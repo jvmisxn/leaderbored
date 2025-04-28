@@ -9,110 +9,34 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Apply Inter font globally */
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Simple transition for hover effects */
-        a, button, .player-entry {
-            transition: all 0.2s ease-in-out;
-        }
-        /* Hide elements meant for admin by default */
-        .admin-only {
-            display: none;
-        }
-        /* Style for showing admin elements when logged in */
-        body.admin-logged-in .admin-only {
-            display: block; /* Or inline, flex, etc., as appropriate */
-        }
-        body.admin-logged-in .public-only {
-            display: none;
-        }
-        /* Style for dynamic outcome section */
-        .outcome-section, .sub-type-section {
-            display: none; /* Hidden by default */
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #e5e7eb; /* gray-200 */
-        }
-        .outcome-section.active, .sub-type-section.active {
-            display: block; /* Shown when active */
-        }
-        /* Styles for Modals */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0s linear 0.3s;
-        }
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-            transition: opacity 0.3s ease;
-        }
-        .modal-content {
-            background-color: white;
-            padding: 1.5rem 2rem 2rem 2rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            max-width: 95%;
-            width: 550px;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-            transform: translateY(-20px) scale(0.98);
-            transition: transform 0.3s ease, opacity 0.3s ease;
-            opacity: 0;
-        }
-        .modal-overlay.active .modal-content {
-             transform: translateY(0) scale(1);
-             opacity: 1;
-        }
-        .modal-close-button {
-             position: absolute;
-             top: 0.5rem;
-             right: 0.75rem;
-             background: none;
-             border: none;
-             font-size: 1.75rem;
-             font-weight: bold;
-             color: #6b7280;
-             cursor: pointer;
-             padding: 0.25rem;
-             line-height: 1;
-        }
-        .modal-close-button:hover {
-            color: #1f2937;
-        }
-
-        /* Style for Ranking Tables */
+        /* Styles remain the same */
+        body { font-family: 'Inter', sans-serif; }
+        a, button, .player-entry { transition: all 0.2s ease-in-out; }
+        .admin-only { display: none; }
+        body.admin-logged-in .admin-only { display: block; }
+        body.admin-logged-in .public-only { display: none; }
+        .outcome-section, .sub-type-section { display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; }
+        .outcome-section.active, .sub-type-section.active { display: block; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
+        .modal-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
+        .modal-content { background-color: white; padding: 1.5rem 2rem 2rem 2rem; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); max-width: 95%; width: 550px; max-height: 90vh; overflow-y: auto; position: relative; transform: translateY(-20px) scale(0.98); transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; }
+        .modal-overlay.active .modal-content { transform: translateY(0) scale(1); opacity: 1; }
+        .modal-close-button { position: absolute; top: 0.5rem; right: 0.75rem; background: none; border: none; font-size: 1.75rem; font-weight: bold; color: #6b7280; cursor: pointer; padding: 0.25rem; line-height: 1; }
+        .modal-close-button:hover { color: #1f2937; }
         .ranking-table { display: none; }
         .ranking-table.active { display: block; }
-        /* Style for multi-select player lists */
         .multi-select-list { max-height: 150px; overflow-y: auto; border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.5rem; background-color: #f9fafb; }
-        /* Table cell padding */
         td, th { white-space: nowrap; padding-left: 1rem; padding-right: 1rem; padding-top: 0.75rem; padding-bottom: 0.75rem; }
         td { white-space: normal; }
-        /* Style for invalid form fields */
         .border-red-500 { border-color: #ef4444; }
-
-        /* Player Modal Edit Mode Styles */
-        .modal-editing .editable-field { display: none; } /* Hide static text in edit mode */
-        .modal-editing .editing-field { display: block; } /* Show input in edit mode */
-        .editing-field { display: none; } /* Hide input by default */
-        .modal-editing .edit-mode-controls { display: inline-flex; } /* Show save/cancel/delete */
-        .edit-mode-controls { display: none; } /* Hide save/cancel/delete by default */
-        .modal-editing .view-mode-controls { display: none; } /* Hide edit button in edit mode */
-
+        .modal-editing .editable-field { display: none; }
+        .modal-editing .editing-field { display: block; }
+        .editing-field { display: none; }
+        .modal-editing .edit-mode-controls { display: inline-flex; }
+        .edit-mode-controls { display: none; }
+        .modal-editing .view-mode-controls { display: none; }
+        .admin-content-panel { display: none; margin-top: 2rem; }
+        .admin-content-panel.active { display: block; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-white to-cyan-50 text-gray-800">
@@ -132,108 +56,131 @@
     </nav>
 
     <div class="container mx-auto mt-8 p-6">
-        <section id="home-section" class="page-section space-y-8"> <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Dashboard</h1> <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"> <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Recent Games</h2> <ul id="recent-games-list" class="space-y-4 text-base"> <li class="border-b border-gray-200 pb-3"><strong>Game:</strong> Cornhole (1v1) <br> Charlie beat Alice <span class="text-gray-500 float-right text-sm">Now</span></li> <li class="border-b border-gray-200 pb-3"><strong>Game:</strong> Pool (Cut-Throat FFA) <br> 1st: Bob, 2nd: Dave, 3rd: Eve <span class="text-gray-500 float-right text-sm">15m ago</span></li> <li class="border-b border-gray-200 pb-3"><strong>Game:</strong> Pickleball (2v2) <br> Alice/Bob beat Charlie/Dave <span class="text-gray-500 float-right text-sm">1h ago</span></li> <li><strong>Game:</strong> Golf <br> Alice (+2), Bob (+5), Charlie (-1) <span class="text-gray-500 float-right text-sm">Yesterday</span></li> </ul> <a href="#games" class="text-blue-600 hover:underline mt-5 inline-block font-medium">View all games...</a> </div> <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Top Players (Overall)</h2> <ol id="top-players-list" class="list-decimal list-inside space-y-3 text-base"> <li>Alice (1350) <span class="text-green-500 text-sm font-medium ml-1">▲ 25</span></li> <li>Charlie (1310) <span class="text-green-500 text-sm font-medium ml-1">▲ 15</span></li> <li>Dave (1280) <span class="text-red-500 text-sm font-medium ml-1">▼ 10</span></li> <li>Bob (1250) <span class="text-red-500 text-sm font-medium ml-1">▼ 25</span></li> <li>Eve (1200) <span class="text-gray-500 text-sm font-medium ml-1">-</span></li> </ol> <a href="#rankings" class="text-blue-600 hover:underline mt-5 inline-block font-medium nav-link" data-target="rankings-section">View full rankings...</a> </div> <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Top Teams (Overall)</h2> <ol id="top-teams-list" class="list-decimal list-inside space-y-3 text-base"> <li>Alice & Charlie (1320) <span class="text-green-500 text-sm font-medium ml-1">▲ 20</span></li> <li>Team Alpha (1290) <span class="text-green-500 text-sm font-medium ml-1">▲ 18</span></li> <li>Bob & Dave (1260) <span class="text-red-500 text-sm font-medium ml-1">▼ 20</span></li> <li>Team Beta (1250) <span class="text-red-500 text-sm font-medium ml-1">▼ 18</span></li> </ol> <a href="#rankings" class="text-blue-600 hover:underline mt-5 inline-block font-medium nav-link" data-target="rankings-section">View full rankings...</a> </div> <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-2 lg:col-span-1"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Tournaments</h2> <ul id="dashboard-tournaments-list" class="space-y-4"> <li> <span class="font-semibold text-lg">Holiday Pickleball Open</span><span class="text-green-600 font-medium text-sm ml-2">(Ongoing)</span><br> <span class="text-sm text-gray-600">Format: Single Elimination, Game: Pickleball (2v2)</span><br> <a href="#tournament-detail-1" class="text-blue-600 hover:underline text-sm font-medium mt-1 inline-block nav-link" data-target="tournament-detail-section">View Bracket</a> </li> <li class="opacity-75"> <span class="font-semibold text-lg">Cornhole Cup</span><span class="text-yellow-600 font-medium text-sm ml-2">(Upcoming)</span><br> <span class="text-sm text-gray-600">Format: Double Elimination, Game: Cornhole (1v1)</span><br> <span class="text-sm text-gray-500">Starts: Next Weekend</span> </li> </ul> <a href="#tournaments" class="text-blue-600 hover:underline mt-5 inline-block font-medium nav-link" data-target="tournaments-section">View all tournaments...</a> </div> </div> </section>
-        <section id="rankings-section" class="page-section hidden space-y-8"> <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6"> <h1 class="text-4xl font-bold text-gray-900">Rankings</h1> <div> <label for="rankings-game-filter" class="text-sm font-medium text-gray-700 mr-2">Filter by Game:</label> <select id="rankings-game-filter" name="rankings-game-filter" class="shadow-sm border border-gray-300 rounded-lg py-2 px-3 text-base focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"> <option value="overall">Overall (1v1/2v2)</option> <option value="pool">Pool</option> <option value="puttpong">PuttPong</option> <option value="golf">Golf</option> <option value="basketball_pickup">Basketball (Pickup)</option> <option value="basketball_horse">Basketball (HORSE)</option> <option value="volleyball_pickup">Volleyball (Pickup)</option> <option value="board_card">Board / Card Game</option> <option value="cornhole">Cornhole</option> <option value="pickleball">Pickleball</option> </select> </div> </div> <div id="ranking-tables-container"> <div id="ranking-table-overall" class="ranking-table active grid grid-cols-1 md:grid-cols-2 gap-8"> <div class="bg-white p-8 rounded-xl shadow-lg"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Overall 1v1 Rankings (Elo)</h2> <table class="w-full text-left table-auto text-base"> <thead> <tr class="bg-gray-100"> <th class="px-4 py-3">Rank</th> <th class="px-4 py-3">Player</th> <th class="px-4 py-3">Rating</th> <th class="px-4 py-3">Change</th> </tr> </thead> <tbody> <tr class="border-b"> <td class="px-4 py-3">1</td> <td class="px-4 py-3">Alice</td> <td class="px-4 py-3">1350</td> <td class="px-4 py-3 text-green-500">+25</td> </tr> <tr class="border-b"> <td class="px-4 py-3">2</td> <td class="px-4 py-3">Charlie</td> <td class="px-4 py-3">1310</td> <td class="px-4 py-3 text-green-500">+15</td> </tr> <tr class="border-b"> <td class="px-4 py-3">3</td> <td class="px-4 py-3">Dave</td> <td class="px-4 py-3">1280</td> <td class="px-4 py-3 text-red-500">-10</td> </tr> <tr class="border-b"> <td class="px-4 py-3">4</td> <td class="px-4 py-3">Bob</td> <td class="px-4 py-3">1250</td> <td class="px-4 py-3 text-red-500">-25</td> </tr> <tr> <td class="px-4 py-3">5</td> <td class="px-4 py-3">Eve</td> <td class="px-4 py-3">1200</td> <td class="px-4 py-3 text-gray-500">-</td> </tr> </tbody> </table> </div> <div class="bg-white p-8 rounded-xl shadow-lg"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Overall 2v2 Team Rankings (Elo)</h2> <table class="w-full text-left table-auto text-base"> <thead> <tr class="bg-gray-100"> <th class="px-4 py-3">Rank</th> <th class="px-4 py-3">Team</th> <th class="px-4 py-3">Rating</th> <th class="px-4 py-3">Change</th> </tr> </thead> <tbody> <tr class="border-b"> <td class="px-4 py-3">1</td> <td class="px-4 py-3">Alice & Charlie</td> <td class="px-4 py-3">1320</td> <td class="px-4 py-3 text-green-500">+20</td> </tr> <tr class="border-b"> <td class="px-4 py-3">2</td> <td class="px-4 py-3">Team Alpha</td> <td class="px-4 py-3">1290</td> <td class="px-4 py-3 text-green-500">+18</td> </tr> <tr class="border-b"> <td class="px-4 py-3">3</td> <td class="px-4 py-3">Bob & Dave</td> <td class="px-4 py-3">1260</td> <td class="px-4 py-3 text-red-500">-20</td> </tr> <tr> <td class="px-4 py-3">4</td> <td class="px-4 py-3">Team Beta</td> <td class="px-4 py-3">1250</td> <td class="px-4 py-3 text-red-500">-18</td> </tr> </tbody> </table> </div> </div> <div id="ranking-table-cornhole" class="ranking-table bg-white p-8 rounded-xl shadow-lg"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Cornhole Rankings (1v1 Elo)</h2> <p class="text-gray-500">Cornhole rankings data would be loaded here...</p> </div> <div id="ranking-table-golf" class="ranking-table bg-white p-8 rounded-xl shadow-lg"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Golf Rankings (Avg Score to Par)</h2> <p class="text-gray-500">Golf rankings data would be loaded here...</p> </div> <div id="ranking-table-pool" class="ranking-table bg-white p-8 rounded-xl shadow-lg"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Pool Rankings</h2> <p class="text-gray-500">Pool rankings (1v1, FFA, etc.) would go here...</p> </div> <div id="ranking-table-pickleball" class="ranking-table bg-white p-8 rounded-xl shadow-lg"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Pickleball Rankings</h2> <p class="text-gray-500">Pickleball rankings (1v1/2v2) would go here...</p> </div> </div> </section>
-        <section id="players-section" class="page-section hidden space-y-8"> <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Players</h1> <div id="players-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"> </div> </section> <section id="tournaments-section" class="page-section hidden space-y-8"> <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Tournaments</h1> <div class="bg-white p-8 rounded-xl shadow-lg"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Tournament List</h2> <div id="tournaments-list-full" class="space-y-6"> <div class="border p-5 rounded-lg hover:bg-gray-50 transition duration-200"> <h3 class="font-semibold text-lg">Holiday Pickleball Open</h3> <p class="text-sm text-gray-600 mt-1">Game: Pickleball (2v2) | Format: Single Elimination | Status: <span class="font-medium text-green-600">Ongoing</span></p> <a href="#tournament-detail-1" class="text-blue-600 hover:underline text-sm font-medium mt-2 inline-block nav-link" data-target="tournament-detail-section">View Details & Bracket</a> </div> <div class="border p-5 rounded-lg hover:bg-gray-50 transition duration-200"> <h3 class="font-semibold text-lg">Thanksgiving Codenames Championship</h3> <p class="text-sm text-gray-600 mt-1">Game: Board/Card Game (Team) | Format: Single Elimination | Status: <span class="font-medium text-gray-500">Completed</span></p> <a href="#tournament-detail-2" class="text-blue-600 hover:underline text-sm font-medium mt-2 inline-block nav-link" data-target="tournament-detail-section">View Results</a> </div> <div class="border p-5 rounded-lg hover:bg-gray-50 transition duration-200"> <h3 class="font-semibold text-lg">Cornhole Cup</h3> <p class="text-sm text-gray-600 mt-1">Game: Cornhole (1v1) | Format: Double Elimination | Status: <span class="font-medium text-yellow-600">Upcoming (Starts Next Weekend)</span></p> <a href="#tournament-detail-3" class="text-blue-600 hover:underline text-sm font-medium mt-2 inline-block nav-link" data-target="tournament-detail-section">View Details</a> </div> </div> </div> <div class="admin-only mt-6"> <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 nav-link" data-target="admin-create-tournament-section"> Create New Tournament </button> </div> </section>
+        <section id="home-section" class="page-section space-y-8"> <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Dashboard</h1> <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"> <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Recent Games</h2> <ul id="recent-games-list" class="space-y-4 text-base"> <li class="text-gray-500">Loading recent games...</li> </ul> <a href="#games" class="text-blue-600 hover:underline mt-5 inline-block font-medium">View all games...</a> </div> <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Top Players (Overall)</h2> <ol id="top-players-list" class="list-decimal list-inside space-y-3 text-base"> <li class="text-gray-500">Loading rankings...</li></ol> <a href="#rankings" class="text-blue-600 hover:underline mt-5 inline-block font-medium nav-link" data-target="rankings-section">View full rankings...</a> </div> <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Top Teams (Overall)</h2> <ol id="top-teams-list" class="list-decimal list-inside space-y-3 text-base"> <li class="text-gray-500">Loading rankings...</li></ol> <a href="#rankings" class="text-blue-600 hover:underline mt-5 inline-block font-medium nav-link" data-target="rankings-section">View full rankings...</a> </div> <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-2 lg:col-span-1"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Tournaments</h2> <ul id="dashboard-tournaments-list" class="space-y-4"> <li class="text-gray-500">Loading tournaments...</li></ul> <a href="#tournaments" class="text-blue-600 hover:underline mt-5 inline-block font-medium nav-link" data-target="tournaments-section">View all tournaments...</a> </div> </div> </section>
+        <section id="rankings-section" class="page-section hidden space-y-8"> <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6"> <h1 class="text-4xl font-bold text-gray-900">Rankings</h1> <div> <label for="rankings-game-filter" class="text-sm font-medium text-gray-700 mr-2">Filter by Game:</label> <select id="rankings-game-filter" name="rankings-game-filter" class="shadow-sm border border-gray-300 rounded-lg py-2 px-3 text-base focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"> <option value="overall">Overall (1v1/2v2)</option> <option value="pool">Pool</option> <option value="puttpong">PuttPong</option> <option value="golf">Golf</option> <option value="basketball_pickup">Basketball (Pickup)</option> <option value="basketball_horse">Basketball (HORSE)</option> <option value="volleyball_pickup">Volleyball (Pickup)</option> <option value="board_card">Board / Card Game</option> <option value="cornhole">Cornhole</option> <option value="pickleball">Pickleball</option> </select> </div> </div> <div id="ranking-tables-container"> <div id="ranking-table-overall" class="ranking-table active grid grid-cols-1 md:grid-cols-2 gap-8"> <div class="bg-white p-8 rounded-xl shadow-lg"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Overall 1v1 Rankings (Elo)</h2> <table class="w-full text-left table-auto text-base"> <thead> <tr class="bg-gray-100"> <th class="px-4 py-3">Rank</th> <th class="px-4 py-3">Player</th> <th class="px-4 py-3">Rating</th> </tr> </thead> <tbody id="overall-1v1-rankings-body"> <tr class="border-b"><td colspan="3" class="text-center text-gray-500 py-4">Loading...</td></tr> </tbody> </table> </div> <div class="bg-white p-8 rounded-xl shadow-lg"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Overall 2v2 Team Rankings (Elo)</h2> <table class="w-full text-left table-auto text-base"> <thead> <tr class="bg-gray-100"> <th class="px-4 py-3">Rank</th> <th class="px-4 py-3">Team</th> <th class="px-4 py-3">Rating</th> </tr> </thead> <tbody id="overall-2v2-rankings-body"> <tr class="border-b"><td colspan="3" class="text-center text-gray-500 py-4">Loading...</td></tr> </tbody> </table> </div> </div> </div> </section>
+        <section id="players-section" class="page-section hidden space-y-8"> <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Players</h1> <div id="players-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"> <p class="text-gray-500 col-span-full text-center">Loading players...</p> </div> </section>
+        <section id="tournaments-section" class="page-section hidden space-y-8"> <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Tournaments</h1> <div class="bg-white p-8 rounded-xl shadow-lg"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Tournament List</h2> <div id="tournaments-list-full" class="space-y-6"> <p class="text-gray-500">Loading tournaments...</p> </div> </div> <div class="admin-only mt-6"> <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 admin-nav-button" data-target="admin-content-create-tournament"> Create New Tournament </button> </div> </section>
         <section id="tournament-detail-section" class="page-section hidden space-y-8"> <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Tournament: <span id="tournament-detail-name">[Tournament Name]</span></h1> <div class="bg-white p-8 rounded-xl shadow-lg"> <p class="text-lg mb-1"><strong>Game:</strong> <span id="tournament-detail-game">[Game]</span></p> <p class="text-lg mb-1"><strong>Format:</strong> <span id="tournament-detail-format">[Format]</span></p> <p class="text-lg mb-4"><strong>Status:</strong> <span id="tournament-detail-status">[Status]</span></p> <h2 class="text-2xl font-semibold mt-8 mb-5 text-indigo-700">Bracket / Matches / Standings</h2> <div id="tournament-detail-visualization" class="border-2 border-dashed border-gray-300 p-12 text-center text-gray-500 rounded-lg min-h-[250px]"> Tournament Visualization Area <br>(Requires JavaScript library or custom rendering based on format) </div> <div class="admin-only mt-6"> <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"> Report Match Result </button> </div> </div> </section>
         <section id="login-section" class="page-section hidden"> <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6 text-center">Admin Login</h1> <div class="bg-white p-10 rounded-xl shadow-xl max-w-lg mx-auto"> <form id="login-form"> <div class="mb-6"> <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password:</label> <input type="password" id="password" name="password" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required> </div> <div id="login-error" class="text-red-500 text-sm mb-4 hidden">Incorrect password.</div> <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"> Login </button> </form> </div> </section>
-        <section id="admin-section" class="page-section hidden admin-only space-y-8"> <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Admin Panel</h1> <p class="text-green-700 bg-green-100 border border-green-300 p-4 rounded-lg text-center font-medium">You are logged in as Admin.</p> <div class="grid grid-cols-1 md:grid-cols-3 gap-8"> <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Add / Record</h2> <div class="space-y-4"> <button class="w-full text-left bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md nav-link" data-target="admin-add-player-section">➕ Add New Player</button> <button class="w-full text-left bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md nav-link" data-target="admin-add-team-section">➕ Add New Team</button> <button id="open-record-game-modal-btn" class="w-full text-left bg-green-100 hover:bg-green-200 text-green-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md">🏆 Record Game Result</button> </div> </div> <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Manage</h2> <div class="space-y-4"> <button class="w-full text-left bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md nav-link" data-target="admin-manage-games-section">✏️ Manage Games</button>
-        <button class="w-full text-left bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md">✏️ Manage Teams</button> </div> </div> <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"> <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Tournaments</h2> <div class="space-y-4"> <button class="w-full text-left bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md nav-link" data-target="admin-create-tournament-section">➕ Create New Tournament</button> <button class="w-full text-left bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md">✏️ Manage Existing Tournament</button> </div> </div> </div> </section>
-        <section id="admin-add-player-section" class="page-section hidden admin-only bg-white p-8 rounded-xl shadow-xl max-w-lg mx-auto"> <h2 class="text-3xl font-semibold mb-6 text-indigo-700">Add New Player</h2> <form id="add-player-form"> <div class="mb-5"> <label for="player-name" class="block text-gray-700 text-sm font-bold mb-2">Player Name:</label> <input type="text" id="player-name" name="player-name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required> </div> <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md">Add Player</button> <button type="button" class="ml-3 text-gray-600 hover:text-gray-900 font-medium cancel-admin-action" data-target="admin-section">Cancel</button> </form> </section>
-        <section id="admin-add-team-section" class="page-section hidden admin-only bg-white p-8 rounded-xl shadow-xl max-w-lg mx-auto"> <h2 class="text-3xl font-semibold mb-6 text-indigo-700">Add New Team (for 2v2)</h2> <form id="add-team-form"> <div class="mb-5"> <label for="team-name" class="block text-gray-700 text-sm font-bold mb-2">Team Name:</label> <input type="text" id="team-name" name="team-name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" required> </div> <div class="mb-5"> <label for="team-player1" class="block text-gray-700 text-sm font-bold mb-2">Player 1:</label> <select id="team-player1" name="team-player1" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Player</option> <option value="player1_id">Alice (Placeholder)</option> <option value="player2_id">Bob (Placeholder)</option> <option value="player3_id">Charlie (Placeholder)</option> </select> </div> <div class="mb-5"> <label for="team-player2" class="block text-gray-700 text-sm font-bold mb-2">Player 2:</label> <select id="team-player2" name="team-player2" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Player</option> <option value="player1_id">Alice (Placeholder)</option> <option value="player2_id">Bob (Placeholder)</option> <option value="player3_id">Charlie (Placeholder)</option> </select> </div> <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md">Add Team</button> <button type="button" class="ml-3 text-gray-600 hover:text-gray-900 font-medium cancel-admin-action" data-target="admin-section">Cancel</button> </form> </section>
-        <section id="admin-create-tournament-section" class="page-section hidden admin-only bg-white p-8 rounded-xl shadow-xl max-w-lg mx-auto"> <h2 class="text-3xl font-semibold mb-6 text-indigo-700">Create New Tournament</h2> <form id="create-tournament-form"> <div class="mb-5"> <label for="tournament-name" class="block text-gray-700 text-sm font-bold mb-2">Tournament Name:</label> <input type="text" id="tournament-name" name="tournament-name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" required> </div> <div class="mb-5"> <label for="tournament-game-type-select" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label> <select id="tournament-game-type-select" name="tournament-game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Type</option> <option value="1v1">1 vs 1 (General)</option> <option value="2v2">2 vs 2 (General)</option> <option value="ffa">Free-for-All (FFA - General)</option> <option value="team">Team vs Team (General)</option> <option value="pool">Pool</option> <option value="puttpong">PuttPong</option> <option value="golf">Golf</option> <option value="basketball_pickup">Basketball (Pickup)</option> <option value="basketball_horse">Basketball (HORSE)</option> <option value="volleyball_pickup">Volleyball (Pickup)</option> <option value="board_card">Board / Card Game</option> <option value="cornhole">Cornhole</option> <option value="pickleball">Pickleball</option> </select> </div> <div class="mb-5"> <label for="tournament-format" class="block text-gray-700 text-sm font-bold mb-2">Format:</label> <select id="tournament-format" name="tournament-format" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Format</option> <option value="single-elim">Single Elimination</option> <option value="double-elim">Double Elimination</option> <option value="round-robin">Round Robin</option> </select> </div> <div class="mb-5"> <label for="tournament-start-date" class="block text-gray-700 text-sm font-bold mb-2">Start Date (Optional):</label> <input type="date" id="tournament-start-date" name="tournament-start-date" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700"> </div> <div class="mb-5"> <label class="block text-gray-700 text-sm font-bold mb-2">Participants:</label> <div id="tournament-participants-list" class="h-40 border rounded-lg p-3 overflow-y-auto bg-gray-50 space-y-2"> <p class="text-gray-500 text-sm">Select Game Type to see participants.</p> </div> <p class="text-xs text-gray-500 mt-1">Select participants. Seeding will be based on current rankings for the selected game type.</p> </div> <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md">Create Tournament</button> <button type="button" class="ml-3 text-gray-600 hover:text-gray-900 font-medium cancel-admin-action" data-target="admin-section">Cancel</button> </form> </section>
-        <section id="admin-manage-games-section" class="page-section hidden admin-only space-y-8"> <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6"> <h1 class="text-4xl font-bold text-gray-900">Manage Recorded Games</h1> <button class="text-sm text-gray-600 hover:text-gray-900 nav-link font-medium" data-target="admin-section">&larr; Back to Admin Panel</button> </div> <div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto"> <table class="w-full text-left table-auto text-base"> <thead> <tr class="bg-gray-100"> <th class="px-4 py-3">Date</th> <th class="px-4 py-3">Game Type</th> <th class="px-4 py-3">Description</th> <th class="px-4 py-3">Actions</th> </tr> </thead> <tbody id="manage-games-table-body"> </tbody> </table> </div> </section>
 
-    </div>
+        <section id="admin-section" class="page-section hidden admin-only space-y-8">
+            <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Admin Panel</h1>
+            <p class="text-green-700 bg-green-100 border border-green-300 p-4 rounded-lg text-center font-medium">You are logged in as Admin.</p>
 
-    <div id="player-info-modal" class="modal-overlay"> <div class="modal-content">
-            <button id="close-player-modal-btn" class="modal-close-button">&times;</button>
-            <div class="flex items-center space-x-4 mb-6">
-                <img id="modal-player-icon" src="https://placehold.co/80x80/E0E7FF/4F46E5?text=P" alt="Player Icon" class="w-20 h-20 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-3xl font-bold">
-                <div>
-                    <h2 id="modal-player-name" class="text-2xl font-bold text-gray-900 editable-field">[Player Name]</h2>
-                    <input type="text" id="modal-edit-player-name-input" name="playerName" class="editing-field shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 text-2xl font-bold leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                    <p class="text-sm text-gray-600 mt-1">Overall Rank: <span id="modal-player-overall-rank" class="font-medium">[Rank]</span> (<span id="modal-player-overall-rating">[Rating]</span>)</p>
+            <div id="admin-button-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Add / Record</h2>
+                    <div class="space-y-4">
+                        <button class="w-full text-left bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md admin-nav-button" data-target="admin-content-add-player">➕ Add New Player</button>
+                        <button class="w-full text-left bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md admin-nav-button" data-target="admin-content-add-team">➕ Add New Team</button>
+                        <button id="open-record-game-modal-btn" class="w-full text-left bg-green-100 hover:bg-green-200 text-green-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md">🏆 Record Game Result</button>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Manage</h2>
+                    <div class="space-y-4">
+                        <button class="w-full text-left bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md admin-nav-button" data-target="admin-content-manage-games">✏️ Manage Games</button>
+                        <button class="w-full text-left bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md">✏️ Manage Teams</button>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Tournaments</h2>
+                    <div class="space-y-4">
+                        <button class="w-full text-left bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md admin-nav-button" data-target="admin-content-create-tournament">➕ Create New Tournament</button>
+                        <button class="w-full text-left bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md">✏️ Manage Existing Tournament</button>
+                    </div>
                 </div>
             </div>
-            <div class="space-y-4">
-                <h3 class="text-lg font-semibold text-indigo-700 border-b pb-1">Game Stats</h3>
-                <div id="modal-player-game-stats" class="text-sm space-y-1"></div>
-                <h3 class="text-lg font-semibold text-indigo-700 border-b pb-1 mt-4">Recent Activity</h3>
-                <ul id="modal-player-recent-activity" class="text-sm space-y-2 list-disc list-inside"></ul>
-            </div>
-            <div class="mt-6 pt-4 border-t border-gray-200 text-right space-x-3">
-                 <button id="edit-player-modal-btn" class="admin-only view-mode-controls text-sm bg-yellow-100 text-yellow-800 hover:bg-yellow-200 font-medium py-2 px-4 rounded-lg shadow-sm">
-                     ✏️ Edit Player
-                 </button>
-                 <div class="edit-mode-controls space-x-3">
-                     <button id="save-player-changes-btn" class="text-sm bg-green-600 text-white hover:bg-green-700 font-medium py-2 px-4 rounded-lg shadow-sm">
-                         💾 Save Changes
-                     </button>
-                     <button id="delete-player-btn" class="text-sm bg-red-600 text-white hover:bg-red-700 font-medium py-2 px-4 rounded-lg shadow-sm">
-                         🗑️ Delete Player
-                     </button>
-                      <button id="cancel-player-edit-btn" class="text-sm bg-gray-200 text-gray-700 hover:bg-gray-300 font-medium py-2 px-4 rounded-lg shadow-sm">
-                         Cancel
-                     </button>
-                 </div>
-            </div>
-        </div>
+
+            <div id="admin-content-container">
+                <div id="admin-content-add-player" class="admin-content-panel hidden bg-white p-8 rounded-xl shadow-xl max-w-lg mx-auto">
+                    <h2 class="text-3xl font-semibold mb-6 text-indigo-700">Add New Player</h2>
+                    <form id="add-player-form">
+                        <div class="mb-5"> <label for="player-name" class="block text-gray-700 text-sm font-bold mb-2">Player Name:</label> <input type="text" id="player-name" name="player-name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required> </div>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md">Add Player</button>
+                        <button type="button" class="ml-3 text-gray-600 hover:text-gray-900 font-medium admin-back-button">Cancel</button>
+                    </form>
+                </div>
+                <div id="admin-content-add-team" class="admin-content-panel hidden bg-white p-8 rounded-xl shadow-xl max-w-lg mx-auto">
+                     <h2 class="text-3xl font-semibold mb-6 text-indigo-700">Add New Team (for 2v2)</h2>
+                     <form id="add-team-form">
+                         <div class="mb-5"> <label for="team-name" class="block text-gray-700 text-sm font-bold mb-2">Team Name:</label> <input type="text" id="team-name" name="team-name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" required> </div>
+                         <div class="mb-5"> <label for="team-player1" class="block text-gray-700 text-sm font-bold mb-2">Player 1:</label> <select id="team-player1" name="team-player1" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Player</option> </select> </div>
+                         <div class="mb-5"> <label for="team-player2" class="block text-gray-700 text-sm font-bold mb-2">Player 2:</label> <select id="team-player2" name="team-player2" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Player</option> </select> </div>
+                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md">Add Team</button>
+                         <button type="button" class="ml-3 text-gray-600 hover:text-gray-900 font-medium admin-back-button">Cancel</button>
+                     </form>
+                </div>
+                <div id="admin-content-create-tournament" class="admin-content-panel hidden bg-white p-8 rounded-xl shadow-xl max-w-lg mx-auto">
+                     <h2 class="text-3xl font-semibold mb-6 text-indigo-700">Create New Tournament</h2>
+                     <form id="create-tournament-form">
+                         <div class="mb-5"> <label for="tournament-name" class="block text-gray-700 text-sm font-bold mb-2">Tournament Name:</label> <input type="text" id="tournament-name" name="tournament-name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" required> </div>
+                         <div class="mb-5"> <label for="tournament-game-type-select" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label> <select id="tournament-game-type-select" name="tournament-game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Type</option> <option value="1v1">1 vs 1 (General)</option> <option value="2v2">2 vs 2 (General)</option> <option value="ffa">Free-for-All (FFA - General)</option> <option value="team">Team vs Team (General)</option> <option value="pool">Pool</option> <option value="puttpong">PuttPong</option> <option value="golf">Golf</option> <option value="basketball_pickup">Basketball (Pickup)</option> <option value="basketball_horse">Basketball (HORSE)</option> <option value="volleyball_pickup">Volleyball (Pickup)</option> <option value="board_card">Board / Card Game</option> <option value="cornhole">Cornhole</option> <option value="pickleball">Pickleball</option> </select> </div>
+                         <div class="mb-5"> <label for="tournament-format" class="block text-gray-700 text-sm font-bold mb-2">Format:</label> <select id="tournament-format" name="tournament-format" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Format</option> <option value="single-elim">Single Elimination</option> <option value="double-elim">Double Elimination</option> <option value="round-robin">Round Robin</option> </select> </div>
+                         <div class="mb-5"> <label for="tournament-start-date" class="block text-gray-700 text-sm font-bold mb-2">Start Date (Optional):</label> <input type="date" id="tournament-start-date" name="tournament-start-date" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700"> </div>
+                         <div class="mb-5"> <label class="block text-gray-700 text-sm font-bold mb-2">Participants:</label> <div id="tournament-participants-list" class="h-40 border rounded-lg p-3 overflow-y-auto bg-gray-50 space-y-2"> <p class="text-gray-500 text-sm">Select Game Type to see participants.</p> </div> <p class="text-xs text-gray-500 mt-1">Select participants. Seeding will be based on current rankings for the selected game type.</p> </div>
+                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md">Create Tournament</button>
+                         <button type="button" class="ml-3 text-gray-600 hover:text-gray-900 font-medium admin-back-button">Cancel</button>
+                     </form>
+                </div>
+                <div id="admin-content-manage-games" class="admin-content-panel hidden space-y-8">
+                    <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
+                         <h1 class="text-4xl font-bold text-gray-900">Manage Recorded Games</h1>
+                         <button class="text-sm text-gray-600 hover:text-gray-900 font-medium admin-back-button">&larr; Back to Admin Panel</button>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
+                        <table class="w-full text-left table-auto text-base">
+                            <thead> <tr class="bg-gray-100"> <th class="px-4 py-3">Date</th> <th class="px-4 py-3">Game Type</th> <th class="px-4 py-3">Description</th> <th class="px-4 py-3">Actions</th> </tr> </thead>
+                            <tbody id="manage-games-table-body"> </tbody>
+                        </table>
+                    </div>
+                </div>
+                </div>
+        </section>
+
     </div>
-    <div id="record-game-modal" class="modal-overlay"> <div class="modal-content">
-            <button id="close-record-game-modal-btn" class="modal-close-button">&times;</button>
-            <h2 class="text-2xl font-semibold mb-6 text-indigo-700">Record Game Result</h2> <form id="record-game-form">
-                <div class="mb-5"> <label for="game-type-select-modal" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label> <select id="game-type-select-modal" name="game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Type</option> <option value="1v1">1 vs 1 (General)</option> <option value="2v2">2 vs 2 (General)</option> <option value="ffa">Free-for-All (FFA - General)</option> <option value="team">Team vs Team (General)</option> <option value="pool">Pool</option> <option value="puttpong">PuttPong</option> <option value="golf">Golf</option> <option value="basketball_pickup">Basketball (Pickup)</option> <option value="basketball_horse">Basketball (HORSE)</option> <option value="volleyball_pickup">Volleyball (Pickup)</option> <option value="board_card">Board / Card Game</option> <option value="cornhole">Cornhole</option> <option value="pickleball">Pickleball</option> </select> </div>
-                <div id="sub-type-wrapper-modal" class="mb-5"> <div id="sub-type-pool-modal" class="sub-type-section space-y-2"> <label for="pool-game-mode-modal" class="block text-gray-700 text-sm font-bold mb-1">Pool Game Mode:</label> <select id="pool-game-mode-modal" name="pool_game_mode" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700"> <option value="">Select Mode</option> <option value="8ball_1v1">8-Ball (1v1)</option> <option value="9ball_1v1">9-Ball (1v1)</option> <option value="8ball_2v2">8-Ball (2v2)</option> <option value="cutthroat_ffa">Cut-Throat (FFA)</option> </select> </div> <div id="sub-type-board_card-modal" class="sub-type-section space-y-2"> <label for="board-card-scoring-modal" class="block text-gray-700 text-sm font-bold mb-1">Scoring Method:</label> <select id="board-card-scoring-modal" name="board_card_scoring" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700"> <option value="">Select Scoring</option> <option value="win_loss_1v1">Win/Loss (1v1)</option> <option value="win_loss_2v2">Win/Loss (2v2)</option> <option value="win_loss_team">Win/Loss (Team vs Team)</option> <option value="points">Points Scored</option> <option value="placement">Placement (FFA)</option> </select> </div> </div>
-                <div id="outcome-wrapper-modal"> <div id="outcome-1v1-modal" class="outcome-section space-y-3"> <h3 class="text-xl font-medium text-gray-800">1 vs 1 Outcome</h3> <label for="winner-1v1-modal" class="block text-gray-700 text-xs font-bold mb-1">Winner:</label> <select id="winner-1v1-modal" name="winner_player" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700"> <option value="">Select Winner</option> </select> <label for="loser-1v1-modal" class="block text-gray-700 text-xs font-bold mb-1">Loser:</label> <select id="loser-1v1-modal" name="loser_player" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700"> <option value="">Select Loser</option> </select> <label for="draw-1v1-modal" class="flex items-center space-x-2 mt-3"> <input type="checkbox" id="draw-1v1-modal" name="is_draw" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 h-4 w-4"> <span class="text-sm text-gray-700">Record as Draw?</span> </label> <div class="mt-3"> <label for="score-1v1-modal" class="block text-gray-700 text-xs font-bold mb-1">Score (Optional):</label> <input type="text" id="score-1v1-modal" name="score" placeholder="e.g., 11-5, 11-9" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 text-sm"> </div> </div> <div id="outcome-2v2-modal" class="outcome-section space-y-3"> <h3 class="text-xl font-medium text-gray-800">2 vs 2 Outcome</h3> <label for="winner-team-2v2-modal" class="block text-gray-700 text-xs font-bold mb-1">Winning Team:</label> <select id="winner-team-2v2-modal" name="winner_team" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700"> <option value="">Select Winning Team</option> </select> <label for="loser-team-2v2-modal" class="block text-gray-700 text-xs font-bold mb-1">Losing Team:</label> <select id="loser-team-2v2-modal" name="loser_team" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700"> <option value="">Select Losing Team</option> </select> <label for="draw-2v2-modal" class="flex items-center space-x-2 mt-3"> <input type="checkbox" id="draw-2v2-modal" name="is_draw" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 h-4 w-4"> <span class="text-sm text-gray-700">Record as Draw?</span> </label> <div class="mt-3"> <label for="score-2v2-modal" class="block text-gray-700 text-xs font-bold mb-1">Score (Optional):</label> <input type="text" id="score-2v2-modal" name="score" placeholder="e.g., 21-15, 21-18" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 text-sm"> </div> </div> <div id="outcome-ffa-modal" class="outcome-section space-y-3"> <h3 class="text-xl font-medium text-gray-800">Free-for-All Outcome</h3> <p class="text-sm text-gray-600">Enter players by placement (1st, 2nd, etc.).</p> <div id="ffa-player-entries-modal"> <div class="flex items-center space-x-2 mb-2"> <span class="font-bold w-8 text-right">1st:</span> <select name="ffa_player_1" class="shadow border rounded-lg flex-grow py-3 px-4 text-gray-700"> <option value="">Select Player</option> </select> </div> <div class="flex items-center space-x-2 mb-2"> <span class="font-bold w-8 text-right">2nd:</span> <select name="ffa_player_2" class="shadow border rounded-lg flex-grow py-3 px-4 text-gray-700"> <option value="">Select Player</option> </select> </div> </div> <button type="button" id="add-ffa-place-modal" class="text-sm text-blue-600 hover:underline mt-2">+ Add Another Place</button> </div> <div id="outcome-golf-modal" class="outcome-section space-y-3"> <h3 class="text-xl font-medium text-gray-800">Golf Outcome</h3> <p class="text-sm text-gray-600">Enter score relative to par for each player.</p> <div id="golf-player-entries-modal"> <div class="flex items-center space-x-2 mb-2"> <select name="golf_player_1" class="shadow border rounded-lg flex-grow py-3 px-4 text-gray-700"> <option value="">Select Player</option> </select> <input type="number" name="golf_score_1" placeholder="Score (+/- Par)" class="shadow border rounded-lg w-28 py-2 px-3 text-gray-700"> </div> </div> <button type="button" id="add-golf-player-modal" class="text-sm text-blue-600 hover:underline mt-2">+ Add Another Player</button> </div> <div id="outcome-pickup-modal" class="outcome-section space-y-4"> <h3 class="text-xl font-medium text-gray-800">Pickup Game Outcome</h3> <div class="grid grid-cols-2 gap-4"> <div> <label class="block text-gray-700 text-sm font-bold mb-2">Winning Players:</label> <div id="pickup-winners-list-modal" class="multi-select-list space-y-1"></div> </div> <div> <label class="block text-gray-700 text-sm font-bold mb-2">Losing Players:</label> <div id="pickup-losers-list-modal" class="multi-select-list space-y-1"></div> </div> </div> <div class="mt-3"> <label for="score-pickup-modal" class="block text-gray-700 text-xs font-bold mb-1">Score (Optional):</label> <input type="text" id="score-pickup-modal" name="score" placeholder="e.g., 11-7" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 text-sm"> </div> </div> <div id="outcome-boardgame-points-modal" class="outcome-section space-y-3"> <h3 class="text-xl font-medium text-gray-800">Points-Based Game Outcome</h3> <p class="text-sm text-gray-600">Enter score for each player.</p> <div id="boardgame-points-entries-modal"> <div class="flex items-center space-x-2 mb-2"> <select name="boardgame_player_1" class="shadow border rounded-lg flex-grow py-3 px-4 text-gray-700"> <option value="">Select Player</option> </select> <input type="number" name="boardgame_score_1" placeholder="Score" class="shadow border rounded-lg w-28 py-2 px-3 text-gray-700"> </div> </div> <button type="button" id="add-boardgame-player-modal" class="text-sm text-blue-600 hover:underline mt-2">+ Add Another Player</button> </div> </div>
-                 <button type="submit" class="mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md">Record Game</button>
-                 <button type="button" id="cancel-record-game-modal-btn" class="ml-3 text-gray-600 hover:text-gray-900 font-medium">Cancel</button>
-             </form>
-        </div>
-    </div>
+
+    <div id="player-info-modal" class="modal-overlay"> </div>
+    <div id="record-game-modal" class="modal-overlay"> </div>
 
     <footer class="text-center text-gray-600 text-base mt-12 mb-6"> &copy; 2025 LeaderBored. Keep it friendly!
     </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 
     <script>
         // --- Basic Page Navigation & Admin Simulation ---
         const ADMIN_PASSWORD = "admin";
 
         // --- DOM Element References (Assigned in initializeApp) ---
-        let sections, navLinks, loginForm, loginError, logoutButton, cancelAdminButtons,
+        let sections, navLinks, loginForm, loginError, logoutButton,
             recordGameModal, openRecordGameModalBtn, closeRecordGameModalBtn, cancelRecordGameModalBtn, recordGameForm,
             gameTypeSelectModal, subTypeWrapperModal, outcomeWrapperModal, poolModeSelectModal, boardCardScoringSelectModal,
             tournamentGameTypeSelect, tournamentParticipantsList, rankingsGameFilter, rankingTablesContainer,
             playersGrid,
-            playerInfoModal, closePlayerModalBtn, manageGamesTableBody;
+            playerInfoModal, closePlayerModalBtn, manageGamesTableBody,
+            adminSection, adminButtonGrid, adminContentContainer, adminNavButtons, adminContentPanels, adminBackButtons;
 
-        // --- Placeholder Data ---
-        const placeholderPlayers = [
-            { id: 'p1', name: 'Alice', overallRank: 1, overallRating: 1350, iconLetter: 'A' },
-            { id: 'p2', name: 'Bob', overallRank: 4, overallRating: 1250, iconLetter: 'B' },
-            { id: 'p3', name: 'Charlie', overallRank: 2, overallRating: 1310, iconLetter: 'C' },
-            { id: 'p4', name: 'Dave', overallRank: 3, overallRating: 1280, iconLetter: 'D' },
-            { id: 'p5', name: 'Eve', overallRank: 5, overallRating: 1200, iconLetter: 'E' }
-        ];
-        const placeholderTeams = [
-            { id: 't1', name: 'Alice & Charlie', players: ['p1', 'p3'], rating: 1320 },
-            { id: 't2', name: 'Bob & Dave', players: ['p2', 'p4'], rating: 1260 },
-            { id: 't3', name: 'Team Alpha', players: [], rating: 1290 },
-            { id: 't4', name: 'Team Beta', players: [], rating: 1250 }
-        ];
-        const placeholderPlayerDetails = {
-             p1: { name: 'Alice', overallRank: 1, overallRating: 1350, iconLetter: 'A', stats: '<strong>Cornhole:</strong> Rank #2 (1380 Elo), 15 Wins, 8 Losses<br><strong>Pickleball (2v2):</strong> Rank #1 (Team: Alice & Charlie - 1320 Elo)<br><strong>Golf:</strong> Avg Score: +1.5', activity: '<li>Won vs Charlie in Cornhole (1v1) - <span class="text-gray-500">Now</span></li><li>Lost vs Bob/Dave in Pickleball (2v2 w/ Charlie) - <span class="text-gray-500">1h ago</span></li><li>Played Golf (+2) - <span class="text-gray-500">Yesterday</span></li>' },
-             p2: { name: 'Bob', overallRank: 4, overallRating: 1250, iconLetter: 'B', stats: '<strong>Pool (FFA):</strong> Rank #1, 3 Wins (1st Place)<br><strong>Pickleball (2v2):</strong> Rank #3 (Team: Bob & Dave - 1260 Elo)<br><strong>Cornhole:</strong> Rank #5 (1190 Elo)', activity: '<li>Won Pool (FFA) - <span class="text-gray-500">15m ago</span></li><li>Won vs Alice/Charlie in Pickleball (2v2 w/ Dave) - <span class="text-gray-500">1h ago</span></li><li>Played Golf (+5) - <span class="text-gray-500">Yesterday</span></li>' },
-             p3: { name: 'Charlie', overallRank: 2, overallRating: 1310, iconLetter: 'C', stats: '<strong>Cornhole:</strong> Rank #1 (1400 Elo)<br><strong>Pickleball (2v2):</strong> Rank #1 (Team: Alice & Charlie - 1320 Elo)<br><strong>Golf:</strong> Avg Score: -1.0', activity: '<li>Lost vs Alice in Cornhole (1v1) - <span class="text-gray-500">Now</span></li><li>Lost vs Bob/Dave in Pickleball (2v2 w/ Alice) - <span class="text-gray-500">1h ago</span></li><li>Played Golf (-1) - <span class="text-gray-500">Yesterday</span></li>' },
-             p4: { name: 'Dave', overallRank: 3, overallRating: 1280, iconLetter: 'D', stats: '<strong>Pickleball (2v2):</strong> Rank #3 (Team: Bob & Dave - 1260 Elo)<br><strong>Pool (FFA):</strong> Rank #2', activity: '<li>Placed 2nd in Pool (FFA) - <span class="text-gray-500">15m ago</span></li><li>Won vs Alice/Charlie in Pickleball (2v2 w/ Bob) - <span class="text-gray-500">1h ago</span></li>' },
-             p5: { name: 'Eve', overallRank: 5, overallRating: 1200, iconLetter: 'E', stats: '<strong>Pool (FFA):</strong> Rank #3<br><strong>Board Games:</strong> 5 Wins', activity: '<li>Placed 3rd in Pool (FFA) - <span class="text-gray-500">15m ago</span></li>' },
-        };
-        const placeholderGames = [
-            { id: 'g1', date: '2025-04-27 23:00', type: 'Cornhole (1v1)', description: 'Charlie beat Alice' },
-            { id: 'g2', date: '2025-04-27 22:45', type: 'Pool (Cut-Throat FFA)', description: '1st: Bob, 2nd: Dave, 3rd: Eve' },
-            { id: 'g3', date: '2025-04-27 22:00', type: 'Pickleball (2v2)', description: 'Alice/Bob beat Charlie/Dave' },
-            { id: 'g4', date: '2025-04-26 15:00', type: 'Golf', description: 'Alice (+2), Bob (+5), Charlie (-1)' },
-        ];
+        // --- Firebase Initialization ---
+        let app, db;
+        try {
+            const firebaseConfig = {
+              apiKey: "AIzaSyCF3az8WEAMVpAx5cbp917EUhNM5cRzvwA", // Replace
+              authDomain: "leaderbored2.firebaseapp.com", // Replace
+              projectId: "leaderbored2", // Replace
+              storageBucket: "leaderbored2.appspot.com", // Replace .firebaseapp.com with .appspot.com
+              messagingSenderId: "449176616925", // Replace
+              appId: "1:449176616925:web:8149e2e8b43a9a72104034", // Replace
+              measurementId: "G-8LRFJGV2XY" // Replace (Optional)
+            };
+            app = firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore(); // Use compat library
+            console.log("[INIT] Firebase Initialized Successfully");
+        } catch (error) {
+            console.error("[INIT] Error initializing Firebase:", error);
+            alert("Could not connect to Firebase. Please check your configuration and console.");
+        }
 
         // Function to assign elements after DOM is loaded
         function assignElements() {
@@ -242,7 +189,6 @@
             loginForm = document.getElementById('login-form');
             loginError = document.getElementById('login-error');
             logoutButton = document.getElementById('logout-button');
-            cancelAdminButtons = document.querySelectorAll('.cancel-admin-action');
             recordGameModal = document.getElementById('record-game-modal');
             openRecordGameModalBtn = document.getElementById('open-record-game-modal-btn');
             closeRecordGameModalBtn = document.getElementById('close-record-game-modal-btn');
@@ -257,53 +203,78 @@
             tournamentParticipantsList = document.getElementById('tournament-participants-list');
             rankingsGameFilter = document.getElementById('rankings-game-filter');
             rankingTablesContainer = document.getElementById('ranking-tables-container');
-            playersGrid = document.querySelector('#players-section .grid'); // Use specific selector
+            playersGrid = document.querySelector('#players-section .grid');
             playerInfoModal = document.getElementById('player-info-modal');
             closePlayerModalBtn = document.getElementById('close-player-modal-btn');
             manageGamesTableBody = document.getElementById('manage-games-table-body');
-            // Removed managePlayersList and editPlayerForm elements
+            adminSection = document.getElementById('admin-section');
+            adminButtonGrid = document.getElementById('admin-button-grid');
+            adminContentContainer = document.getElementById('admin-content-container');
+            adminNavButtons = document.querySelectorAll('.admin-nav-button');
+            adminContentPanels = document.querySelectorAll('.admin-content-panel');
+            adminBackButtons = document.querySelectorAll('.admin-back-button');
 
             // Log if critical elements are missing
             if (!loginForm) console.error("Login form element (#login-form) not found!");
-            if (!recordGameModal) console.error("Record game modal element (#record-game-modal) not found!");
-            if (!openRecordGameModalBtn) console.error("Open record game modal button (#open-record-game-modal-btn) not found!");
+            if (!adminSection) console.error("Admin section element (#admin-section) not found!");
+            if (!adminButtonGrid) console.error("Admin button grid element (#admin-button-grid) not found!");
+            if (!adminContentContainer) console.error("Admin content container element (#admin-content-container) not found!");
             if (!playersGrid) console.error("Players grid element (#players-grid) not found!");
             if (!playerInfoModal) console.error("Player info modal element (#player-info-modal) not found!");
         }
 
 
         // --- Utility Functions ---
-        function populateSelect(selectElement, options, valueField = 'id', textField = 'name', prompt = 'Select...') { /* ... */ }
+        function populateSelect(selectElement, optionsData, valueField = 'id', textField = 'name', prompt = 'Select...') { /* ... */ }
         function populateCheckboxes(containerElement, options, name, valueField = 'id', textField = 'name') { /* ... */ }
         function populateMultiSelectCheckboxes(containerElement, options, name, valueField = 'id', textField = 'name') { /* ... */ }
 
         // --- Page Section Navigation ---
         function showSection(targetId) {
-             if (!sections) { console.error("Sections not assigned yet in showSection"); return; }
-             console.log(`[DEBUG] showSection called for: ${targetId}`); // DEBUG
+             if (!sections) { console.error("Sections variable is not assigned yet in showSection"); return; }
+             console.log(`[NAV DEBUG] showSection called for: ${targetId}`);
             const cleanTargetId = targetId.startsWith('#') ? targetId.substring(1) : targetId;
             let sectionFound = false;
-            // FIRST: Hide ALL sections
+
+            // Hide ALL top-level sections first
             sections.forEach(section => {
-                if (section && section.id) { // Basic check
+                if (section && section.id) {
                      section.classList.add('hidden');
+                } else {
+                    console.warn("Found an element with class 'page-section' but no ID during hide loop.");
                 }
             });
-            // THEN: Show the target section
+            console.log(`[NAV DEBUG] All sections hidden. Attempting to show: ${cleanTargetId}`);
+
+            // Show the target top-level section
             const targetSection = document.getElementById(cleanTargetId);
             if (targetSection) {
-                console.log(`[DEBUG] Showing section: ${targetSection.id}`); // DEBUG
-                targetSection.classList.remove('hidden');
-                sectionFound = true;
-                // Populate dynamic content when section is shown
-                if (cleanTargetId === 'players-section' && playersGrid) populatePlayersList();
-                if (cleanTargetId === 'rankings-section' && rankingTablesContainer) updateRankingsVisibility();
-                if (cleanTargetId === 'admin-manage-games-section' && manageGamesTableBody) populateManageGamesTable();
+                if (targetSection.classList.contains('page-section')) {
+                    console.log(`[NAV DEBUG] Showing section: ${targetSection.id}`);
+                    targetSection.classList.remove('hidden');
+                    sectionFound = true;
+
+                    // If showing the admin section, ensure the button grid is visible and content panels are hidden
+                    if (cleanTargetId === 'admin-section') {
+                        showAdminOverview(); // Reset admin view to button grid
+                    }
+
+                    // Populate dynamic content if needed
+                    if (cleanTargetId === 'players-section' && playersGrid) populatePlayersList();
+                    if (cleanTargetId === 'rankings-section' && rankingTablesContainer) updateRankingsVisibility();
+                    if (cleanTargetId === 'home-section') populateDashboard();
+
+                } else {
+                    console.warn(`Element with ID "${cleanTargetId}" found, but it lacks the 'page-section' class.`);
+                    sectionFound = false;
+                }
+
             } else {
                  console.warn(`Section with ID "${cleanTargetId}" not found. Showing home.`);
                  const homeSection = document.getElementById('home-section');
                  if (homeSection) {
                      homeSection.classList.remove('hidden');
+                     populateDashboard(); // Populate dashboard if showing home
                  } else {
                      console.error("Home section (#home-section) not found as fallback.");
                  }
@@ -314,46 +285,176 @@
             }
         }
 
-        // --- Player List and Modal Functions ---
-        function populatePlayersList() {
-             if (!playersGrid) { console.warn("Player grid container (#players-grid) not found."); return; }
-             console.log("[DEBUG] Populating players list..."); // DEBUG
-             playersGrid.innerHTML = ''; // Clear existing list
-             if (placeholderPlayers.length === 0) {
-                 playersGrid.innerHTML = '<p class="text-gray-500 col-span-full text-center">No players added yet.</p>'; // Span full grid width
-                 return;
-             }
-             placeholderPlayers.forEach(player => {
-                 const div = document.createElement('div');
-                 div.className = 'player-entry bg-white p-5 rounded-lg shadow hover:shadow-md cursor-pointer flex items-center space-x-4';
-                 div.setAttribute('data-player-id', player.id);
-                 const iconUrl = `https://placehold.co/48x48/E0E7FF/4F46E5?text=${player.iconLetter}`;
-                 div.innerHTML = `
-                     <img src="${iconUrl}" alt="Player Icon ${player.name}" class="w-12 h-12 rounded-full flex-shrink-0" onerror="this.onerror=null; this.src='https://placehold.co/48x48/cccccc/ffffff?text=?';">
-                     <span class="font-medium text-lg text-gray-800">${player.name}</span> `;
-                 // Event listener added via delegation in setupEventListeners
-                 playersGrid.appendChild(div);
-             });
-             console.log(`[DEBUG] Populated players list with ${placeholderPlayers.length} players.`); // DEBUG
+        // --- Admin Panel Navigation ---
+        function showAdminContentPanel(targetPanelId) {
+            console.log(`[DEBUG] Showing admin content panel: ${targetPanelId}`);
+            if (!adminButtonGrid || !adminContentPanels) { console.error("Admin grid or content panels not found"); return; }
+            adminButtonGrid.classList.add('hidden');
+            adminContentPanels.forEach(panel => panel.classList.add('hidden'));
+
+            const targetPanel = document.getElementById(targetPanelId);
+            if (targetPanel) {
+                targetPanel.classList.remove('hidden');
+                targetPanel.classList.add('active');
+                if (targetPanelId === 'admin-content-manage-games' && manageGamesTableBody) {
+                    populateManageGamesTable();
+                }
+                if (targetPanelId === 'admin-content-add-team') {
+                    populateAddTeamDropdowns();
+                }
+                if (targetPanelId === 'admin-content-create-tournament') {
+                     populateTournamentParticipantsSelect();
+                }
+            } else {
+                console.warn(`Admin content panel with ID "${targetPanelId}" not found.`);
+                showAdminOverview();
+            }
         }
-        function openPlayerModal(playerId) { /* ... */ }
+
+        function showAdminOverview() {
+            console.log("[DEBUG] Showing admin overview (button grid).");
+            if (!adminButtonGrid || !adminContentPanels) { console.error("Admin grid or content panels not found"); return; }
+            adminContentPanels.forEach(panel => { panel.classList.add('hidden'); panel.classList.remove('active'); });
+            adminButtonGrid.classList.remove('hidden');
+        }
+
+
+        // --- Player List and Modal Functions (Firestore) ---
+        async function populatePlayersList() {
+             if (!playersGrid) { console.warn("Player grid container (#players-grid) not found."); return; }
+             console.log("[PLAYER DEBUG] Populating players list from Firestore...");
+             playersGrid.innerHTML = '<p class="text-gray-500 col-span-full text-center">Loading players...</p>';
+
+             try {
+                 const playersCollection = db.collection('players');
+                 const snapshot = await playersCollection.orderBy('name').get();
+
+                 if (snapshot.empty) {
+                     playersGrid.innerHTML = '<p class="text-gray-500 col-span-full text-center">No players found in database.</p>';
+                     console.log("[PLAYER DEBUG] No players found in Firestore.");
+                     return;
+                 }
+
+                 playersGrid.innerHTML = ''; // Clear loading state
+                 snapshot.forEach(doc => {
+                     const player = { id: doc.id, ...doc.data() };
+                     const div = document.createElement('div');
+                     div.className = 'player-entry bg-white p-5 rounded-lg shadow hover:shadow-md cursor-pointer flex items-center space-x-4';
+                     div.setAttribute('data-player-id', player.id);
+                     // Use iconUrl if present, otherwise generate placeholder
+                     const iconLetter = player.name ? player.name.charAt(0).toUpperCase() : '?';
+                     const iconUrl = player.iconUrl || `https://placehold.co/48x48/E0E7FF/4F46E5?text=${iconLetter}`;
+                     console.log(`[PLAYER DEBUG] Player: ${player.name}, Using icon URL: ${iconUrl}`); // DEBUG
+                     div.innerHTML = `
+                         <img src="${iconUrl}" alt="Player Icon ${player.name}" class="w-12 h-12 rounded-full flex-shrink-0 object-cover" onerror="this.onerror=null; this.src='https://placehold.co/48x48/cccccc/ffffff?text=?'; this.classList.add('bg-gray-200');"> <span class="font-medium text-lg text-gray-800">${player.name || 'Unnamed Player'}</span> `;
+                     playersGrid.appendChild(div);
+                 });
+                 console.log(`[PLAYER DEBUG] Populated players list with ${snapshot.size} players from Firestore.`);
+             } catch (error) {
+                 console.error("Error fetching players:", error);
+                 playersGrid.innerHTML = '<p class="text-red-500 col-span-full text-center">Error loading players.</p>';
+             }
+        }
+
+        async function openPlayerModal(playerId) {
+            console.log(`[PLAYER MODAL DEBUG] Attempting to open player modal for ID: ${playerId}`);
+             if (!playerInfoModal) { console.error("[PLAYER MODAL DEBUG] Player info modal element not found."); return; }
+             if (!db) { console.error("[PLAYER MODAL DEBUG] Firestore not initialized."); return; }
+
+             // Ensure modal content exists before trying to populate
+             const modalContent = playerInfoModal.querySelector('.modal-content');
+             if (!modalContent) { console.error("[PLAYER MODAL DEBUG] Modal content div not found."); return; }
+
+             // Show loading state inside modal
+             const modalNameElement = modalContent.querySelector('#modal-player-name');
+             const modalStatsElement = modalContent.querySelector('#modal-player-game-stats');
+             const modalActivityElement = modalContent.querySelector('#modal-player-recent-activity');
+             const modalIconElement = modalContent.querySelector('#modal-player-icon'); // Get icon element
+
+             if(modalNameElement) modalNameElement.textContent = 'Loading...';
+             if(modalStatsElement) modalStatsElement.innerHTML = '<p class="text-gray-500">Loading stats...</p>';
+             if(modalActivityElement) modalActivityElement.innerHTML = '<li class="text-gray-500">Loading activity...</li>';
+             if(modalIconElement) modalIconElement.src = 'https://placehold.co/80x80/E0E7FF/4F46E5?text=?'; // Default loading icon
+
+             playerInfoModal.classList.add('active'); // Show modal overlay immediately
+             console.log("[PLAYER MODAL DEBUG] Modal overlay activated."); // DEBUG
+
+             try {
+                 const playerDocRef = db.collection('players').doc(playerId);
+                 const docSnap = await playerDocRef.get();
+
+                 if (!docSnap.exists) {
+                     console.error(`[PLAYER MODAL DEBUG] Player document not found for ID: ${playerId}`);
+                     alert(`Error: Could not find details for player ${playerId}`);
+                     closePlayerModal();
+                     return;
+                 }
+
+                 const details = { id: docSnap.id, ...docSnap.data() };
+                 console.log("[PLAYER MODAL DEBUG] Fetched player details:", details);
+
+                 playerInfoModal.setAttribute('data-current-player-id', playerId);
+                 playerInfoModal.classList.remove('modal-editing');
+
+                 // Safely get modal elements and populate
+                 const iconElement = modalContent.querySelector('#modal-player-icon');
+                 const nameElement = modalContent.querySelector('#modal-player-name');
+                 const nameInputElement = modalContent.querySelector('#modal-edit-player-name-input');
+                 const rankElement = modalContent.querySelector('#modal-player-overall-rank');
+                 const ratingElement = modalContent.querySelector('#modal-player-overall-rating');
+                 const statsElement = modalContent.querySelector('#modal-player-game-stats');
+                 const activityElement = modalContent.querySelector('#modal-player-recent-activity');
+
+                 console.log("[PLAYER MODAL DEBUG] Populating modal elements...");
+
+                 const iconLetter = details.name ? details.name.charAt(0).toUpperCase() : '?';
+                 // Use iconUrl from DB if available, otherwise generate placeholder
+                 const iconSrc = details.iconUrl || `https://placehold.co/80x80/E0E7FF/4F46E5?text=${iconLetter}`;
+                 if (iconElement) {
+                     iconElement.src = iconSrc;
+                     iconElement.alt = `Player Icon ${details.name}`;
+                     console.log(`[PLAYER MODAL DEBUG] Set icon src to: ${iconSrc}`);
+                 } else { console.warn("Player icon element not found in modal"); }
+
+                 if (nameElement) nameElement.textContent = details.name || 'Unnamed Player'; else { console.warn("Player name display element not found in modal"); }
+                 if (nameInputElement) nameInputElement.value = details.name || ''; else { console.warn("Player name input element not found in modal"); }
+                 if (rankElement) rankElement.textContent = details.overallRank || 'N/A'; else { console.warn("Player rank element not found in modal"); }
+                 if (ratingElement) ratingElement.textContent = details.elo_overall || '1200'; else { console.warn("Player rating element not found in modal"); }
+                 // TODO: Fetch and display actual stats and activity from Firestore (requires more complex queries)
+                 if (statsElement) statsElement.innerHTML = 'Stats loading not implemented yet.'; else { console.warn("Player stats element not found in modal"); }
+                 if (activityElement) activityElement.innerHTML = '<li>Activity loading not implemented yet.</li>'; else { console.warn("Player activity element not found in modal"); }
+
+                 console.log(`[PLAYER MODAL DEBUG] Player modal populated for ${details.name}`);
+
+             } catch (error) {
+                  console.error("[PLAYER MODAL DEBUG] Error occurred during openPlayerModal:", error);
+                  alert("An error occurred trying to open the player details.");
+                  closePlayerModal(); // Close modal on error
+             }
+        }
         function closePlayerModal() { /* ... */ }
 
         // --- Record Game Modal Functions ---
         function openRecordGameModal() { /* ... */ }
         function closeRecordGameModal() { /* ... */ }
 
-        // --- Admin Management List Population ---
-        function populateManageGamesTable() { /* ... (adds listeners via delegation) ... */ }
+        // --- Populate Dropdowns from Firestore ---
+        async function populateRecordGameDropdowns() { /* ... */ }
+         async function populateAddTeamDropdowns() { /* ... */ }
+         async function populateTournamentParticipantsSelect() { /* ... */ }
 
-        // --- Admin Action Handlers ---
+
+        // --- Admin Management List Population (Firestore) ---
+        async function populateManageGamesTable() { /* ... */ }
+
+        // --- Admin Action Handlers (Firestore) ---
         function handleEditGame(gameId) { /* ... */ }
-        function handleDeleteGame(gameId, tableRowElement) { /* ... */ }
+        async function handleDeleteGame(gameId, tableRowElement) { /* ... */ }
 
-        // --- Player Modal Edit Mode Handlers ---
+        // --- Player Modal Edit Mode Handlers (Firestore) ---
         function togglePlayerModalEdit(editMode) { /* ... */ }
-        function savePlayerChanges() { /* ... */ }
-        function deletePlayer() { /* ... */ }
+        async function savePlayerChanges() { /* ... */ }
+        async function deletePlayer() { /* ... */ }
 
 
         // --- Event Listeners Setup ---
@@ -372,15 +473,27 @@
             if (logoutButton) logoutButton.addEventListener('click', logout);
             else { console.error("Logout button not found."); }
 
-            if(cancelAdminButtons) {
-                cancelAdminButtons.forEach(button => {
-                    button.addEventListener('click', () => {
-                        const target = button.getAttribute('data-target') || 'admin-section';
-                        console.log(`Cancel button clicked, navigating to: ${target}`);
-                        showSection(target);
+            // --- Admin Panel Navigation Buttons ---
+            if (adminNavButtons) {
+                adminNavButtons.forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const targetPanelId = event.currentTarget.getAttribute('data-target');
+                        if (targetPanelId) {
+                            showAdminContentPanel(targetPanelId);
+                        } else {
+                            console.warn("Admin nav button missing data-target:", event.currentTarget);
+                        }
                     });
                 });
-            }
+            } else { console.error("Admin navigation buttons (.admin-nav-button) not found."); }
+
+            // --- Admin Panel Back/Cancel Buttons ---
+            if (adminBackButtons) {
+                 adminBackButtons.forEach(button => {
+                    button.addEventListener('click', showAdminOverview);
+                 });
+            } else { console.error("Admin back buttons (.admin-back-button) not found."); }
+
 
             // --- Record Game Modal ---
             if (openRecordGameModalBtn) openRecordGameModalBtn.addEventListener('click', openRecordGameModal);
@@ -424,21 +537,21 @@
             if (closePlayerModalBtn) closePlayerModalBtn.addEventListener('click', closePlayerModal);
             if (playerInfoModal) {
                 playerInfoModal.addEventListener('click', (event) => {
-                    console.log("[DEBUG] Click inside player info modal detected. Target:", event.target); // DEBUG
+                    console.log("[PLAYER MODAL DEBUG] Click inside player info modal detected. Target:", event.target); // DEBUG
                     if (event.target === playerInfoModal) {
-                        console.log("[DEBUG] Clicked on overlay, closing player modal."); // DEBUG
+                        console.log("[PLAYER MODAL DEBUG] Clicked on overlay, closing player modal."); // DEBUG
                         closePlayerModal(); // Close on overlay click
                     } else if (event.target.matches('#edit-player-modal-btn')) {
-                        console.log("[DEBUG] Edit player button clicked."); // DEBUG
+                        console.log("[PLAYER MODAL DEBUG] Edit player button clicked."); // DEBUG
                         togglePlayerModalEdit(true); // Enter edit mode
                     } else if (event.target.matches('#save-player-changes-btn')) {
-                        console.log("[DEBUG] Save player changes button clicked."); // DEBUG
+                        console.log("[PLAYER MODAL DEBUG] Save player changes button clicked."); // DEBUG
                         savePlayerChanges(); // Save changes
                     } else if (event.target.matches('#cancel-player-edit-btn')) {
-                        console.log("[DEBUG] Cancel player edit button clicked."); // DEBUG
+                        console.log("[PLAYER MODAL DEBUG] Cancel player edit button clicked."); // DEBUG
                         togglePlayerModalEdit(false); // Cancel edit mode
                     } else if (event.target.matches('#delete-player-btn')) {
-                        console.log("[DEBUG] Delete player button clicked."); // DEBUG
+                        console.log("[PLAYER MODAL DEBUG] Delete player button clicked."); // DEBUG
                         deletePlayer(); // Delete player
                     }
                 });
@@ -454,14 +567,24 @@
             // --- Event Delegation for Dynamic Buttons ---
             // Players Page - Open Modal
             if (playersGrid) {
+                 console.log("[DEBUG] Attaching player grid click listener."); // DEBUG
                 playersGrid.addEventListener('click', (event) => {
+                    console.log("[DEBUG] Click detected inside players grid."); // DEBUG
                     const playerEntry = event.target.closest('.player-entry');
                     if (playerEntry) {
+                        console.log("[DEBUG] Click target is a player entry."); // DEBUG
                         const playerId = playerEntry.getAttribute('data-player-id');
-                        if (playerId) openPlayerModal(playerId);
+                        if (playerId) {
+                            console.log(`[DEBUG] Player ID found: ${playerId}. Opening modal.`); // DEBUG
+                            openPlayerModal(playerId);
+                        } else {
+                            console.warn("[DEBUG] Player entry clicked, but no data-player-id found."); // DEBUG
+                        }
+                    } else {
+                         console.log("[DEBUG] Click target is NOT a player entry."); // DEBUG
                     }
                 });
-            }
+            } else { console.error("Players grid not found for event delegation."); }
 
             // Manage Games Page - Edit/Delete
             if (manageGamesTableBody) {
@@ -509,14 +632,18 @@
         // --- Admin Login/Logout Logic ---
         function checkLoginState() {
              const isLoggedIn = sessionStorage.getItem('isAdminLoggedIn') === 'true';
+             console.log(`[LOGIN DEBUG] checkLoginState: isLoggedIn = ${isLoggedIn}`); // DEBUG
              if (isLoggedIn) {
                  document.body.classList.add('admin-logged-in');
+                 console.log("[LOGIN DEBUG] checkLoginState: Added admin-logged-in class to body."); // DEBUG
              } else {
                  document.body.classList.remove('admin-logged-in');
+                 console.log("[LOGIN DEBUG] checkLoginState: Removed admin-logged-in class from body."); // DEBUG
                  if(sections) { // Ensure sections exist before looping
                     sections.forEach(section => {
                         if (section.classList.contains('admin-only') && !section.classList.contains('hidden')) {
                            section.classList.add('hidden');
+                           console.log(`[LOGIN DEBUG] checkLoginState: Hiding admin-only section: ${section.id}`); // DEBUG
                         }
                     });
                  }
@@ -531,11 +658,8 @@
                 alert("[LOGIN DEBUG] Password MATCHES!"); // Alert on success
                 console.log("[LOGIN DEBUG] Password MATCHES. Setting session storage and updating UI."); // Specific log
                 sessionStorage.setItem('isAdminLoggedIn', 'true');
-                checkLoginState(); // Apply logged-in styles
-                // Simplified action on login success for debugging:
-                // showSection('admin-section'); // Original line
-                document.body.style.backgroundColor = 'lightgreen'; // Temporary visual confirmation
-                alert("Login successful! (Body should be green)"); // Temporary alert
+                checkLoginState(); // Apply logged-in styles FIRST
+                showSection('admin-section'); // THEN navigate to admin panel
 
                 if(localLoginError) localLoginError.classList.add('hidden');
                 const passwordInput = document.getElementById('password');
@@ -560,11 +684,11 @@
         // --- Rankings Filter Logic ---
         function updateRankingsVisibility() { /* ... */ }
 
-        // --- Form Submission Handlers ---
-        function handleFormSubmit(formId, successMessage) {
+        // --- Form Submission Handlers (Firestore) ---
+        async function handleFormSubmit(formId, successMessage) {
              const form = document.getElementById(formId);
-             if (form && formId !== 'login-form') { // Exclude login form from this generic handler now
-                 form.addEventListener('submit', (event) => {
+             if (form && formId !== 'login-form') {
+                 form.addEventListener('submit', async (event) => { // Make handler async
                      event.preventDefault();
                      let isValid = true;
                      form.querySelectorAll('select[required], input[required]').forEach(field => {
@@ -576,62 +700,61 @@
                      const formData = Object.fromEntries(new FormData(form));
                      console.log(`Form submitted: ${formId}`, formData);
 
-                     // --- Simulate Data Update ---
-                     if (formId === 'add-player-form') {
-                         const newPlayerName = formData['player-name'];
-                         if (newPlayerName) {
-                             const newPlayerId = 'p' + (placeholderPlayers.length + 1); // Simple unique ID
-                             const newPlayer = {
-                                 id: newPlayerId,
-                                 name: newPlayerName,
-                                 overallRank: placeholderPlayers.length + 1, // Placeholder rank
-                                 overallRating: 1200, // Default rating
-                                 iconLetter: newPlayerName.charAt(0).toUpperCase() || '?' // Handle empty name
-                             };
-                             placeholderPlayers.push(newPlayer);
-                             placeholderPlayerDetails[newPlayerId] = { // Add basic details
-                                 name: newPlayerName,
-                                 overallRank: newPlayer.overallRank,
-                                 overallRating: newPlayer.overallRating,
-                                 iconLetter: newPlayer.iconLetter,
-                                 stats: 'No games played yet.',
-                                 activity: '<li>Player created</li>'
-                             };
-                             console.log("[DEBUG] Added new player:", newPlayer);
-                             // Refresh player list if visible
-                             if (playersGrid && !playersGrid.closest('.page-section.hidden')) {
-                                 populatePlayersList();
+                     // --- Save Data to Firestore ---
+                     if (!db) { alert("Database connection error."); return; }
+
+                     try {
+                         if (formId === 'add-player-form') {
+                             const newPlayerName = formData['player-name'];
+                             if (newPlayerName) {
+                                 const docRef = await db.collection('players').add({
+                                     name: newPlayerName,
+                                     elo_overall: 1200, // Default starting Elo
+                                     date_created: firebase.firestore.FieldValue.serverTimestamp() // Use server timestamp
+                                     // Add other fields like iconUrl if you add an input for it
+                                 });
+                                 console.log("[FIRESTORE] Added new player with ID:", docRef.id);
+                                 // Optionally refresh players list immediately if needed
+                                 // if (playersGrid && !playersGrid.closest('.page-section.hidden')) {
+                                 //     populatePlayersList();
+                                 // }
                              }
+                             showAdminOverview(); // Go back to admin overview after adding
+                         } else if (formId === 'record-game-form') {
+                             // Construct game data object (needs more detail based on form)
+                             const gameData = {
+                                 game_type: formData['game-type'],
+                                 date_played: firebase.firestore.FieldValue.serverTimestamp(),
+                                 // --- TODO: Extract participants, outcome, score based on game type ---
+                                 participants: [formData['winner_player'], formData['loser_player']].filter(p => p), // Simplified example
+                                 outcome: formData['is_draw'] ? 'Draw' : 'Win/Loss', // Simplified
+                                 score: formData['score'] || null
+                             };
+                             const docRef = await db.collection('games').add(gameData);
+                             console.log("[FIRESTORE] Recorded new game with ID:", docRef.id);
+                             closeRecordGameModal(); // Close the modal
+                         } else if (formId === 'add-team-form') {
+                             // TODO: Add logic to save team to Firestore
+                             console.log("[DEBUG] Add Team form submitted (Firestore save not implemented).");
+                             showAdminOverview(); // Go back to admin overview
+                         } else if (formId === 'create-tournament-form') {
+                             // TODO: Add logic to save tournament to Firestore
+                             console.log("[DEBUG] Create Tournament form submitted (Firestore save not implemented).");
+                             showAdminOverview(); // Go back to admin overview
                          }
-                     } else if (formId === 'record-game-form') {
-                         // Simulate adding game data (won't show anywhere yet)
-                         const gameData = {
-                             id: 'g' + (placeholderGames.length + 1),
-                             date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-                             type: formData['game-type'],
-                             description: 'Game details from form...' // Needs logic to build description
-                         };
-                         placeholderGames.push(gameData);
-                         console.log("[DEBUG] Recorded new game:", gameData);
-                         // Refresh recent games list on dashboard if visible
-                         if (document.getElementById('recent-games-list') && !document.getElementById('home-section').classList.contains('hidden')) {
-                             // TODO: Add function to refresh recent games list display
-                         }
+
+                         alert(`${successMessage} (Data saved to Firebase)`);
+                         form.reset();
+
+                         // Reset dynamic sections if applicable (only needed for modal now)
+                         if (formId === 'record-game-form') updateRecordGameFormModal();
+
+                     } catch (error) {
+                         console.error("Error saving data to Firestore:", error);
+                         alert(`Error saving data: ${error.message}. See console for details.`);
                      }
-                     // Add similar logic for 'add-team-form' if needed
-
-                     alert(`${successMessage} (Data logged to console)`);
-
-                     if (formId === 'record-game-form') closeRecordGameModal();
-                     // Removed edit-player-form case
-                     else if (formId !== 'login-form') showSection('admin-section');
-
-                     form.reset();
-
-                     if (formId === 'record-game-form') updateRecordGameFormModal();
-                     else if (formId === 'create-tournament-form' && tournamentParticipantsList) tournamentParticipantsList.innerHTML = '<p class="text-gray-500 text-sm">Select Game Type to see participants.</p>';
                  });
-             } else if (formId !== 'login-form') { // Avoid warning for login form
+             } else if (formId !== 'login-form') {
                  console.warn(`Form with ID "${formId}" not found for submission handling.`);
              }
         }
@@ -644,7 +767,7 @@
             loginForm = document.getElementById('login-form');
             loginError = document.getElementById('login-error');
             logoutButton = document.getElementById('logout-button');
-            cancelAdminButtons = document.querySelectorAll('.cancel-admin-action');
+            // cancelAdminButtons = document.querySelectorAll('.cancel-admin-action'); // Replaced by adminBackButtons
             recordGameModal = document.getElementById('record-game-modal');
             openRecordGameModalBtn = document.getElementById('open-record-game-modal-btn');
             closeRecordGameModalBtn = document.getElementById('close-record-game-modal-btn');
@@ -663,14 +786,19 @@
             playerInfoModal = document.getElementById('player-info-modal');
             closePlayerModalBtn = document.getElementById('close-player-modal-btn');
             manageGamesTableBody = document.getElementById('manage-games-table-body');
-            // Removed managePlayersList and editPlayerForm elements
+            // New admin panel elements
+            adminSection = document.getElementById('admin-section');
+            adminButtonGrid = document.getElementById('admin-button-grid');
+            adminContentContainer = document.getElementById('admin-content-container');
+            adminNavButtons = document.querySelectorAll('.admin-nav-button'); // Buttons in the grid
+            adminContentPanels = document.querySelectorAll('.admin-content-panel'); // The content divs
+            adminBackButtons = document.querySelectorAll('.admin-back-button'); // Back/Cancel buttons inside panels
 
             // Log if critical elements are missing
             if (!loginForm) console.error("Login form element (#login-form) not found!");
-            if (!recordGameModal) console.error("Record game modal element (#record-game-modal) not found!");
-            if (!openRecordGameModalBtn) console.error("Open record game modal button (#open-record-game-modal-btn) not found!");
-            if (!playersGrid) console.error("Players grid element (#players-grid) not found!");
-            if (!playerInfoModal) console.error("Player info modal element (#player-info-modal) not found!");
+            if (!adminSection) console.error("Admin section element (#admin-section) not found!");
+            if (!adminButtonGrid) console.error("Admin button grid element (#admin-button-grid) not found!");
+            if (!adminContentContainer) console.error("Admin content container element (#admin-content-container) not found!");
         }
 
         function initializeApp() {
@@ -679,23 +807,15 @@
                 assignElements();
                 console.log("[DEBUG] Elements assigned."); // DEBUG
 
+                if (!db) {
+                    console.error("Firebase DB not initialized. App cannot function fully.");
+                    return; // Stop initialization if DB failed
+                }
+
                 const isLoggedIn = checkLoginState();
                 console.log(`[DEBUG] Initial login state: ${isLoggedIn}`); // DEBUG
 
-                if (document.getElementById('team-player1')) populateSelect(document.getElementById('team-player1'), placeholderPlayers);
-                if (document.getElementById('team-player2')) populateSelect(document.getElementById('team-player2'), placeholderPlayers);
-
-                // --- Setup Login Listener Directly ---
-                if (loginForm) {
-                    console.log("[LOGIN DEBUG] Attaching login form listener in initializeApp."); // LOGIN DEBUG
-                    loginForm.addEventListener('submit', handleLoginFormSubmit);
-                } else {
-                    console.error("[LOGIN DEBUG] Login form not found in initializeApp. Cannot attach listener."); // LOGIN DEBUG
-                    alert("[LOGIN DEBUG] CRITICAL ERROR: Login form not found. Login will not work."); // Alert user
-                }
-                // --- End Direct Login Listener Setup ---
-
-                setupEventListeners(); // Setup other event listeners AFTER elements are assigned
+                setupEventListeners(); // Setup all event listeners AFTER elements are assigned
 
                 // Determine initial section
                 const initialHash = window.location.hash;
@@ -717,20 +837,22 @@
                 }
                 if (!navigatedByHash) {
                      const visibleSection = document.querySelector('.page-section:not(.hidden)');
-                     if (!visibleSection) {
-                         console.log("No initial section visible or from hash, showing home.");
+                     if (!visibleSection || (visibleSection?.classList.contains('admin-only') && !isLoggedIn)) {
+                         console.log("No initial section visible/allowed or from hash, showing home.");
                          showSection('home-section');
-                     } else {
+                     } else if (visibleSection) {
                          console.log(`Browser restored visible section: ${visibleSection.id}`);
-                        // Ensure content populated if needed
                         if (visibleSection.id === 'players-section') populatePlayersList();
                         if (visibleSection.id === 'rankings-section') updateRankingsVisibility();
                         if (visibleSection.id === 'admin-manage-games-section') populateManageGamesTable();
-                        // Removed manage-players population
+                        if (visibleSection.id === 'admin-section') showAdminOverview();
+                     } else {
+                         console.log("No visible section found, defaulting to home.");
+                         showSection('home-section');
                      }
                 }
 
-                updateRecordGameFormModal();
+                updateRecordGameFormModal(); // Set initial state for modal form sections
                 console.log("[DEBUG] App Initialized Successfully."); // DEBUG
              } catch (error) {
                  console.error("Error during app initialization:", error);
@@ -745,4 +867,3 @@
 
 </body>
 </html>
-

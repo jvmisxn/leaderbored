@@ -177,6 +177,7 @@
             app = firebase.initializeApp(firebaseConfig);
             db = firebase.firestore(); // Use compat library
             console.log("[INIT] Firebase Initialized Successfully");
+            // alert("[INIT] Firebase Initialized Successfully"); // DEBUG Alert
         } catch (error) {
             console.error("[INIT] Error initializing Firebase:", error);
             alert("Could not connect to Firebase. Please check your configuration and console.");
@@ -254,15 +255,16 @@
                     targetSection.classList.remove('hidden');
                     sectionFound = true;
 
-                    // If showing the admin section, ensure the button grid is visible and content panels are hidden
+                    // If showing the admin section, reset to its default view
                     if (cleanTargetId === 'admin-section') {
-                        showAdminOverview(); // Reset admin view to button grid
+                        showAdminOverview();
                     }
 
                     // Populate dynamic content if needed
                     if (cleanTargetId === 'players-section' && playersGrid) populatePlayersList();
                     if (cleanTargetId === 'rankings-section' && rankingTablesContainer) updateRankingsVisibility();
                     if (cleanTargetId === 'home-section') populateDashboard();
+                    if (cleanTargetId === 'tournaments-section') populateTournamentsList('tournaments-list-full');
 
                 } else {
                     console.warn(`Element with ID "${cleanTargetId}" found, but it lacks the 'page-section' class.`);
@@ -326,6 +328,7 @@
              playersGrid.innerHTML = '<p class="text-gray-500 col-span-full text-center">Loading players...</p>';
 
              try {
+                 if (!db) throw new Error("Firestore database (db) is not initialized."); // Check db
                  const playersCollection = db.collection('players');
                  const snapshot = await playersCollection.orderBy('name').get();
 
@@ -341,12 +344,11 @@
                      const div = document.createElement('div');
                      div.className = 'player-entry bg-white p-5 rounded-lg shadow hover:shadow-md cursor-pointer flex items-center space-x-4';
                      div.setAttribute('data-player-id', player.id);
-                     // Use iconUrl if present, otherwise generate placeholder
                      const iconLetter = player.name ? player.name.charAt(0).toUpperCase() : '?';
                      const iconUrl = player.iconUrl || `https://placehold.co/48x48/E0E7FF/4F46E5?text=${iconLetter}`;
-                     console.log(`[PLAYER DEBUG] Player: ${player.name}, Using icon URL: ${iconUrl}`); // DEBUG
                      div.innerHTML = `
-                         <img src="${iconUrl}" alt="Player Icon ${player.name}" class="w-12 h-12 rounded-full flex-shrink-0 object-cover" onerror="this.onerror=null; this.src='https://placehold.co/48x48/cccccc/ffffff?text=?'; this.classList.add('bg-gray-200');"> <span class="font-medium text-lg text-gray-800">${player.name || 'Unnamed Player'}</span> `;
+                         <img src="${iconUrl}" alt="Player Icon ${player.name}" class="w-12 h-12 rounded-full flex-shrink-0 object-cover" onerror="this.onerror=null; this.src='https://placehold.co/48x48/cccccc/ffffff?text=?'; this.classList.add('bg-gray-200');">
+                         <span class="font-medium text-lg text-gray-800">${player.name || 'Unnamed Player'}</span> `;
                      playersGrid.appendChild(div);
                  });
                  console.log(`[PLAYER DEBUG] Populated players list with ${snapshot.size} players from Firestore.`);
@@ -361,23 +363,32 @@
              if (!playerInfoModal) { console.error("[PLAYER MODAL DEBUG] Player info modal element not found."); return; }
              if (!db) { console.error("[PLAYER MODAL DEBUG] Firestore not initialized."); return; }
 
-             // Ensure modal content exists before trying to populate
              const modalContent = playerInfoModal.querySelector('.modal-content');
              if (!modalContent) { console.error("[PLAYER MODAL DEBUG] Modal content div not found."); return; }
+             console.log("[PLAYER MODAL DEBUG] Modal content div found.");
 
-             // Show loading state inside modal
+             // Reset fields and show loading
              const modalNameElement = modalContent.querySelector('#modal-player-name');
              const modalStatsElement = modalContent.querySelector('#modal-player-game-stats');
              const modalActivityElement = modalContent.querySelector('#modal-player-recent-activity');
-             const modalIconElement = modalContent.querySelector('#modal-player-icon'); // Get icon element
+             const modalIconElement = modalContent.querySelector('#modal-player-icon');
+             const modalNameInputElement = modalContent.querySelector('#modal-edit-player-name-input');
+             const modalIconInputElement = modalContent.querySelector('#modal-edit-player-icon-input');
+             const modalRankElement = modalContent.querySelector('#modal-player-overall-rank');
+             const modalRatingElement = modalContent.querySelector('#modal-player-overall-rating');
 
-             if(modalNameElement) modalNameElement.textContent = 'Loading...';
-             if(modalStatsElement) modalStatsElement.innerHTML = '<p class="text-gray-500">Loading stats...</p>';
-             if(modalActivityElement) modalActivityElement.innerHTML = '<li class="text-gray-500">Loading activity...</li>';
-             if(modalIconElement) modalIconElement.src = 'https://placehold.co/80x80/E0E7FF/4F46E5?text=?'; // Default loading icon
+             console.log("[PLAYER MODAL DEBUG] Resetting modal fields to loading state.");
+             if(modalNameElement) modalNameElement.textContent = 'Loading...'; else console.warn("modal-player-name not found");
+             if(modalStatsElement) modalStatsElement.innerHTML = '<p class="text-gray-500">Loading stats...</p>'; else console.warn("modal-player-game-stats not found");
+             if(modalActivityElement) modalActivityElement.innerHTML = '<li class="text-gray-500">Loading activity...</li>'; else console.warn("modal-player-recent-activity not found");
+             if(modalIconElement) modalIconElement.src = 'https://placehold.co/80x80/cccccc/ffffff?text=?'; else console.warn("modal-player-icon not found");
+             if(modalNameInputElement) modalNameInputElement.value = ''; else console.warn("modal-edit-player-name-input not found");
+             if(modalIconInputElement) modalIconInputElement.value = ''; else console.warn("modal-edit-player-icon-input not found");
+             if(modalRankElement) modalRankElement.textContent = '...'; else console.warn("modal-player-overall-rank not found");
+             if(modalRatingElement) modalRatingElement.textContent = '...'; else console.warn("modal-player-overall-rating not found");
 
              playerInfoModal.classList.add('active'); // Show modal overlay immediately
-             console.log("[PLAYER MODAL DEBUG] Modal overlay activated."); // DEBUG
+             console.log("[PLAYER MODAL DEBUG] Modal overlay activated.");
 
              try {
                  const playerDocRef = db.collection('players').doc(playerId);
@@ -396,7 +407,7 @@
                  playerInfoModal.setAttribute('data-current-player-id', playerId);
                  playerInfoModal.classList.remove('modal-editing');
 
-                 // Safely get modal elements and populate
+                 // Re-fetch elements inside try block to be safe
                  const iconElement = modalContent.querySelector('#modal-player-icon');
                  const nameElement = modalContent.querySelector('#modal-player-name');
                  const nameInputElement = modalContent.querySelector('#modal-edit-player-name-input');
@@ -404,25 +415,21 @@
                  const ratingElement = modalContent.querySelector('#modal-player-overall-rating');
                  const statsElement = modalContent.querySelector('#modal-player-game-stats');
                  const activityElement = modalContent.querySelector('#modal-player-recent-activity');
+                 const iconInputElement = modalContent.querySelector('#modal-edit-player-icon-input');
 
                  console.log("[PLAYER MODAL DEBUG] Populating modal elements...");
 
                  const iconLetter = details.name ? details.name.charAt(0).toUpperCase() : '?';
-                 // Use iconUrl from DB if available, otherwise generate placeholder
                  const iconSrc = details.iconUrl || `https://placehold.co/80x80/E0E7FF/4F46E5?text=${iconLetter}`;
-                 if (iconElement) {
-                     iconElement.src = iconSrc;
-                     iconElement.alt = `Player Icon ${details.name}`;
-                     console.log(`[PLAYER MODAL DEBUG] Set icon src to: ${iconSrc}`);
-                 } else { console.warn("Player icon element not found in modal"); }
-
-                 if (nameElement) nameElement.textContent = details.name || 'Unnamed Player'; else { console.warn("Player name display element not found in modal"); }
-                 if (nameInputElement) nameInputElement.value = details.name || ''; else { console.warn("Player name input element not found in modal"); }
-                 if (rankElement) rankElement.textContent = details.overallRank || 'N/A'; else { console.warn("Player rank element not found in modal"); }
-                 if (ratingElement) ratingElement.textContent = details.elo_overall || '1200'; else { console.warn("Player rating element not found in modal"); }
-                 // TODO: Fetch and display actual stats and activity from Firestore (requires more complex queries)
-                 if (statsElement) statsElement.innerHTML = 'Stats loading not implemented yet.'; else { console.warn("Player stats element not found in modal"); }
-                 if (activityElement) activityElement.innerHTML = '<li>Activity loading not implemented yet.</li>'; else { console.warn("Player activity element not found in modal"); }
+                 if (iconElement) { iconElement.src = iconSrc; iconElement.alt = `Player Icon ${details.name}`; }
+                 if (nameElement) nameElement.textContent = details.name || 'Unnamed Player';
+                 if (nameInputElement) nameInputElement.value = details.name || '';
+                 if (iconInputElement) iconInputElement.value = details.iconUrl || '';
+                 if (rankElement) rankElement.textContent = details.overallRank || 'N/A';
+                 if (ratingElement) ratingElement.textContent = details.elo_overall || '1200';
+                 // TODO: Fetch and display actual stats and activity from Firestore
+                 if (statsElement) statsElement.innerHTML = 'Stats loading not implemented yet.';
+                 if (activityElement) activityElement.innerHTML = '<li>Activity loading not implemented yet.</li>';
 
                  console.log(`[PLAYER MODAL DEBUG] Player modal populated for ${details.name}`);
 
@@ -456,6 +463,58 @@
         async function savePlayerChanges() { /* ... */ }
         async function deletePlayer() { /* ... */ }
 
+        // --- Dashboard / Tournament Population ---
+        async function populateDashboard() {
+            console.log("[DEBUG] Populating dashboard...");
+            await populateTournamentsList('dashboard-tournaments-list', 3); // Limit to 3 for dashboard
+            // TODO: Add calls to populate top players, top teams, recent games from Firestore
+            console.log("[DEBUG] Dashboard population (partially) complete.");
+        }
+
+        async function populateTournamentsList(listElementId, limit = 10) {
+             const listElement = document.getElementById(listElementId);
+             if (!listElement) { console.warn(`Tournament list element #${listElementId} not found.`); return; }
+             if (!db) { console.error("Firestore not initialized."); return; }
+
+             console.log(`[TOURNAMENT DEBUG] Populating tournament list: ${listElementId}`);
+             listElement.innerHTML = `<li class="text-gray-500">Loading tournaments...</li>`; // Loading state
+
+             try {
+                 const tournamentsCollection = db.collection('tournaments');
+                 const q = tournamentsCollection.orderBy('date_created', 'desc').limit(limit);
+                 const snapshot = await q.get();
+
+                 if (snapshot.empty) {
+                     listElement.innerHTML = `<li class="text-gray-500">No tournaments found.</li>`;
+                     console.log("[TOURNAMENT DEBUG] No tournaments found in Firestore.");
+                     return;
+                 }
+
+                 listElement.innerHTML = ''; // Clear loading state
+                 snapshot.forEach(doc => {
+                     const tournament = { id: doc.id, ...doc.data() };
+                     const li = document.createElement('li');
+                     li.className = listElementId === 'dashboard-tournaments-list' ? 'border-b pb-3' : 'border p-5 rounded-lg hover:bg-gray-50 transition duration-200';
+                     const status = tournament.status || 'Upcoming';
+                     const statusColor = status === 'Ongoing' ? 'text-green-600' : (status === 'Completed' ? 'text-gray-500' : 'text-yellow-600');
+
+                     li.innerHTML = `
+                         <span class="font-semibold text-lg">${tournament.name}</span>
+                         <span class="${statusColor} font-medium text-sm ml-2">(${status})</span><br>
+                         <span class="text-sm text-gray-600">Game: ${tournament.game_type || 'N/A'} | Format: ${tournament.format || 'N/A'}</span><br>
+                         <a href="#tournament-detail-${tournament.id}" class="text-blue-600 hover:underline text-sm font-medium mt-1 inline-block nav-link" data-target="tournament-detail-section">View Details</a>
+                     `;
+                     listElement.appendChild(li);
+                 });
+                 console.log(`[TOURNAMENT DEBUG] Populated tournament list ${listElementId} with ${snapshot.size} tournaments.`);
+             } catch (error) {
+                  console.error(`Error fetching tournaments for ${listElementId}:`, error);
+                  listElement.innerHTML = `<li class="text-red-500">Error loading tournaments.</li>`;
+             }
+        }
+
+         // --- Rankings Population (Placeholder) ---
+         async function updateRankingsVisibility() { /* ... */ }
 
         // --- Event Listeners Setup ---
         function setupEventListeners() {
@@ -709,44 +768,48 @@
                              if (newPlayerName) {
                                  const docRef = await db.collection('players').add({
                                      name: newPlayerName,
-                                     elo_overall: 1200, // Default starting Elo
-                                     date_created: firebase.firestore.FieldValue.serverTimestamp() // Use server timestamp
-                                     // Add other fields like iconUrl if you add an input for it
+                                     elo_overall: 1200,
+                                     date_created: firebase.firestore.FieldValue.serverTimestamp()
                                  });
                                  console.log("[FIRESTORE] Added new player with ID:", docRef.id);
-                                 // Optionally refresh players list immediately if needed
-                                 // if (playersGrid && !playersGrid.closest('.page-section.hidden')) {
-                                 //     populatePlayersList();
-                                 // }
                              }
-                             showAdminOverview(); // Go back to admin overview after adding
+                             showAdminOverview();
                          } else if (formId === 'record-game-form') {
-                             // Construct game data object (needs more detail based on form)
                              const gameData = {
                                  game_type: formData['game-type'],
                                  date_played: firebase.firestore.FieldValue.serverTimestamp(),
-                                 // --- TODO: Extract participants, outcome, score based on game type ---
-                                 participants: [formData['winner_player'], formData['loser_player']].filter(p => p), // Simplified example
-                                 outcome: formData['is_draw'] ? 'Draw' : 'Win/Loss', // Simplified
+                                 participants: [formData['winner_player'], formData['loser_player']].filter(p => p),
+                                 outcome: formData['is_draw'] ? 'Draw' : 'Win/Loss',
                                  score: formData['score'] || null
                              };
                              const docRef = await db.collection('games').add(gameData);
                              console.log("[FIRESTORE] Recorded new game with ID:", docRef.id);
-                             closeRecordGameModal(); // Close the modal
+                             closeRecordGameModal();
                          } else if (formId === 'add-team-form') {
-                             // TODO: Add logic to save team to Firestore
                              console.log("[DEBUG] Add Team form submitted (Firestore save not implemented).");
-                             showAdminOverview(); // Go back to admin overview
+                             showAdminOverview();
                          } else if (formId === 'create-tournament-form') {
-                             // TODO: Add logic to save tournament to Firestore
-                             console.log("[DEBUG] Create Tournament form submitted (Firestore save not implemented).");
-                             showAdminOverview(); // Go back to admin overview
+                             console.log("[DEBUG] Create Tournament form submitted.");
+                             const tournamentData = {
+                                 name: formData['tournament-name'],
+                                 game_type: formData['tournament-game-type'],
+                                 format: formData['tournament-format'],
+                                 start_date: formData['tournament-start-date'] || null,
+                                 participants: [], // TODO: Get selected participants
+                                 status: 'Upcoming', // Default status
+                                 date_created: firebase.firestore.FieldValue.serverTimestamp()
+                             };
+                             const docRef = await db.collection('tournaments').add(tournamentData);
+                             console.log("[FIRESTORE] Created new tournament with ID:", docRef.id);
+                             // Refresh tournament lists after adding
+                             await populateTournamentsList('dashboard-tournaments-list', 3);
+                             await populateTournamentsList('tournaments-list-full');
+                             showAdminOverview();
                          }
 
                          alert(`${successMessage} (Data saved to Firebase)`);
                          form.reset();
 
-                         // Reset dynamic sections if applicable (only needed for modal now)
                          if (formId === 'record-game-form') updateRecordGameFormModal();
 
                      } catch (error) {
@@ -760,100 +823,51 @@
         }
 
         // --- Initialization ---
-        // Function to assign elements after DOM is loaded
-        function assignElements() {
-            sections = document.querySelectorAll('.page-section');
-            navLinks = document.querySelectorAll('.nav-link');
-            loginForm = document.getElementById('login-form');
-            loginError = document.getElementById('login-error');
-            logoutButton = document.getElementById('logout-button');
-            // cancelAdminButtons = document.querySelectorAll('.cancel-admin-action'); // Replaced by adminBackButtons
-            recordGameModal = document.getElementById('record-game-modal');
-            openRecordGameModalBtn = document.getElementById('open-record-game-modal-btn');
-            closeRecordGameModalBtn = document.getElementById('close-record-game-modal-btn');
-            cancelRecordGameModalBtn = document.getElementById('cancel-record-game-modal-btn');
-            recordGameForm = document.getElementById('record-game-form');
-            gameTypeSelectModal = document.getElementById('game-type-select-modal');
-            subTypeWrapperModal = document.getElementById('sub-type-wrapper-modal');
-            outcomeWrapperModal = document.getElementById('outcome-wrapper-modal');
-            poolModeSelectModal = document.getElementById('pool-game-mode-modal');
-            boardCardScoringSelectModal = document.getElementById('board-card-scoring-modal');
-            tournamentGameTypeSelect = document.getElementById('tournament-game-type-select');
-            tournamentParticipantsList = document.getElementById('tournament-participants-list');
-            rankingsGameFilter = document.getElementById('rankings-game-filter');
-            rankingTablesContainer = document.getElementById('ranking-tables-container');
-            playersGrid = document.querySelector('#players-section .grid'); // Assign playersGrid
-            playerInfoModal = document.getElementById('player-info-modal');
-            closePlayerModalBtn = document.getElementById('close-player-modal-btn');
-            manageGamesTableBody = document.getElementById('manage-games-table-body');
-            // New admin panel elements
-            adminSection = document.getElementById('admin-section');
-            adminButtonGrid = document.getElementById('admin-button-grid');
-            adminContentContainer = document.getElementById('admin-content-container');
-            adminNavButtons = document.querySelectorAll('.admin-nav-button'); // Buttons in the grid
-            adminContentPanels = document.querySelectorAll('.admin-content-panel'); // The content divs
-            adminBackButtons = document.querySelectorAll('.admin-back-button'); // Back/Cancel buttons inside panels
-
-            // Log if critical elements are missing
-            if (!loginForm) console.error("Login form element (#login-form) not found!");
-            if (!adminSection) console.error("Admin section element (#admin-section) not found!");
-            if (!adminButtonGrid) console.error("Admin button grid element (#admin-button-grid) not found!");
-            if (!adminContentContainer) console.error("Admin content container element (#admin-content-container) not found!");
-        }
-
         function initializeApp() {
              try {
-                console.log("[DEBUG] Initializing App..."); // DEBUG
+                console.log("[DEBUG] Initializing App...");
                 assignElements();
-                console.log("[DEBUG] Elements assigned."); // DEBUG
+                console.log("[DEBUG] Elements assigned.");
 
                 if (!db) {
                     console.error("Firebase DB not initialized. App cannot function fully.");
-                    return; // Stop initialization if DB failed
+                    return;
                 }
 
                 const isLoggedIn = checkLoginState();
-                console.log(`[DEBUG] Initial login state: ${isLoggedIn}`); // DEBUG
+                console.log(`[DEBUG] Initial login state: ${isLoggedIn}`);
 
                 setupEventListeners(); // Setup all event listeners AFTER elements are assigned
 
-                // Determine initial section
+                // Determine initial section based on hash or default to home
                 const initialHash = window.location.hash;
-                let navigatedByHash = false;
+                let initialSectionId = 'home-section'; // Default
                 if (initialHash && initialHash !== '#') {
                     const targetLink = document.querySelector(`.nav-link[href="${initialHash}"]`);
                     if (targetLink) {
                          const targetId = targetLink.getAttribute('data-target');
                          const targetSection = document.getElementById(targetId);
                          const isAdminOnly = targetSection?.classList.contains('admin-only');
+                         // Allow navigation if section exists AND (it's not admin OR user is logged in)
                          if (targetId && targetSection && (!isAdminOnly || isLoggedIn)) {
-                            console.log(`Navigating to initial section from hash: ${targetId}`);
-                            showSection(targetId);
-                            navigatedByHash = true;
+                            initialSectionId = targetId;
+                            console.log(`[DEBUG] Initial navigation target from hash: ${targetId}`);
                          } else if (targetId && targetSection && isAdminOnly && !isLoggedIn) {
-                             console.log("Blocked hash nav to admin section.");
+                             console.log("[DEBUG] Blocked hash nav to admin section.");
+                         } else {
+                              console.warn(`[DEBUG] Hash target "${targetId}" not found or invalid, defaulting to home.`);
                          }
+                    } else {
+                         console.warn(`[DEBUG] Nav link for hash "${initialHash}" not found, defaulting to home.`);
                     }
-                }
-                if (!navigatedByHash) {
-                     const visibleSection = document.querySelector('.page-section:not(.hidden)');
-                     if (!visibleSection || (visibleSection?.classList.contains('admin-only') && !isLoggedIn)) {
-                         console.log("No initial section visible/allowed or from hash, showing home.");
-                         showSection('home-section');
-                     } else if (visibleSection) {
-                         console.log(`Browser restored visible section: ${visibleSection.id}`);
-                        if (visibleSection.id === 'players-section') populatePlayersList();
-                        if (visibleSection.id === 'rankings-section') updateRankingsVisibility();
-                        if (visibleSection.id === 'admin-manage-games-section') populateManageGamesTable();
-                        if (visibleSection.id === 'admin-section') showAdminOverview();
-                     } else {
-                         console.log("No visible section found, defaulting to home.");
-                         showSection('home-section');
-                     }
+                } else {
+                     console.log("[DEBUG] No hash found, defaulting to home.");
                 }
 
+                showSection(initialSectionId); // Show the determined initial section
+
                 updateRecordGameFormModal(); // Set initial state for modal form sections
-                console.log("[DEBUG] App Initialized Successfully."); // DEBUG
+                console.log("[DEBUG] App Initialized Successfully.");
              } catch (error) {
                  console.error("Error during app initialization:", error);
                  alert("An error occurred while initializing the application. Please check the console.");

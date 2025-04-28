@@ -87,7 +87,7 @@
                     <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Tournaments</h2>
                     <div class="space-y-4">
                         <button class="w-full text-left bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md admin-nav-button" data-target="admin-content-create-tournament">➕ Create New Tournament</button>
-                        <button class="w-full text-left bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md">✏️ Manage Existing Tournament</button>
+                        <button class="w-full text-left bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md admin-nav-button" data-target="admin-content-manage-tournaments">✏️ Manage Existing Tournament</button>
                     </div>
                 </div>
             </div>
@@ -135,7 +135,16 @@
                         </table>
                     </div>
                 </div>
+                <div id="admin-content-manage-tournaments" class="admin-content-panel hidden space-y-8">
+                    <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
+                         <h1 class="text-4xl font-bold text-gray-900">Manage Tournaments</h1>
+                         <button class="text-sm text-gray-600 hover:text-gray-900 font-medium admin-back-button">&larr; Back to Admin Panel</button>
+                    </div>
+                    <div id="manage-tournaments-list-container" class="bg-white p-6 rounded-xl shadow-lg">
+                         <p class="text-gray-500">Loading tournaments...</p>
+                         </div>
                 </div>
+            </div>
         </section>
 
     </div>
@@ -160,7 +169,8 @@
             tournamentGameTypeSelect, tournamentParticipantsList, rankingsGameFilter, rankingTablesContainer,
             playersGrid,
             playerInfoModal, closePlayerModalBtn, manageGamesTableBody,
-            adminSection, adminButtonGrid, adminContentContainer, adminNavButtons, adminContentPanels, adminBackButtons;
+            adminSection, adminButtonGrid, adminContentContainer, adminNavButtons, adminContentPanels, adminBackButtons,
+            manageTournamentsListContainer;
 
         // --- Firebase Initialization ---
         let app, db;
@@ -214,6 +224,7 @@
             adminNavButtons = document.querySelectorAll('.admin-nav-button');
             adminContentPanels = document.querySelectorAll('.admin-content-panel');
             adminBackButtons = document.querySelectorAll('.admin-back-button');
+            manageTournamentsListContainer = document.getElementById('manage-tournaments-list-container');
 
             // Log if critical elements are missing
             if (!loginForm) console.error("Login form element (#login-form) not found!");
@@ -222,11 +233,25 @@
             if (!adminContentContainer) console.error("Admin content container element (#admin-content-container) not found!");
             if (!playersGrid) console.error("Players grid element (#players-grid) not found!");
             if (!playerInfoModal) console.error("Player info modal element (#player-info-modal) not found!");
+            if (!manageTournamentsListContainer) console.error("Manage tournaments list container not found!");
         }
 
 
         // --- Utility Functions ---
-        function populateSelect(selectElement, optionsData, valueField = 'id', textField = 'name', prompt = 'Select...') { /* ... */ }
+        function populateSelect(selectElement, optionsData, valueField = 'id', textField = 'name', prompt = 'Select...') {
+             if (!selectElement) { console.warn("populateSelect: Provided selectElement is null or undefined."); return; }
+             const currentValue = selectElement.value; // Preserve current value if possible
+             selectElement.innerHTML = `<option value="">${prompt}</option>`;
+             optionsData.forEach(option => {
+                 const optionElement = document.createElement('option');
+                 optionElement.value = option[valueField];
+                 optionElement.textContent = option[textField];
+                 if (option[valueField] === currentValue) {
+                     optionElement.selected = true; // Re-select previous value if it exists in new options
+                 }
+                 selectElement.appendChild(optionElement);
+             });
+         }
         function populateCheckboxes(containerElement, options, name, valueField = 'id', textField = 'name') { /* ... */ }
         function populateMultiSelectCheckboxes(containerElement, options, name, valueField = 'id', textField = 'name') { /* ... */ }
 
@@ -289,17 +314,21 @@
 
         // --- Admin Panel Navigation ---
         function showAdminContentPanel(targetPanelId) {
-            console.log(`[DEBUG] Showing admin content panel: ${targetPanelId}`);
+            console.log(`[ADMIN PANEL DEBUG] Showing admin content panel: ${targetPanelId}`);
             if (!adminButtonGrid || !adminContentPanels) { console.error("Admin grid or content panels not found"); return; }
             adminButtonGrid.classList.add('hidden');
             adminContentPanels.forEach(panel => panel.classList.add('hidden'));
 
             const targetPanel = document.getElementById(targetPanelId);
             if (targetPanel) {
+                console.log(`[ADMIN PANEL DEBUG] Found target panel: ${targetPanel.id}`);
                 targetPanel.classList.remove('hidden');
                 targetPanel.classList.add('active');
                 if (targetPanelId === 'admin-content-manage-games' && manageGamesTableBody) {
                     populateManageGamesTable();
+                }
+                 if (targetPanelId === 'admin-content-manage-tournaments' && manageTournamentsListContainer) {
+                    populateManageTournamentsList();
                 }
                 if (targetPanelId === 'admin-content-add-team') {
                     populateAddTeamDropdowns();
@@ -314,7 +343,7 @@
         }
 
         function showAdminOverview() {
-            console.log("[DEBUG] Showing admin overview (button grid).");
+            console.log("[ADMIN PANEL DEBUG] Showing admin overview (button grid).");
             if (!adminButtonGrid || !adminContentPanels) { console.error("Admin grid or content panels not found"); return; }
             adminContentPanels.forEach(panel => { panel.classList.add('hidden'); panel.classList.remove('active'); });
             adminButtonGrid.classList.remove('hidden');
@@ -328,7 +357,7 @@
              playersGrid.innerHTML = '<p class="text-gray-500 col-span-full text-center">Loading players...</p>';
 
              try {
-                 if (!db) throw new Error("Firestore database (db) is not initialized."); // Check db
+                 if (!db) throw new Error("Firestore database (db) is not initialized.");
                  const playersCollection = db.collection('players');
                  const snapshot = await playersCollection.orderBy('name').get();
 
@@ -439,7 +468,13 @@
                   closePlayerModal(); // Close modal on error
              }
         }
-        function closePlayerModal() { /* ... */ }
+        function closePlayerModal() {
+             if (playerInfoModal) {
+                 playerInfoModal.classList.remove('active');
+                 playerInfoModal.classList.remove('modal-editing');
+                 playerInfoModal.removeAttribute('data-current-player-id');
+             }
+        }
 
         // --- Record Game Modal Functions ---
         function openRecordGameModal() { /* ... */ }
@@ -454,9 +489,79 @@
         // --- Admin Management List Population (Firestore) ---
         async function populateManageGamesTable() { /* ... */ }
 
+        // --- Manage Tournaments List Population ---
+        async function populateManageTournamentsList() {
+            if (!manageTournamentsListContainer) { console.warn("Manage tournaments list container not found."); return; }
+            if (!db) { console.error("[TOURNAMENT DEBUG] Firestore not initialized."); return; }
+            manageTournamentsListContainer.innerHTML = '<p class="text-gray-500">Loading tournaments...</p>';
+
+            try {
+                const tournamentsCollection = db.collection('tournaments');
+                const snapshot = await tournamentsCollection.orderBy('date_created', 'desc').get();
+
+                if (snapshot.empty) {
+                    manageTournamentsListContainer.innerHTML = '<p class="text-gray-500">No tournaments found.</p>';
+                    return;
+                }
+
+                manageTournamentsListContainer.innerHTML = ''; // Clear loading
+                const list = document.createElement('ul');
+                list.className = 'space-y-4';
+                snapshot.forEach(doc => {
+                    const tournament = { id: doc.id, ...doc.data() };
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-center border-b pb-3 pt-3';
+                    li.setAttribute('data-tournament-id', tournament.id);
+                    li.innerHTML = `
+                        <div>
+                            <span class="font-medium text-lg">${tournament.name}</span><br>
+                            <span class="text-sm text-gray-600">Game: ${tournament.game_type || 'N/A'} | Format: ${tournament.format || 'N/A'} | Status: ${tournament.status || 'N/A'}</span>
+                        </div>
+                        <div class="space-x-3">
+                            <button class="text-sm bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 rounded-lg edit-tournament-btn">Edit</button>
+                            <button class="text-sm bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded-lg delete-tournament-btn">Delete</button>
+                        </div>
+                    `;
+                    list.appendChild(li);
+                });
+                manageTournamentsListContainer.appendChild(list);
+            } catch (error) {
+                console.error("Error fetching tournaments for management:", error);
+                manageTournamentsListContainer.innerHTML = '<p class="text-red-500">Error loading tournaments.</p>';
+            }
+        }
+
+
         // --- Admin Action Handlers (Firestore) ---
         function handleEditGame(gameId) { /* ... */ }
         async function handleDeleteGame(gameId, tableRowElement) { /* ... */ }
+        // --- Tournament Action Handlers ---
+        function handleEditTournament(tournamentId) {
+            console.log(`[ADMIN PANEL DEBUG] Edit tournament clicked: ${tournamentId}`);
+            alert(`Edit functionality for tournament ${tournamentId} not implemented yet.`);
+            // TODO: Implement opening an edit form/modal
+        }
+        async function handleDeleteTournament(tournamentId, listItemElement) {
+            console.log(`[ADMIN PANEL DEBUG] Delete tournament clicked: ${tournamentId}`);
+            if (!db) { console.error("Firestore not initialized."); return; }
+            if (confirm(`Are you sure you want to delete tournament ${tournamentId}? This cannot be undone.`)) {
+                 try {
+                     await db.collection('tournaments').doc(tournamentId).delete();
+                     console.log(`[FIRESTORE] Firestore document deleted: tournaments/${tournamentId}`);
+                     if (listItemElement) listItemElement.remove(); // Remove from UI
+                     alert(`Tournament ${tournamentId} deleted.`);
+                     // Refresh dashboard/main list if needed
+                     await populateTournamentsList('dashboard-tournaments-list', 3);
+                     await populateTournamentsList('tournaments-list-full');
+                 } catch (error) {
+                     console.error("Error deleting tournament:", error);
+                     alert(`Failed to delete tournament ${tournamentId}. See console for details.`);
+                 }
+             } else {
+                  console.log(`Deletion cancelled for tournament ID: ${tournamentId}`);
+             }
+        }
+
 
         // --- Player Modal Edit Mode Handlers (Firestore) ---
         function togglePlayerModalEdit(editMode) { /* ... */ }
@@ -474,7 +579,7 @@
         async function populateTournamentsList(listElementId, limit = 10) {
              const listElement = document.getElementById(listElementId);
              if (!listElement) { console.warn(`Tournament list element #${listElementId} not found.`); return; }
-             if (!db) { console.error("Firestore not initialized."); return; }
+             if (!db) { console.error("[TOURNAMENT DEBUG] Firestore not initialized."); return; } // Check db
 
              console.log(`[TOURNAMENT DEBUG] Populating tournament list: ${listElementId}`);
              listElement.innerHTML = `<li class="text-gray-500">Loading tournaments...</li>`; // Loading state
@@ -538,6 +643,7 @@
                     button.addEventListener('click', (event) => {
                         const targetPanelId = event.currentTarget.getAttribute('data-target');
                         if (targetPanelId) {
+                            console.log(`[ADMIN PANEL DEBUG] Nav button clicked, target: ${targetPanelId}`); // DEBUG
                             showAdminContentPanel(targetPanelId);
                         } else {
                             console.warn("Admin nav button missing data-target:", event.currentTarget);
@@ -661,6 +767,22 @@
                     }
                 });
             }
+             // Manage Tournaments Page - Edit/Delete
+             if (manageTournamentsListContainer) {
+                 manageTournamentsListContainer.addEventListener('click', (event) => {
+                     const targetButton = event.target;
+                     const tournamentItem = targetButton.closest('li[data-tournament-id]'); // Find parent LI with ID
+                     if (!tournamentItem) return;
+                     const tournamentId = tournamentItem.getAttribute('data-tournament-id');
+                     if (!tournamentId) return;
+
+                     if (targetButton.classList.contains('edit-tournament-btn')) {
+                         handleEditTournament(tournamentId);
+                     } else if (targetButton.classList.contains('delete-tournament-btn')) {
+                         handleDeleteTournament(tournamentId, tournamentItem);
+                     }
+                 });
+             }
 
              console.log("Event listeners setup complete.");
         }
@@ -676,7 +798,7 @@
         }
 
         function handleLoginFormSubmit(event) {
-            // This function is now called directly by the event listener in setupEventListeners
+            event.preventDefault(); // Prevent default form submission
             alert("[LOGIN DEBUG] Login form submitted!"); // Alert to confirm event fired
             console.log("[LOGIN DEBUG] handleLoginFormSubmit called."); // Specific log
             const passwordInput = document.getElementById('password');
@@ -848,7 +970,6 @@
                          const targetId = targetLink.getAttribute('data-target');
                          const targetSection = document.getElementById(targetId);
                          const isAdminOnly = targetSection?.classList.contains('admin-only');
-                         // Allow navigation if section exists AND (it's not admin OR user is logged in)
                          if (targetId && targetSection && (!isAdminOnly || isLoggedIn)) {
                             initialSectionId = targetId;
                             console.log(`[DEBUG] Initial navigation target from hash: ${targetId}`);

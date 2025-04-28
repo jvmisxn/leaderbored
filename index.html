@@ -357,7 +357,7 @@
              <form id="record-game-form">
                 <div class="mb-4"> <label for="game-type-select-modal" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label> <select id="game-type-select-modal" name="game-type" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700" required> <option value="">Select Type</option> <option value="1v1">1 vs 1 (General)</option> <option value="2v2">2 vs 2 (General)</option> <option value="ffa">Free-for-All (FFA - General)</option> <option value="team">Team vs Team (General)</option> <option value="pool">Pool</option> <option value="puttpong">PuttPong</option> <option value="golf">Golf</option> <option value="basketball_pickup">Basketball (Pickup)</option> <option value="basketball_horse">Basketball (HORSE)</option> <option value="volleyball_pickup">Volleyball (Pickup)</option> <option value="board_card">Board / Card Game</option> <option value="cornhole">Cornhole</option> <option value="pickleball">Pickleball</option> </select> </div>
                 <div id="sub-type-wrapper-modal" class="mb-4"> <div id="sub-type-pool-modal" class="sub-type-section space-y-2"> <label for="pool-game-mode-modal" class="block text-gray-700 text-sm font-bold mb-1">Pool Game Mode:</label> <select id="pool-game-mode-modal" name="pool_game_mode" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700"> <option value="">Select Mode</option> <option value="8ball_1v1">8-Ball (1v1)</option> <option value="9ball_1v1">9-Ball (1v1)</option> <option value="8ball_2v2">8-Ball (2v2)</option> <option value="cutthroat_ffa">Cut-Throat (FFA)</option> </select> </div> <div id="sub-type-board_card-modal" class="sub-type-section space-y-2"> <label for="board-card-scoring-modal" class="block text-gray-700 text-sm font-bold mb-1">Scoring Method:</label> <select id="board-card-scoring-modal" name="board_card_scoring" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700"> <option value="">Select Scoring</option> <option value="win_loss_1v1">Win/Loss (1v1)</option> <option value="win_loss_2v2">Win/Loss (2v2)</option> <option value="win_loss_team">Win/Loss (Team vs Team)</option> <option value="points">Points Scored</option> <option value="placement">Placement (FFA)</option> </select> </div> </div>
-                <div id="outcome-wrapper-modal"> <div id="outcome-1v1-modal" class="outcome-section space-y-2"> <h3 class="text-lg font-medium text-gray-800">1 vs 1 Outcome</h3> <label for="winner-1v1-modal" class="block text-gray-700 text-xs font-bold mb-1">Winner:</label> <select id="winner-1v1-modal" name="winner_player" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700"> <option value="">Select Winner</option> </select> <label for="loser-1v1-modal" class="block text-gray-700 text-xs font-bold mb-1">Loser:</label> <select id="loser-1v1-modal" name="loser_player" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700"> <option value="">Select Loser</option> </select> <label for="draw-1v1-modal" class="flex items-center space-x-2 mt-2"> <input type="checkbox" id="draw-1v1-modal" name="is_draw" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"> <span class="text-sm text-gray-700">Record as Draw?</span> </label> <div class="mt-2"> <label for="score-1v1-modal" class="block text-gray-700 text-xs font-bold mb-1">Score (Optional):</label> <input type="text" id="score-1v1-modal" name="score" placeholder="e.g., 11-5, 11-9" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 text-sm"> </div> </div> <div id="outcome-2v2-modal" class="outcome-section space-y-2"> <h3 class="text-lg font-medium text-gray-800">2 vs 2 Outcome</h3> <label for="winner-team-2v2-modal" class="block text-gray-700 text-xs font-bold mb-1">Winning Team:</label> <select id="winner-team-2v2-modal" name="winner_team" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700"> <option value="">Select Winning Team</option> </select> <label for="loser-team-2v2-modal" class="block text-gray-700 text-xs font-bold mb-1">Losing Team:</label> <select id="loser-team-2v2-modal" name="loser_team" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700"> <option value="">Select Losing Team</option> </select> <label for="draw-2v2-modal" class="flex items-center space-x-2 mt-2"> <input type="checkbox" id="draw-2v2-modal" name="is_draw" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"> <span class="text-sm text-gray-700">Record as Draw?</span> </label> <div class="mt-2"> <label for="score-2v2-modal" class="block text-gray-700 text-xs font-bold mb-1">Score (Optional):</label> <input type="text" id="score-2v2-modal" name="score" placeholder="e.g., 21-15, 21-18" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 text-sm"> </div> </div> <div id="outcome-ffa-modal" class="outcome-section space-y-2"> <h3 class="text-lg font-medium text-gray-800">Free-for-All Outcome</h3> <p class="text-sm text-gray-600">Enter players by placement (1st, 2nd, etc.).</p> <div id="ffa-player-entries-modal"> <div class="flex items-center space-x-2 mb-2"> <span class="font-bold w-8 text-right">1st:</span> <select name="ffa_player_1" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select> </div> <div class="flex items-center space-x-2 mb-2"> <span class="font-bold w-8 text-right">2nd:</span> <select name="ffa_player_2" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select> </div> </div> <button type="button" id="add-ffa-place-modal" class="text-sm text-blue-600 hover:underline mt-2">+ Add Another Place</button> </div> <div id="outcome-golf-modal" class="outcome-section space-y-2"> <h3 class="text-lg font-medium text-gray-800">Golf Outcome</h3> <p class="text-sm text-gray-600">Enter score relative to par for each player.</p> <div id="golf-player-entries-modal"> <div class="flex items-center space-x-2 mb-2"> <select name="golf_player_1" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select> <input type="number" name="golf_score_1" placeholder="Score (+/- Par)" class="shadow border rounded-lg w-28 py-2 px-3 text-gray-700"> </div> </div> <button type="button" id="add-golf-player-modal" class="text-sm text-blue-600 hover:underline mt-2">+ Add Another Player</option> </div> <div id="outcome-pickup-modal" class="outcome-section space-y-4"> <h3 class="text-lg font-medium text-gray-800">Pickup Game Outcome</h3> <div class="grid grid-cols-2 gap-4"> <div> <label class="block text-gray-700 text-sm font-bold mb-2">Winning Players:</label> <div id="pickup-winners-list-modal" class="multi-select-list space-y-1"></div> </div> <div> <label class="block text-gray-700 text-sm font-bold mb-2">Losing Players:</label> <div id="pickup-losers-list-modal" class="multi-select-list space-y-1"></div> </div> </div> <div class="mt-2"> <label for="score-pickup-modal" class="block text-gray-700 text-xs font-bold mb-1">Score (Optional):</label> <input type="text" id="score-pickup-modal" name="score" placeholder="e.g., 11-7" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 text-sm"> </div> </div> <div id="outcome-boardgame-points-modal" class="outcome-section space-y-2"> <h3 class="text-lg font-medium text-gray-800">Points-Based Game Outcome</h3> <p class="text-sm text-gray-600">Enter score for each player.</p> <div id="boardgame-points-entries-modal"> <div class="flex items-center space-x-2 mb-2"> <select name="boardgame_player_1" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select> <input type="number" name="boardgame_score_1" placeholder="Score" class="shadow border rounded-lg w-28 py-2 px-3 text-gray-700"> </div> </div> <button type="button" id="add-boardgame-player-modal" class="text-sm text-blue-600 hover:underline mt-2">+ Add Another Player</option> </div> </div>
+                <div id="outcome-wrapper-modal"> <div id="outcome-1v1-modal" class="outcome-section space-y-2"> <h3 class="text-lg font-medium text-gray-800">1 vs 1 Outcome</h3> <label for="winner-1v1-modal" class="block text-gray-700 text-xs font-bold mb-1">Winner:</label> <select id="winner-1v1-modal" name="winner_player" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700"> <option value="">Select Winner</option> </select> <label for="loser-1v1-modal" class="block text-gray-700 text-xs font-bold mb-1">Loser:</label> <select id="loser-1v1-modal" name="loser_player" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700"> <option value="">Select Loser</option> </select> <label for="draw-1v1-modal" class="flex items-center space-x-2 mt-2"> <input type="checkbox" id="draw-1v1-modal" name="is_draw" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"> <span class="text-sm text-gray-700">Record as Draw?</span> </label> <div class="mt-2"> <label for="score-1v1-modal" class="block text-gray-700 text-xs font-bold mb-1">Score (Optional):</label> <input type="text" id="score-1v1-modal" name="score" placeholder="e.g., 11-5, 11-9" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 text-sm"> </div> </div> <div id="outcome-2v2-modal" class="outcome-section space-y-2"> <h3 class="text-lg font-medium text-gray-800">2 vs 2 Outcome</h3> <label for="winner-team-2v2-modal" class="block text-gray-700 text-xs font-bold mb-1">Winning Team:</label> <select id="winner-team-2v2-modal" name="winner_team" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700"> <option value="">Select Winning Team</option> </select> <label for="loser-team-2v2-modal" class="block text-gray-700 text-xs font-bold mb-1">Losing Team:</label> <select id="loser-team-2v2-modal" name="loser_team" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700"> <option value="">Select Losing Team</option> </select> <label for="draw-2v2-modal" class="flex items-center space-x-2 mt-2"> <input type="checkbox" id="draw-2v2-modal" name="is_draw" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"> <span class="text-sm text-gray-700">Record as Draw?</span> </label> <div class="mt-2"> <label for="score-2v2-modal" class="block text-gray-700 text-xs font-bold mb-1">Score (Optional):</label> <input type="text" id="score-2v2-modal" name="score" placeholder="e.g., 21-15, 21-18" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 text-sm"> </div> </div> <div id="outcome-ffa-modal" class="outcome-section space-y-2"> <h3 class="text-lg font-medium text-gray-800">Free-for-All Outcome</h3> <p class="text-sm text-gray-600">Enter players by placement (1st, 2nd, etc.).</p> <div id="ffa-player-entries-modal"> <div class="flex items-center space-x-2 mb-2"> <span class="font-bold w-8 text-right">1st:</span> <select name="ffa_player_1" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select> </div> <div class="flex items-center space-x-2 mb-2"> <span class="font-bold w-8 text-right">2nd:</span> <select name="ffa_player_2" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select> </div> </div> <button type="button" id="add-ffa-place-modal" class="text-sm text-blue-600 hover:underline mt-2">+ Add Another Place</button> </div> <div id="outcome-golf-modal" class="outcome-section space-y-2"> <h3 class="text-lg font-medium text-gray-800">Golf Outcome</h3> <p class="text-sm text-gray-600">Enter score relative to par for each player.</p> <div id="golf-player-entries-modal"> <div class="flex items-center space-x-2 mb-2"> <select name="golf_player_1" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select> <input type="number" name="golf_score_1" placeholder="Score (+/- Par)" class="shadow border rounded-lg w-28 py-2 px-3 text-gray-700"> </div> </div> <button type="button" id="add-golf-player-modal" class="text-sm text-blue-600 hover:underline mt-2">+ Add Another Player</button> </div> <div id="outcome-pickup-modal" class="outcome-section space-y-4"> <h3 class="text-lg font-medium text-gray-800">Pickup Game Outcome</h3> <div class="grid grid-cols-2 gap-4"> <div> <label class="block text-gray-700 text-sm font-bold mb-2">Winning Players:</label> <div id="pickup-winners-list-modal" class="multi-select-list space-y-1"></div> </div> <div> <label class="block text-gray-700 text-sm font-bold mb-2">Losing Players:</label> <div id="pickup-losers-list-modal" class="multi-select-list space-y-1"></div> </div> </div> <div class="mt-2"> <label for="score-pickup-modal" class="block text-gray-700 text-xs font-bold mb-1">Score (Optional):</label> <input type="text" id="score-pickup-modal" name="score" placeholder="e.g., 11-7" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 text-sm"> </div> </div> <div id="outcome-boardgame-points-modal" class="outcome-section space-y-2"> <h3 class="text-lg font-medium text-gray-800">Points-Based Game Outcome</h3> <p class="text-sm text-gray-600">Enter score for each player.</p> <div id="boardgame-points-entries-modal"> <div class="flex items-center space-x-2 mb-2"> <select name="boardgame_player_1" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select> <input type="number" name="boardgame_score_1" placeholder="Score" class="shadow border rounded-lg w-28 py-2 px-3 text-gray-700"> </div> </div> <button type="button" id="add-boardgame-player-modal" class="text-sm text-blue-600 hover:underline mt-2">+ Add Another Player</option> </div> </div>
                  <button type="submit" class="mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow">Record Game</button>
                  <button type="button" id="cancel-record-game-modal-btn" class="ml-2 text-gray-600 hover:text-gray-800">Cancel</button>
              </form>
@@ -408,10 +408,47 @@
             { id: 'g4', date: '2025-04-26 15:00', type: 'Golf', description: 'Alice (+2), Bob (+5), Charlie (-1)' },
         ];
 
+        // Function to assign elements after DOM is loaded
+        function assignElements() {
+            sections = document.querySelectorAll('.page-section');
+            navLinks = document.querySelectorAll('.nav-link');
+            loginForm = document.getElementById('login-form');
+            loginError = document.getElementById('login-error');
+            logoutButton = document.getElementById('logout-button');
+            cancelAdminButtons = document.querySelectorAll('.cancel-admin-action');
+            recordGameModal = document.getElementById('record-game-modal');
+            openRecordGameModalBtn = document.getElementById('open-record-game-modal-btn');
+            closeRecordGameModalBtn = document.getElementById('close-record-game-modal-btn');
+            cancelRecordGameModalBtn = document.getElementById('cancel-record-game-modal-btn');
+            recordGameForm = document.getElementById('record-game-form');
+            gameTypeSelectModal = document.getElementById('game-type-select-modal');
+            subTypeWrapperModal = document.getElementById('sub-type-wrapper-modal');
+            outcomeWrapperModal = document.getElementById('outcome-wrapper-modal');
+            poolModeSelectModal = document.getElementById('pool-game-mode-modal');
+            boardCardScoringSelectModal = document.getElementById('board-card-scoring-modal');
+            tournamentGameTypeSelect = document.getElementById('tournament-game-type-select');
+            tournamentParticipantsList = document.getElementById('tournament-participants-list');
+            rankingsGameFilter = document.getElementById('rankings-game-filter');
+            rankingTablesContainer = document.getElementById('ranking-tables-container');
+            playersSectionContent = document.querySelector('#players-section .grid');
+            playerInfoModal = document.getElementById('player-info-modal');
+            closePlayerModalBtn = document.getElementById('close-player-modal-btn');
+            manageGamesTableBody = document.getElementById('manage-games-table-body');
+            managePlayersList = document.getElementById('manage-players-list');
+            editPlayerForm = document.getElementById('edit-player-form');
+            editPlayerIdInput = document.getElementById('edit-player-id');
+            editPlayerNameInput = document.getElementById('edit-player-name');
+
+            // Log if critical elements are missing
+            if (!loginForm) console.error("Login form element (#login-form) not found!");
+            if (!recordGameModal) console.error("Record game modal element (#record-game-modal) not found!");
+            if (!openRecordGameModalBtn) console.error("Open record game modal button (#open-record-game-modal-btn) not found!");
+        }
+
 
         // --- Utility Functions ---
         function populateSelect(selectElement, options, valueField = 'id', textField = 'name', prompt = 'Select...') {
-            if (!selectElement) { console.error("populateSelect: Provided selectElement is null or undefined."); return; }
+            if (!selectElement) { console.warn("populateSelect: Provided selectElement is null or undefined."); return; }
             selectElement.innerHTML = `<option value="">${prompt}</option>`;
             options.forEach(option => {
                 const optionElement = document.createElement('option');
@@ -421,7 +458,7 @@
             });
         }
         function populateCheckboxes(containerElement, options, name, valueField = 'id', textField = 'name') {
-             if (!containerElement) { console.error("populateCheckboxes: Provided containerElement is null or undefined."); return; }
+             if (!containerElement) { console.warn("populateCheckboxes: Provided containerElement is null or undefined."); return; }
             containerElement.innerHTML = '';
             if (!options || options.length === 0) { containerElement.innerHTML = `<p class="text-gray-500 text-sm">No available ${name} found.</p>`; return; }
             options.forEach(option => {
@@ -440,7 +477,7 @@
             });
         }
         function populateMultiSelectCheckboxes(containerElement, options, name, valueField = 'id', textField = 'name') {
-            if (!containerElement) { console.error("populateMultiSelectCheckboxes: Provided containerElement is null or undefined."); return; }
+            if (!containerElement) { console.warn("populateMultiSelectCheckboxes: Provided containerElement is null or undefined."); return; }
             containerElement.innerHTML = '';
             if (!options || options.length === 0) { containerElement.innerHTML = `<p class="text-gray-500 text-sm">No available players found.</p>`; return; }
             options.forEach(option => {
@@ -488,7 +525,7 @@
 
         // --- Player List and Modal Functions ---
         function populatePlayersList() {
-             if (!playersSectionContent) { console.error("Player section content area not found."); return; }
+             if (!playersSectionContent) { console.warn("Player section content area not found."); return; }
             playersSectionContent.innerHTML = ''; // Clear existing list
             placeholderPlayers.forEach(player => {
                  const div = document.createElement('div');
@@ -499,14 +536,14 @@
                      <img src="${iconUrl}" alt="Player Icon ${player.name}" class="w-10 h-10 rounded-full flex-shrink-0" onerror="this.onerror=null; this.src='https://placehold.co/40x40/cccccc/ffffff?text=?';">
                      <span class="font-medium text-gray-800">${player.name}</span>
                  `;
+                 // Use event delegation on the container later if needed, for now direct binding
                  div.addEventListener('click', () => openPlayerModal(player.id));
                  playersSectionContent.appendChild(div);
             });
         }
         function openPlayerModal(playerId) {
              const details = placeholderPlayerDetails[playerId];
-             if (!details || !playerInfoModal) { console.error("Cannot open player modal: Details or modal element not found."); return; }
-             // Safely get modal elements and populate
+             if (!details || !playerInfoModal) { console.warn("Cannot open player modal: Details or modal element not found."); return; }
              const iconElement = document.getElementById('modal-player-icon');
              const nameElement = document.getElementById('modal-player-name');
              const rankElement = document.getElementById('modal-player-overall-rank');
@@ -541,8 +578,8 @@
 
         // --- Admin Management List Population ---
         function populateManageGamesTable() {
-             if (!manageGamesTableBody) { console.error("Manage games table body not found."); return; }
-             manageGamesTableBody.innerHTML = ''; // Clear existing
+             if (!manageGamesTableBody) { console.warn("Manage games table body not found."); return; }
+             manageGamesTableBody.innerHTML = '';
              placeholderGames.forEach(game => {
                  const row = document.createElement('tr');
                  row.className = 'border-b';
@@ -558,14 +595,15 @@
                  `;
                  const editBtn = row.querySelector('.edit-game-btn');
                  const deleteBtn = row.querySelector('.delete-game-btn');
+                 // Add listeners directly - consider delegation if list becomes very large
                  if (editBtn) editBtn.addEventListener('click', () => handleEditGame(game.id));
                  if (deleteBtn) deleteBtn.addEventListener('click', () => handleDeleteGame(game.id, row));
                  manageGamesTableBody.appendChild(row);
              });
         }
         function populateManagePlayersList() {
-             if (!managePlayersList) { console.error("Manage players list container not found."); return; }
-             managePlayersList.innerHTML = ''; // Clear existing
+             if (!managePlayersList) { console.warn("Manage players list container not found."); return; }
+             managePlayersList.innerHTML = '';
              placeholderPlayers.forEach(player => {
                  const div = document.createElement('div');
                  div.className = 'flex justify-between items-center border-b pb-2';
@@ -620,13 +658,14 @@
                  console.log("Attaching login form listener.");
                 loginForm.addEventListener('submit', (event) => {
                     event.preventDefault();
-                    console.log("Login form submitted."); // DEBUG
+                    console.log("Login form submit event detected."); // DEBUG
                     const passwordInput = document.getElementById('password');
                     if (passwordInput) {
-                        login(passwordInput.value);
-                    } else { console.error("Password input field not found."); }
+                        console.log(`Password entered: "${passwordInput.value}"`); // DEBUG
+                        login(passwordInput.value); // Call login function
+                    } else { console.error("Password input field not found inside submit handler."); }
                 });
-            } else { console.error("Login form not found."); }
+            } else { console.error("Login form element (#login-form) not found during listener setup."); }
 
             if (logoutButton) logoutButton.addEventListener('click', logout);
             else { console.error("Logout button not found."); }
@@ -665,9 +704,9 @@
              if (tournamentGameTypeSelect) tournamentGameTypeSelect.addEventListener('change', updateTournamentParticipants);
 
             // Add Player/Place/Score Buttons (MODAL versions)
-            setupAddPlayerButton('add-ffa-place-modal', 'ffa-player-entries-modal', (num) => `...`);
-            setupAddPlayerButton('add-golf-player-modal', 'golf-player-entries-modal', (num) => `...`);
-            setupAddPlayerButton('add-boardgame-player-modal', 'boardgame-points-entries-modal', (num) => `...`);
+            setupAddPlayerButton('add-ffa-place-modal', 'ffa-player-entries-modal');
+            setupAddPlayerButton('add-golf-player-modal', 'golf-player-entries-modal');
+            setupAddPlayerButton('add-boardgame-player-modal', 'boardgame-points-entries-modal');
 
             // Rankings Filter
             if (rankingsGameFilter) rankingsGameFilter.addEventListener('change', updateRankingsVisibility);
@@ -704,7 +743,7 @@
              return isLoggedIn;
         }
         function login(password) {
-            console.log(`Attempting login with password: "${password}"`);
+            console.log(`Attempting login with password: "${password}"`); // DEBUG
             const localLoginError = document.getElementById('login-error');
             if (password === ADMIN_PASSWORD) {
                 sessionStorage.setItem('isAdminLoggedIn', 'true');
@@ -737,19 +776,73 @@
              let targetOutcomeSectionId = null;
              let targetSubTypeSectionId = null;
              // 1. Show Sub-Type section
-             switch (selectedType) { /* ... */ }
-             if (targetSubTypeSectionId) { /* ... */ }
+             switch (selectedType) {
+                 case 'pool': targetSubTypeSectionId = 'sub-type-pool-modal'; break;
+                 case 'board_card': targetSubTypeSectionId = 'sub-type-board_card-modal'; break;
+             }
+             if (targetSubTypeSectionId) {
+                 const subTypeSection = document.getElementById(targetSubTypeSectionId);
+                 if (subTypeSection) subTypeSection.classList.add('active');
+             }
              // 2. Determine Outcome section
              const currentPoolMode = poolModeSelectModal?.value;
              const currentBoardCardScoring = boardCardScoringSelectModal?.value;
-             switch (selectedType) { /* ... */ }
+             switch (selectedType) {
+                 case '1v1': case 'puttpong': case 'basketball_horse': case 'cornhole': case 'pickleball':
+                     targetOutcomeSectionId = 'outcome-1v1-modal';
+                     populateSelect(document.getElementById('winner-1v1-modal'), placeholderPlayers);
+                     populateSelect(document.getElementById('loser-1v1-modal'), placeholderPlayers);
+                     break;
+                 case '2v2': case 'team':
+                     targetOutcomeSectionId = 'outcome-2v2-modal';
+                     populateSelect(document.getElementById('winner-team-2v2-modal'), placeholderTeams);
+                     populateSelect(document.getElementById('loser-team-2v2-modal'), placeholderTeams);
+                     break;
+                 case 'ffa':
+                     targetOutcomeSectionId = 'outcome-ffa-modal';
+                     document.querySelectorAll('#outcome-ffa-modal select').forEach(select => populateSelect(select, placeholderPlayers));
+                     break;
+                 case 'golf':
+                      targetOutcomeSectionId = 'outcome-golf-modal';
+                      document.querySelectorAll('#outcome-golf-modal select').forEach(select => populateSelect(select, placeholderPlayers));
+                     break;
+                 case 'basketball_pickup': case 'volleyball_pickup':
+                     targetOutcomeSectionId = 'outcome-pickup-modal';
+                     populateMultiSelectCheckboxes(document.getElementById('pickup-winners-list-modal'), placeholderPlayers, 'pickup_winners');
+                     populateMultiSelectCheckboxes(document.getElementById('pickup-losers-list-modal'), placeholderPlayers, 'pickup_losers');
+                     break;
+                 case 'pool':
+                     if (currentPoolMode === '8ball_1v1' || currentPoolMode === '9ball_1v1') targetOutcomeSectionId = 'outcome-1v1-modal';
+                     else if (currentPoolMode === '8ball_2v2') targetOutcomeSectionId = 'outcome-2v2-modal';
+                     else if (currentPoolMode === 'cutthroat_ffa') targetOutcomeSectionId = 'outcome-ffa-modal';
+                     // Repopulate selects if outcome type changed
+                     if(targetOutcomeSectionId === 'outcome-1v1-modal') { populateSelect(document.getElementById('winner-1v1-modal'), placeholderPlayers); populateSelect(document.getElementById('loser-1v1-modal'), placeholderPlayers); }
+                     if(targetOutcomeSectionId === 'outcome-2v2-modal') { populateSelect(document.getElementById('winner-team-2v2-modal'), placeholderTeams); populateSelect(document.getElementById('loser-team-2v2-modal'), placeholderTeams); }
+                     if(targetOutcomeSectionId === 'outcome-ffa-modal') { document.querySelectorAll('#outcome-ffa-modal select').forEach(select => populateSelect(select, placeholderPlayers)); }
+                     break;
+                 case 'board_card':
+                      if (currentBoardCardScoring === 'win_loss_1v1') targetOutcomeSectionId = 'outcome-1v1-modal';
+                      else if (currentBoardCardScoring === 'win_loss_2v2' || currentBoardCardScoring === 'win_loss_team') targetOutcomeSectionId = 'outcome-2v2-modal';
+                      else if (currentBoardCardScoring === 'points') targetOutcomeSectionId = 'outcome-boardgame-points-modal';
+                      else if (currentBoardCardScoring === 'placement') targetOutcomeSectionId = 'outcome-ffa-modal';
+                      // Repopulate selects if outcome type changed
+                      if(targetOutcomeSectionId === 'outcome-1v1-modal') { populateSelect(document.getElementById('winner-1v1-modal'), placeholderPlayers); populateSelect(document.getElementById('loser-1v1-modal'), placeholderPlayers); }
+                      if(targetOutcomeSectionId === 'outcome-2v2-modal') { populateSelect(document.getElementById('winner-team-2v2-modal'), placeholderTeams); populateSelect(document.getElementById('loser-team-2v2-modal'), placeholderTeams); }
+                      if(targetOutcomeSectionId === 'outcome-boardgame-points-modal') { document.querySelectorAll('#outcome-boardgame-points-modal select').forEach(select => populateSelect(select, placeholderPlayers)); }
+                      if(targetOutcomeSectionId === 'outcome-ffa-modal') { document.querySelectorAll('#outcome-ffa-modal select').forEach(select => populateSelect(select, placeholderPlayers)); }
+                     break;
+             }
              // 3. Show Outcome section
-             if (targetOutcomeSectionId) { /* ... */ }
+             if (targetOutcomeSectionId) {
+                 const targetSection = document.getElementById(targetOutcomeSectionId);
+                 if (targetSection) targetSection.classList.add('active');
+                 else console.error(`Outcome section with ID "${targetOutcomeSectionId}" not found.`);
+             }
         }
         function updateTournamentParticipants() { /* ... */ }
 
         // --- Add Player/Place/Score Button Logic ---
-        function setupAddPlayerButton(buttonId, containerId, entryHtmlGenerator) {
+        function setupAddPlayerButton(buttonId, containerId) {
              const addButton = document.getElementById(buttonId);
              const container = document.getElementById(containerId);
              if (addButton && container) {
@@ -766,8 +859,8 @@
                      } else if (buttonId === 'add-boardgame-player-modal') {
                           div.innerHTML = `<select name="boardgame_player_${nextEntryNum}" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select> <input type="number" name="boardgame_score_${nextEntryNum}" placeholder="Score" class="shadow border rounded-lg w-28 py-2 px-3 text-gray-700">`;
                      } else {
-                         // Fallback or default structure if needed
-                         div.innerHTML = entryHtmlGenerator(nextEntryNum); // Use passed generator if specific logic isn't met
+                         console.warn(`setupAddPlayerButton called with unhandled buttonId: ${buttonId}`);
+                         return; // Don't append if we don't know what to add
                      }
                      // Populate selects in the newly added row
                      div.querySelectorAll('select').forEach(select => populateSelect(select, placeholderPlayers));
@@ -778,7 +871,22 @@
 
 
         // --- Rankings Filter Logic ---
-        function updateRankingsVisibility() { /* ... */ }
+        function updateRankingsVisibility() {
+             if (!rankingsGameFilter || !rankingTablesContainer) return;
+             const selectedGame = rankingsGameFilter.value;
+             const allTables = rankingTablesContainer.querySelectorAll('.ranking-table');
+             allTables.forEach(table => table.classList.remove('active'));
+             const targetTableId = `ranking-table-${selectedGame}`;
+             const targetTable = document.getElementById(targetTableId);
+             if (targetTable) {
+                 targetTable.classList.add('active');
+                 console.log(`Should display rankings for: ${selectedGame}`);
+             } else {
+                 console.warn(`Ranking table with ID "${targetTableId}" not found. Showing overall.`);
+                 const overallTable = document.getElementById('ranking-table-overall');
+                 if(overallTable) overallTable.classList.add('active'); // Fallback to overall
+             }
+        }
 
         // --- Form Submission Handlers ---
         function handleFormSubmit(formId, successMessage) {
@@ -813,55 +921,60 @@
 
         // --- Initialization ---
         function initializeApp() {
-            console.log("Initializing App...");
-            assignElements(); // Assign DOM elements to variables
-            console.log("Elements assigned.");
+             try {
+                console.log("Initializing App...");
+                assignElements(); // Assign DOM elements to variables
+                console.log("Elements assigned.");
 
-            const isLoggedIn = checkLoginState(); // Check login state
-            console.log(`Initial login state: ${isLoggedIn}`);
+                const isLoggedIn = checkLoginState(); // Check login state
+                console.log(`Initial login state: ${isLoggedIn}`);
 
-            // Populate static selects (ensure elements exist first)
-            if (document.getElementById('team-player1')) populateSelect(document.getElementById('team-player1'), placeholderPlayers);
-            if (document.getElementById('team-player2')) populateSelect(document.getElementById('team-player2'), placeholderPlayers);
+                // Populate static selects (ensure elements exist first)
+                if (document.getElementById('team-player1')) populateSelect(document.getElementById('team-player1'), placeholderPlayers);
+                if (document.getElementById('team-player2')) populateSelect(document.getElementById('team-player2'), placeholderPlayers);
 
-            setupEventListeners(); // Setup all event listeners
+                setupEventListeners(); // Setup all event listeners
 
-            // Determine initial section
-            const initialHash = window.location.hash;
-            let navigatedByHash = false;
-            if (initialHash && initialHash !== '#') {
-                const targetLink = document.querySelector(`.nav-link[href="${initialHash}"]`);
-                if (targetLink) {
-                     const targetId = targetLink.getAttribute('data-target');
-                     const targetSection = document.getElementById(targetId);
-                     const isAdminOnly = targetSection?.classList.contains('admin-only');
-                     if (targetId && targetSection && (!isAdminOnly || isLoggedIn)) {
-                        console.log(`Navigating to initial section from hash: ${targetId}`);
-                        showSection(targetId);
-                        navigatedByHash = true;
-                     } else if (targetId && targetSection && isAdminOnly && !isLoggedIn) {
-                         console.log("Blocked hash nav to admin section.");
+                // Determine initial section
+                const initialHash = window.location.hash;
+                let navigatedByHash = false;
+                if (initialHash && initialHash !== '#') {
+                    const targetLink = document.querySelector(`.nav-link[href="${initialHash}"]`);
+                    if (targetLink) {
+                         const targetId = targetLink.getAttribute('data-target');
+                         const targetSection = document.getElementById(targetId);
+                         const isAdminOnly = targetSection?.classList.contains('admin-only');
+                         if (targetId && targetSection && (!isAdminOnly || isLoggedIn)) {
+                            console.log(`Navigating to initial section from hash: ${targetId}`);
+                            showSection(targetId);
+                            navigatedByHash = true;
+                         } else if (targetId && targetSection && isAdminOnly && !isLoggedIn) {
+                             console.log("Blocked hash nav to admin section.");
+                         }
+                    }
+                }
+                if (!navigatedByHash) {
+                     const visibleSection = document.querySelector('.page-section:not(.hidden)');
+                     if (!visibleSection) {
+                         console.log("No initial section visible or from hash, showing home.");
+                         showSection('home-section');
+                     } else {
+                         console.log(`Browser restored visible section: ${visibleSection.id}`);
+                        // Ensure content populated if needed
+                        if (visibleSection.id === 'players-section') populatePlayersList();
+                        if (visibleSection.id === 'rankings-section') updateRankingsVisibility();
+                        if (visibleSection.id === 'admin-manage-games-section') populateManageGamesTable();
+                        if (visibleSection.id === 'admin-manage-players-section') populateManagePlayersList();
                      }
                 }
-            }
-            if (!navigatedByHash) {
-                 const visibleSection = document.querySelector('.page-section:not(.hidden)');
-                 if (!visibleSection) {
-                     console.log("No initial section visible or from hash, showing home.");
-                     showSection('home-section');
-                 } else {
-                     console.log(`Browser restored visible section: ${visibleSection.id}`);
-                    // Ensure content populated if needed
-                    if (visibleSection.id === 'players-section') populatePlayersList();
-                    if (visibleSection.id === 'rankings-section') updateRankingsVisibility();
-                    if (visibleSection.id === 'admin-manage-games-section') populateManageGamesTable();
-                    if (visibleSection.id === 'admin-manage-players-section') populateManagePlayersList();
-                 }
-            }
 
-            // Initial setup for the record game MODAL form
-            updateRecordGameFormModal();
-            console.log("App Initialized.");
+                // Initial setup for the record game MODAL form
+                updateRecordGameFormModal();
+                console.log("App Initialized Successfully.");
+             } catch (error) {
+                 console.error("Error during app initialization:", error);
+                 alert("An error occurred while initializing the application. Please check the console.");
+             }
         }
 
         // --- Run Initialization ---

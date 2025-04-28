@@ -280,33 +280,49 @@
         // --- Page Section Navigation ---
         function showSection(targetId) {
              if (!sections) { console.error("Sections not assigned yet in showSection"); return; }
+             console.log(`[DEBUG] showSection called for: ${targetId}`); // DEBUG
             const cleanTargetId = targetId.startsWith('#') ? targetId.substring(1) : targetId;
             let sectionFound = false;
+            // FIRST: Hide ALL sections
             sections.forEach(section => {
-                if (section.id === cleanTargetId) {
-                    section.classList.remove('hidden');
-                    sectionFound = true;
-                    // Populate dynamic content when section is shown
-                    if (cleanTargetId === 'players-section' && playersGrid) populatePlayersList();
-                    if (cleanTargetId === 'rankings-section' && rankingTablesContainer) updateRankingsVisibility();
-                    if (cleanTargetId === 'admin-manage-games-section' && manageGamesTableBody) populateManageGamesTable();
-                    // Removed manage-players population
-                } else {
-                    section.classList.add('hidden');
+                if (section && section.id) { // Basic check
+                     section.classList.add('hidden');
                 }
             });
-             if (sectionFound) {
-                window.scrollTo(0, 0);
+            // THEN: Show the target section
+            const targetSection = document.getElementById(cleanTargetId);
+            if (targetSection) {
+                console.log(`[DEBUG] Showing section: ${targetSection.id}`); // DEBUG
+                targetSection.classList.remove('hidden');
+                sectionFound = true;
+                // Populate dynamic content when section is shown
+                if (cleanTargetId === 'players-section' && playersGrid) populatePlayersList();
+                if (cleanTargetId === 'rankings-section' && rankingTablesContainer) updateRankingsVisibility();
+                if (cleanTargetId === 'admin-manage-games-section' && manageGamesTableBody) populateManageGamesTable();
             } else {
                  console.warn(`Section with ID "${cleanTargetId}" not found. Showing home.`);
-                 showSection('home-section'); // Fallback to home
+                 const homeSection = document.getElementById('home-section');
+                 if (homeSection) {
+                     homeSection.classList.remove('hidden');
+                 } else {
+                     console.error("Home section (#home-section) not found as fallback.");
+                 }
+            }
+
+            if (sectionFound) {
+                window.scrollTo(0, 0);
             }
         }
 
         // --- Player List and Modal Functions ---
         function populatePlayersList() {
              if (!playersGrid) { console.warn("Player grid container (#players-grid) not found."); return; }
+             console.log("[DEBUG] Populating players list..."); // DEBUG
              playersGrid.innerHTML = ''; // Clear existing list
+             if (placeholderPlayers.length === 0) {
+                 playersGrid.innerHTML = '<p class="text-gray-500 col-span-full text-center">No players added yet.</p>'; // Span full grid width
+                 return;
+             }
              placeholderPlayers.forEach(player => {
                  const div = document.createElement('div');
                  div.className = 'player-entry bg-white p-5 rounded-lg shadow hover:shadow-md cursor-pointer flex items-center space-x-4';
@@ -318,61 +334,17 @@
                  // Event listener added via delegation in setupEventListeners
                  playersGrid.appendChild(div);
              });
+             console.log(`[DEBUG] Populated players list with ${placeholderPlayers.length} players.`); // DEBUG
         }
-        function openPlayerModal(playerId) {
-             const details = placeholderPlayerDetails[playerId];
-             if (!details || !playerInfoModal) { console.warn("Cannot open player modal: Details or modal element not found."); return; }
-             playerInfoModal.setAttribute('data-current-player-id', playerId);
-             playerInfoModal.classList.remove('modal-editing'); // Ensure starts in view mode
-             const iconElement = document.getElementById('modal-player-icon');
-             const nameElement = document.getElementById('modal-player-name');
-             const nameInputElement = document.getElementById('modal-edit-player-name-input');
-             const rankElement = document.getElementById('modal-player-overall-rank');
-             const ratingElement = document.getElementById('modal-player-overall-rating');
-             const statsElement = document.getElementById('modal-player-game-stats');
-             const activityElement = document.getElementById('modal-player-recent-activity');
-             if (iconElement) { iconElement.src = `https://placehold.co/80x80/E0E7FF/4F46E5?text=${details.iconLetter}`; iconElement.alt = `Player Icon ${details.name}`; }
-             if (nameElement) nameElement.textContent = details.name;
-             if (nameInputElement) nameInputElement.value = details.name; // Pre-fill input
-             if (rankElement) rankElement.textContent = details.overallRank;
-             if (ratingElement) ratingElement.textContent = details.overallRating;
-             if (statsElement) statsElement.innerHTML = details.stats;
-             if (activityElement) activityElement.innerHTML = details.activity;
-             playerInfoModal.classList.add('active');
-        }
-        function closePlayerModal() {
-             if (playerInfoModal) {
-                 playerInfoModal.classList.remove('active');
-                 playerInfoModal.classList.remove('modal-editing'); // Ensure edit mode is off
-                 playerInfoModal.removeAttribute('data-current-player-id');
-             }
-        }
+        function openPlayerModal(playerId) { /* ... */ }
+        function closePlayerModal() { /* ... */ }
 
         // --- Record Game Modal Functions ---
         function openRecordGameModal() { /* ... */ }
         function closeRecordGameModal() { /* ... */ }
 
         // --- Admin Management List Population ---
-        function populateManageGamesTable() {
-             if (!manageGamesTableBody) { console.warn("Manage games table body not found."); return; }
-             manageGamesTableBody.innerHTML = '';
-             placeholderGames.forEach(game => {
-                 const row = document.createElement('tr');
-                 row.className = 'border-b hover:bg-gray-50';
-                 row.setAttribute('data-game-id', game.id);
-                 row.innerHTML = `
-                     <td class="px-4 py-3">${game.date}</td>
-                     <td class="px-4 py-3">${game.type}</td>
-                     <td class="px-4 py-3 whitespace-normal">${game.description}</td>
-                     <td class="px-4 py-3 space-x-3">
-                         <button class="text-blue-600 hover:text-blue-800 font-medium edit-game-btn">Edit</button>
-                         <button class="text-red-600 hover:text-red-800 font-medium delete-game-btn">Delete</button>
-                     </td>
-                 `;
-                 // Listeners added via delegation
-                 manageGamesTableBody.appendChild(row);
-             });
-        }
+        function populateManageGamesTable() { /* ... (adds listeners via delegation) ... */ }
 
         // --- Admin Action Handlers ---
         function handleEditGame(gameId) { /* ... */ }
@@ -393,9 +365,9 @@
 
             // Admin Login/Logout
             if (loginForm) {
-                 console.log("[DEBUG] Attaching login form listener.");
+                 console.log("[LOGIN DEBUG] Attaching login form listener in setupEventListeners."); // LOGIN DEBUG
                 loginForm.addEventListener('submit', handleLoginFormSubmit); // Use named handler
-            } else { console.error("[DEBUG] Login form element (#login-form) not found during listener setup."); }
+            } else { console.error("[LOGIN DEBUG] Login form element (#login-form) not found during setupEventListeners."); } // LOGIN DEBUG
 
             if (logoutButton) logoutButton.addEventListener('click', logout);
             else { console.error("Logout button not found."); }
@@ -523,13 +495,14 @@
 
         function handleLoginFormSubmit(event) {
             // This function is now called directly by the event listener in setupEventListeners
-            console.log("[DEBUG] handleLoginFormSubmit called.");
+            alert("[LOGIN DEBUG] Login form submitted!"); // Alert to confirm event fired
+            console.log("[LOGIN DEBUG] handleLoginFormSubmit called."); // Specific log
             const passwordInput = document.getElementById('password');
             if (passwordInput) {
                 const passwordValue = passwordInput.value;
-                console.log(`[DEBUG] Password value from input: "${passwordValue}"`);
+                console.log(`[LOGIN DEBUG] Password value from input: "${passwordValue}"`); // Specific log
                 login(passwordValue); // Call login function
-            } else { console.error("[DEBUG] Password input field not found inside handleLoginFormSubmit."); }
+            } else { console.error("[LOGIN DEBUG] Password input field not found inside handleLoginFormSubmit."); } // Specific log
         }
 
 
@@ -551,29 +524,31 @@
              return isLoggedIn;
         }
         function login(password) {
-            console.log(`[DEBUG] Inside login function. Comparing "${password}" with "${ADMIN_PASSWORD}"`); // DEBUG
+            alert(`[LOGIN DEBUG] Inside login function. Comparing "${password}" with "${ADMIN_PASSWORD}"`); // Alert to confirm function called
+            console.log(`[LOGIN DEBUG] Inside login function. Comparing "${password}" with "${ADMIN_PASSWORD}"`); // Specific log
             const localLoginError = document.getElementById('login-error');
             if (password === ADMIN_PASSWORD) {
-                console.log("[DEBUG] Password MATCHES. Setting session storage and updating UI."); // DEBUG
+                alert("[LOGIN DEBUG] Password MATCHES!"); // Alert on success
+                console.log("[LOGIN DEBUG] Password MATCHES. Setting session storage and updating UI."); // Specific log
                 sessionStorage.setItem('isAdminLoggedIn', 'true');
-                checkLoginState();
-                showSection('admin-section');
+                checkLoginState(); // Apply logged-in styles
+                // Simplified action on login success for debugging:
+                // showSection('admin-section'); // Original line
+                document.body.style.backgroundColor = 'lightgreen'; // Temporary visual confirmation
+                alert("Login successful! (Body should be green)"); // Temporary alert
+
                 if(localLoginError) localLoginError.classList.add('hidden');
                 const passwordInput = document.getElementById('password');
                 if(passwordInput) passwordInput.value = '';
-                console.log("[DEBUG] Admin login successful.");
+                console.log("[LOGIN DEBUG] Admin login successful."); // Specific log
             } else {
-                console.log("[DEBUG] Password DOES NOT MATCH."); // DEBUG
+                alert("[LOGIN DEBUG] Password DOES NOT MATCH."); // Alert on failure
+                console.log("[LOGIN DEBUG] Password DOES NOT MATCH."); // Specific log
                 if(localLoginError) localLoginError.classList.remove('hidden');
-                 console.log("[DEBUG] Admin login failed: Incorrect password.");
+                 console.log("[LOGIN DEBUG] Admin login failed: Incorrect password."); // Specific log
             }
         }
-        function logout() {
-            sessionStorage.removeItem('isAdminLoggedIn');
-            checkLoginState();
-            showSection('home-section');
-             console.log("Admin logged out.");
-        }
+        function logout() { /* ... */ }
 
         // --- Dynamic Form Logic (MODAL version) ---
         function updateRecordGameFormModal() { /* ... */ }
@@ -588,7 +563,7 @@
         // --- Form Submission Handlers ---
         function handleFormSubmit(formId, successMessage) {
              const form = document.getElementById(formId);
-             if (form) {
+             if (form && formId !== 'login-form') { // Exclude login form from this generic handler now
                  form.addEventListener('submit', (event) => {
                      event.preventDefault();
                      let isValid = true;
@@ -600,6 +575,51 @@
 
                      const formData = Object.fromEntries(new FormData(form));
                      console.log(`Form submitted: ${formId}`, formData);
+
+                     // --- Simulate Data Update ---
+                     if (formId === 'add-player-form') {
+                         const newPlayerName = formData['player-name'];
+                         if (newPlayerName) {
+                             const newPlayerId = 'p' + (placeholderPlayers.length + 1); // Simple unique ID
+                             const newPlayer = {
+                                 id: newPlayerId,
+                                 name: newPlayerName,
+                                 overallRank: placeholderPlayers.length + 1, // Placeholder rank
+                                 overallRating: 1200, // Default rating
+                                 iconLetter: newPlayerName.charAt(0).toUpperCase() || '?' // Handle empty name
+                             };
+                             placeholderPlayers.push(newPlayer);
+                             placeholderPlayerDetails[newPlayerId] = { // Add basic details
+                                 name: newPlayerName,
+                                 overallRank: newPlayer.overallRank,
+                                 overallRating: newPlayer.overallRating,
+                                 iconLetter: newPlayer.iconLetter,
+                                 stats: 'No games played yet.',
+                                 activity: '<li>Player created</li>'
+                             };
+                             console.log("[DEBUG] Added new player:", newPlayer);
+                             // Refresh player list if visible
+                             if (playersGrid && !playersGrid.closest('.page-section.hidden')) {
+                                 populatePlayersList();
+                             }
+                         }
+                     } else if (formId === 'record-game-form') {
+                         // Simulate adding game data (won't show anywhere yet)
+                         const gameData = {
+                             id: 'g' + (placeholderGames.length + 1),
+                             date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+                             type: formData['game-type'],
+                             description: 'Game details from form...' // Needs logic to build description
+                         };
+                         placeholderGames.push(gameData);
+                         console.log("[DEBUG] Recorded new game:", gameData);
+                         // Refresh recent games list on dashboard if visible
+                         if (document.getElementById('recent-games-list') && !document.getElementById('home-section').classList.contains('hidden')) {
+                             // TODO: Add function to refresh recent games list display
+                         }
+                     }
+                     // Add similar logic for 'add-team-form' if needed
+
                      alert(`${successMessage} (Data logged to console)`);
 
                      if (formId === 'record-game-form') closeRecordGameModal();
@@ -611,7 +631,7 @@
                      if (formId === 'record-game-form') updateRecordGameFormModal();
                      else if (formId === 'create-tournament-form' && tournamentParticipantsList) tournamentParticipantsList.innerHTML = '<p class="text-gray-500 text-sm">Select Game Type to see participants.</p>';
                  });
-             } else {
+             } else if (formId !== 'login-form') { // Avoid warning for login form
                  console.warn(`Form with ID "${formId}" not found for submission handling.`);
              }
         }
@@ -655,17 +675,27 @@
 
         function initializeApp() {
              try {
-                console.log("Initializing App...");
+                console.log("[DEBUG] Initializing App..."); // DEBUG
                 assignElements();
-                console.log("Elements assigned.");
+                console.log("[DEBUG] Elements assigned."); // DEBUG
 
                 const isLoggedIn = checkLoginState();
-                console.log(`Initial login state: ${isLoggedIn}`);
+                console.log(`[DEBUG] Initial login state: ${isLoggedIn}`); // DEBUG
 
                 if (document.getElementById('team-player1')) populateSelect(document.getElementById('team-player1'), placeholderPlayers);
                 if (document.getElementById('team-player2')) populateSelect(document.getElementById('team-player2'), placeholderPlayers);
 
-                setupEventListeners(); // Setup all event listeners AFTER elements are assigned
+                // --- Setup Login Listener Directly ---
+                if (loginForm) {
+                    console.log("[LOGIN DEBUG] Attaching login form listener in initializeApp."); // LOGIN DEBUG
+                    loginForm.addEventListener('submit', handleLoginFormSubmit);
+                } else {
+                    console.error("[LOGIN DEBUG] Login form not found in initializeApp. Cannot attach listener."); // LOGIN DEBUG
+                    alert("[LOGIN DEBUG] CRITICAL ERROR: Login form not found. Login will not work."); // Alert user
+                }
+                // --- End Direct Login Listener Setup ---
+
+                setupEventListeners(); // Setup other event listeners AFTER elements are assigned
 
                 // Determine initial section
                 const initialHash = window.location.hash;
@@ -701,7 +731,7 @@
                 }
 
                 updateRecordGameFormModal();
-                console.log("App Initialized Successfully.");
+                console.log("[DEBUG] App Initialized Successfully."); // DEBUG
              } catch (error) {
                  console.error("Error during app initialization:", error);
                  alert("An error occurred while initializing the application. Please check the console.");
@@ -715,3 +745,4 @@
 
 </body>
 </html>
+

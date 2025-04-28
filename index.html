@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friendly Competition Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Apply Inter font globally */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Simple transition for hover effects */
+        a, button, .player-entry {
+            transition: all 0.2s ease-in-out;
+        }
+        /* Hide elements meant for admin by default */
+        .admin-only {
+            display: none;
+        }
+        /* Style for showing admin elements when logged in */
+        body.admin-logged-in .admin-only {
+            display: block; /* Or inline, flex, etc., as appropriate */
+        }
+        body.admin-logged-in .public-only {
+            display: none;
+        }
+        /* Style for dynamic outcome section */
+        .outcome-section, .sub-type-section {
+            display: none; /* Hidden by default */
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb; /* gray-200 */
+        }
+        .outcome-section.active, .sub-type-section.active {
+            display: block; /* Shown when active */
+        }
+        /* Styles for Player Info Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            max-width: 90%;
+            width: 500px; /* Adjust as needed */
+            position: relative;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-content {
+             transform: scale(1);
+        }
+        /* Style for Ranking Tables (hide by default except overall) */
+        .ranking-table {
+            display: none;
+        }
+        .ranking-table.active {
+            display: block;
+        }
+        /* Style for multi-select player lists */
+        .multi-select-list {
+            max-height: 150px; /* Limit height */
+            overflow-y: auto; /* Add scroll */
+            border: 1px solid #d1d5db; /* gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            padding: 0.5rem; /* p-2 */
+            background-color: #f9fafb; /* gray-50 */
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <nav class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="#home" class="text-2xl font-bold hover:text-blue-200 nav-link" data-target="home-section">🏆 CompeteTrack</a>
+            <div class="space-x-4">
+                <a href="#home" class="hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium nav-link" data-target="home-section">Home</a>
+                <a href="#rankings" class="hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium nav-link" data-target="rankings-section">Rankings</a>
+                <a href="#players" class="hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium nav-link" data-target="players-section">Players</a>
+                <a href="#tournaments" class="hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium nav-link" data-target="tournaments-section">Tournaments</a>
+                <a href="#login" id="login-link" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-md text-sm font-medium public-only nav-link" data-target="login-section">Admin Login</a>
+                <a href="#admin" id="admin-link" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-md text-sm font-medium admin-only nav-link" data-target="admin-section">Admin Panel</a>
+                <button id="logout-button" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-md text-sm font-medium admin-only">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-6 p-4">
+
+        <section id="home-section" class="page-section space-y-6">
+             <h1 class="text-3xl font-bold text-gray-900 border-b pb-2 mb-4">Dashboard</h1>
+             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+                     <h2 class="text-xl font-semibold mb-4 text-indigo-700">Recent Games</h2>
+                     <ul id="recent-games-list" class="space-y-3 text-sm">
+                         <li class="border-b pb-2"><strong>Game:</strong> Cornhole (1v1) <br> Charlie beat Alice <span class="text-gray-500 float-right">Now</span></li>
+                         <li class="border-b pb-2"><strong>Game:</strong> Pool (Cut-Throat FFA) <br> 1st: Bob, 2nd: Dave, 3rd: Eve <span class="text-gray-500 float-right">15m ago</span></li>
+                         <li class="border-b pb-2"><strong>Game:</strong> Pickleball (2v2) <br> Alice/Bob beat Charlie/Dave <span class="text-gray-500 float-right">1h ago</span></li>
+                         <li><strong>Game:</strong> Golf <br> Alice (+2), Bob (+5), Charlie (-1) <span class="text-gray-500 float-right">Yesterday</span></li>
+                     </ul>
+                     <a href="#games" class="text-blue-600 hover:underline mt-4 inline-block">View all games...</a> </div>
+                 <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+                     <h2 class="text-xl font-semibold mb-4 text-indigo-700">Top Players (Overall)</h2>
+                     <ol id="top-players-list" class="list-decimal list-inside space-y-2">
+                         <li>Alice (1350) <span class="text-green-500 text-xs">▲ 25</span></li>
+                         <li>Charlie (1310) <span class="text-green-500 text-xs">▲ 15</span></li>
+                         <li>Dave (1280) <span class="text-red-500 text-xs">▼ 10</span></li>
+                         <li>Bob (1250) <span class="text-red-500 text-xs">▼ 25</span></li>
+                         <li>Eve (1200) <span class="text-gray-500 text-xs">-</span></li>
+                     </ol>
+                     <a href="#rankings" class="text-blue-600 hover:underline mt-4 inline-block nav-link" data-target="rankings-section">View full rankings...</a>
+                 </div>
+                 <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+                     <h2 class="text-xl font-semibold mb-4 text-indigo-700">Top Teams (Overall)</h2>
+                     <ol id="top-teams-list" class="list-decimal list-inside space-y-2">
+                         <li>Alice & Charlie (1320) <span class="text-green-500 text-xs">▲ 20</span></li>
+                         <li>Team Alpha (1290) <span class="text-green-500 text-xs">▲ 18</span></li>
+                         <li>Bob & Dave (1260) <span class="text-red-500 text-xs">▼ 20</span></li>
+                         <li>Team Beta (1250) <span class="text-red-500 text-xs">▼ 18</span></li>
+                     </ol>
+                     <a href="#rankings" class="text-blue-600 hover:underline mt-4 inline-block nav-link" data-target="rankings-section">View full rankings...</a>
+                 </div>
+                 <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-2 lg:col-span-1">
+                     <h2 class="text-xl font-semibold mb-4 text-indigo-700">Tournaments</h2>
+                     <ul id="dashboard-tournaments-list" class="space-y-3">
+                         <li> <span class="font-medium">Holiday Pickleball Open (Ongoing)</span><br> <span class="text-sm text-gray-600">Format: Single Elimination, Game: Pickleball (2v2)</span><br> <a href="#tournament-detail-1" class="text-blue-600 hover:underline text-sm nav-link" data-target="tournament-detail-section">View Bracket</a> </li>
+                         <li class="opacity-70"> <span class="font-medium">Cornhole Cup (Upcoming)</span><br> <span class="text-sm text-gray-600">Format: Double Elimination, Game: Cornhole (1v1)</span><br> <span class="text-sm text-gray-500">Starts: Next Weekend</span> </li>
+                     </ul>
+                     <a href="#tournaments" class="text-blue-600 hover:underline mt-4 inline-block nav-link" data-target="tournaments-section">View all tournaments...</a>
+                 </div>
+             </div>
+        </section>
+
+        <section id="rankings-section" class="page-section hidden space-y-6">
+            <div class="flex justify-between items-center border-b pb-2 mb-4">
+                 <h1 class="text-3xl font-bold text-gray-900">Rankings</h1>
+                 <div>
+                     <label for="rankings-game-filter" class="text-sm font-medium text-gray-700 mr-2">Filter by Game:</label>
+                     <select id="rankings-game-filter" name="rankings-game-filter" class="shadow-sm border border-gray-300 rounded-md py-1 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                         <option value="overall">Overall (1v1/2v2)</option>
+                         <option value="pool">Pool</option>
+                         <option value="puttpong">PuttPong</option>
+                         <option value="golf">Golf</option>
+                         <option value="basketball_pickup">Basketball (Pickup)</option>
+                         <option value="basketball_horse">Basketball (HORSE)</option>
+                         <option value="volleyball_pickup">Volleyball (Pickup)</option>
+                         <option value="board_card">Board / Card Game</option>
+                         <option value="cornhole">Cornhole</option>
+                         <option value="pickleball">Pickleball</option>
+                         </select>
+                 </div>
+            </div>
+             <div id="ranking-tables-container">
+                 <div id="ranking-table-overall" class="ranking-table active grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div class="bg-white p-6 rounded-lg shadow-lg">
+                         <h2 class="text-xl font-semibold mb-4 text-indigo-700">Overall 1v1 Rankings (Elo)</h2>
+                         <table class="w-full text-left table-auto">
+                             <thead> <tr class="bg-gray-200"> <th class="px-4 py-2">Rank</th> <th class="px-4 py-2">Player</th> <th class="px-4 py-2">Rating</th> <th class="px-4 py-2">Change</th> </tr> </thead>
+                             <tbody>
+                                 <tr class="border-b"> <td class="px-4 py-2">1</td> <td class="px-4 py-2">Alice</td> <td class="px-4 py-2">1350</td> <td class="px-4 py-2 text-green-500">+25</td> </tr>
+                                 <tr class="border-b"> <td class="px-4 py-2">2</td> <td class="px-4 py-2">Charlie</td> <td class="px-4 py-2">1310</td> <td class="px-4 py-2 text-green-500">+15</td> </tr>
+                                 <tr class="border-b"> <td class="px-4 py-2">3</td> <td class="px-4 py-2">Dave</td> <td class="px-4 py-2">1280</td> <td class="px-4 py-2 text-red-500">-10</td> </tr>
+                                 <tr class="border-b"> <td class="px-4 py-2">4</td> <td class="px-4 py-2">Bob</td> <td class="px-4 py-2">1250</td> <td class="px-4 py-2 text-red-500">-25</td> </tr>
+                                 <tr> <td class="px-4 py-2">5</td> <td class="px-4 py-2">Eve</td> <td class="px-4 py-2">1200</td> <td class="px-4 py-2 text-gray-500">-</td> </tr>
+                             </tbody>
+                         </table>
+                     </div>
+                     <div class="bg-white p-6 rounded-lg shadow-lg">
+                         <h2 class="text-xl font-semibold mb-4 text-indigo-700">Overall 2v2 Team Rankings (Elo)</h2>
+                         <table class="w-full text-left table-auto">
+                              <thead> <tr class="bg-gray-200"> <th class="px-4 py-2">Rank</th> <th class="px-4 py-2">Team</th> <th class="px-4 py-2">Rating</th> <th class="px-4 py-2">Change</th> </tr> </thead>
+                             <tbody>
+                                 <tr class="border-b"> <td class="px-4 py-2">1</td> <td class="px-4 py-2">Alice & Charlie</td> <td class="px-4 py-2">1320</td> <td class="px-4 py-2 text-green-500">+20</td> </tr>
+                                 <tr class="border-b"> <td class="px-4 py-2">2</td> <td class="px-4 py-2">Team Alpha</td> <td class="px-4 py-2">1290</td> <td class="px-4 py-2 text-green-500">+18</td> </tr>
+                                 <tr class="border-b"> <td class="px-4 py-2">3</td> <td class="px-4 py-2">Bob & Dave</td> <td class="px-4 py-2">1260</td> <td class="px-4 py-2 text-red-500">-20</td> </tr>
+                                  <tr> <td class="px-4 py-2">4</td> <td class="px-4 py-2">Team Beta</td> <td class="px-4 py-2">1250</td> <td class="px-4 py-2 text-red-500">-18</td> </tr>
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+                 <div id="ranking-table-cornhole" class="ranking-table bg-white p-6 rounded-lg shadow-lg"> <h2 class="text-xl font-semibold mb-4 text-indigo-700">Cornhole Rankings (1v1 Elo)</h2> <p class="text-gray-500">Cornhole rankings data would be loaded here...</p> </div>
+                 <div id="ranking-table-golf" class="ranking-table bg-white p-6 rounded-lg shadow-lg"> <h2 class="text-xl font-semibold mb-4 text-indigo-700">Golf Rankings (Avg Score to Par)</h2> <p class="text-gray-500">Golf rankings data would be loaded here...</p> </div>
+                 <div id="ranking-table-pool" class="ranking-table bg-white p-6 rounded-lg shadow-lg"> <h2 class="text-xl font-semibold mb-4 text-indigo-700">Pool Rankings</h2> <p class="text-gray-500">Pool rankings (1v1, FFA, etc.) would go here...</p> </div>
+                 <div id="ranking-table-pickleball" class="ranking-table bg-white p-6 rounded-lg shadow-lg"> <h2 class="text-xl font-semibold mb-4 text-indigo-700">Pickleball Rankings</h2> <p class="text-gray-500">Pickleball rankings (1v1/2v2) would go here...</p> </div>
+             </div>
+        </section>
+
+        <section id="players-section" class="page-section hidden space-y-6">
+            <h1 class="text-3xl font-bold text-gray-900 border-b pb-2 mb-4">Players</h1>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                </div>
+        </section>
+
+        <section id="tournaments-section" class="page-section hidden space-y-6">
+             <h1 class="text-3xl font-bold text-gray-900 border-b pb-2 mb-4">Tournaments</h1>
+             <div class="bg-white p-6 rounded-lg shadow-lg">
+                 <h2 class="text-xl font-semibold mb-4 text-indigo-700">Tournament List</h2>
+                 <div id="tournaments-list-full" class="space-y-4">
+                     <div class="border p-4 rounded-md hover:bg-gray-50"> <h3 class="font-semibold text-lg">Holiday Pickleball Open</h3> <p class="text-sm text-gray-600">Game: Pickleball (2v2) | Format: Single Elimination | Status: <span class="font-medium text-green-600">Ongoing</span></p> <a href="#tournament-detail-1" class="text-blue-600 hover:underline text-sm mt-1 inline-block nav-link" data-target="tournament-detail-section">View Details & Bracket</a> </div>
+                     <div class="border p-4 rounded-md hover:bg-gray-50"> <h3 class="font-semibold text-lg">Thanksgiving Codenames Championship</h3> <p class="text-sm text-gray-600">Game: Board/Card Game (Team) | Format: Single Elimination | Status: <span class="font-medium text-gray-500">Completed</span></p> <a href="#tournament-detail-2" class="text-blue-600 hover:underline text-sm mt-1 inline-block nav-link" data-target="tournament-detail-section">View Results</a> </div>
+                     <div class="border p-4 rounded-md hover:bg-gray-50"> <h3 class="font-semibold text-lg">Cornhole Cup</h3> <p class="text-sm text-gray-600">Game: Cornhole (1v1) | Format: Double Elimination | Status: <span class="font-medium text-yellow-600">Upcoming (Starts Next Weekend)</span></p> <a href="#tournament-detail-3" class="text-blue-600 hover:underline text-sm mt-1 inline-block nav-link" data-target="tournament-detail-section">View Details</a> </div>
+                 </div>
+             </div>
+             <div class="admin-only mt-4"> <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 nav-link" data-target="admin-create-tournament-section"> Create New Tournament </button> </div>
+        </section>
+
+        <section id="tournament-detail-section" class="page-section hidden space-y-6">
+             <h1 class="text-3xl font-bold text-gray-900 border-b pb-2 mb-4">Tournament: <span id="tournament-detail-name">[Tournament Name]</span></h1>
+              <div class="bg-white p-6 rounded-lg shadow-lg">
+                 <p><strong>Game:</strong> <span id="tournament-detail-game">[Game]</span></p>
+                 <p><strong>Format:</strong> <span id="tournament-detail-format">[Format]</span></p>
+                 <p><strong>Status:</strong> <span id="tournament-detail-status">[Status]</span></p>
+                 <h2 class="text-xl font-semibold mt-6 mb-4 text-indigo-700">Bracket / Matches / Standings</h2>
+                 <div id="tournament-detail-visualization" class="border border-dashed border-gray-400 p-10 text-center text-gray-500 rounded-md min-h-[200px]"> Tournament Visualization Area <br>(Requires JavaScript library or custom rendering based on format) </div>
+                 <div class="admin-only mt-4"> <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"> Report Match Result </button> </div>
+             </div>
+        </section>
+
+        <section id="login-section" class="page-section hidden">
+             <h1 class="text-3xl font-bold text-gray-900 border-b pb-2 mb-4">Admin Login</h1>
+             <div class="bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto">
+                 <form id="login-form">
+                     <div class="mb-4"> <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password:</label> <input type="password" id="password" name="password" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required> </div>
+                     <div id="login-error" class="text-red-500 text-sm mb-4 hidden">Incorrect password.</div>
+                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"> Login </button>
+                 </form>
+             </div>
+        </section>
+
+        <section id="admin-section" class="page-section hidden admin-only space-y-6">
+            <h1 class="text-3xl font-bold text-gray-900 border-b pb-2 mb-4">Admin Panel</h1>
+            <p class="text-green-600 bg-green-100 border border-green-300 p-3 rounded-md">You are logged in as Admin.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"> <h2 class="text-xl font-semibold mb-4 text-indigo-700">Manage Data</h2> <div class="space-y-3"> <button class="w-full text-left bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg shadow nav-link" data-target="admin-add-player-section">Add New Player</button> <button class="w-full text-left bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg shadow nav-link" data-target="admin-add-team-section">Add New Team</button> <button class="w-full text-left bg-green-200 hover:bg-green-300 text-green-800 font-bold py-2 px-4 rounded-lg shadow nav-link" data-target="admin-record-game-section">Record Game Result</button> </div> </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"> <h2 class="text-xl font-semibold mb-4 text-indigo-700">Manage Tournaments</h2> <div class="space-y-3"> <button class="w-full text-left bg-blue-200 hover:bg-blue-300 text-blue-800 font-bold py-2 px-4 rounded-lg shadow nav-link" data-target="admin-create-tournament-section">Create New Tournament</button> <button class="w-full text-left bg-yellow-200 hover:bg-yellow-300 text-yellow-800 font-bold py-2 px-4 rounded-lg shadow">Manage Existing Tournament</button> </div> </div>
+            </div>
+        </section>
+
+        <section id="admin-add-player-section" class="page-section hidden admin-only bg-white p-6 rounded-lg shadow-lg max-w-lg mx-auto"> <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Add New Player</h2> <form id="add-player-form"> <div class="mb-4"> <label for="player-name" class="block text-gray-700 text-sm font-bold mb-2">Player Name:</label> <input type="text" id="player-name" name="player-name" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required> </div> <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow">Add Player</button> <button type="button" class="ml-2 text-gray-600 hover:text-gray-800 cancel-admin-action">Cancel</button> </form> </section>
+        <section id="admin-add-team-section" class="page-section hidden admin-only bg-white p-6 rounded-lg shadow-lg max-w-lg mx-auto"> <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Add New Team (for 2v2)</h2> <form id="add-team-form"> <div class="mb-4"> <label for="team-name" class="block text-gray-700 text-sm font-bold mb-2">Team Name:</label> <input type="text" id="team-name" name="team-name" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" required> </div> <div class="mb-4"> <label for="team-player1" class="block text-gray-700 text-sm font-bold mb-2">Player 1:</label> <select id="team-player1" name="team-player1" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700" required> <option value="">Select Player</option> <option value="player1_id">Alice (Placeholder)</option> <option value="player2_id">Bob (Placeholder)</option> <option value="player3_id">Charlie (Placeholder)</option> </select> </div> <div class="mb-4"> <label for="team-player2" class="block text-gray-700 text-sm font-bold mb-2">Player 2:</label> <select id="team-player2" name="team-player2" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700" required> <option value="">Select Player</option> <option value="player1_id">Alice (Placeholder)</option> <option value="player2_id">Bob (Placeholder)</option> <option value="player3_id">Charlie (Placeholder)</option> </select> </div> <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow">Add Team</button> <button type="button" class="ml-2 text-gray-600 hover:text-gray-800 cancel-admin-action">Cancel</button> </form> </section>
+
+        <section id="admin-record-game-section" class="page-section hidden admin-only bg-white p-6 rounded-lg shadow-lg max-w-lg mx-auto">
+             <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Record Game Result</h2>
+             <form id="record-game-form">
+                <div class="mb-4">
+                    <label for="game-type-select" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label>
+                    <select id="game-type-select" name="game-type" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700" required>
+                         <option value="">Select Type</option>
+                         <option value="1v1">1 vs 1 (General)</option>
+                         <option value="2v2">2 vs 2 (General)</option>
+                         <option value="ffa">Free-for-All (FFA - General)</option>
+                         <option value="team">Team vs Team (General)</option>
+                         <option value="pool">Pool</option>
+                         <option value="puttpong">PuttPong</option>
+                         <option value="golf">Golf</option>
+                         <option value="basketball_pickup">Basketball (Pickup)</option>
+                         <option value="basketball_horse">Basketball (HORSE)</option>
+                         <option value="volleyball_pickup">Volleyball (Pickup)</option>
+                         <option value="board_card">Board / Card Game</option>
+                         <option value="cornhole">Cornhole</option>
+                         <option value="pickleball">Pickleball</option>
+                    </select>
+                </div>
+
+                <div id="sub-type-wrapper" class="mb-4">
+                    <div id="sub-type-pool" class="sub-type-section space-y-2">
+                         <label for="pool-game-mode" class="block text-gray-700 text-sm font-bold mb-1">Pool Game Mode:</label>
+                         <select id="pool-game-mode" name="pool_game_mode" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700">
+                            <option value="">Select Mode</option>
+                            <option value="8ball_1v1">8-Ball (1v1)</option>
+                            <option value="9ball_1v1">9-Ball (1v1)</option>
+                            <option value="8ball_2v2">8-Ball (2v2)</option>
+                            <option value="cutthroat_ffa">Cut-Throat (FFA)</option>
+                            </select>
+                    </div>
+                    <div id="sub-type-board_card" class="sub-type-section space-y-2">
+                         <label for="board-card-scoring" class="block text-gray-700 text-sm font-bold mb-1">Scoring Method:</label>
+                         <select id="board-card-scoring" name="board_card_scoring" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700">
+                            <option value="">Select Scoring</option>
+                            <option value="win_loss_1v1">Win/Loss (1v1)</option>
+                            <option value="win_loss_2v2">Win/Loss (2v2)</option>
+                            <option value="win_loss_team">Win/Loss (Team vs Team)</option>
+                            <option value="points">Points Scored</option>
+                            <option value="placement">Placement (FFA)</option>
+                            </select>
+                    </div>
+                </div>
+
+                <div id="outcome-wrapper">
+                    <div id="outcome-1v1" class="outcome-section space-y-2">
+                        <h3 class="text-lg font-medium text-gray-800">1 vs 1 Outcome</h3>
+                         <label for="winner-1v1" class="block text-gray-700 text-xs font-bold mb-1">Winner:</label>
+                         <select id="winner-1v1" name="winner_player" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700"> <option value="">Select Winner</option> </select>
+                         <label for="loser-1v1" class="block text-gray-700 text-xs font-bold mb-1">Loser:</label>
+                         <select id="loser-1v1" name="loser_player" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700"> <option value="">Select Loser</option> </select>
+                         <label for="draw-1v1" class="flex items-center space-x-2 mt-2">
+                            <input type="checkbox" id="draw-1v1" name="is_draw" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            <span class="text-sm text-gray-700">Record as Draw?</span>
+                        </label>
+                         <div class="mt-2">
+                             <label for="score-1v1" class="block text-gray-700 text-xs font-bold mb-1">Score (Optional):</label>
+                             <input type="text" id="score-1v1" name="score" placeholder="e.g., 11-5, 11-9" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 text-sm">
+                         </div>
+                    </div>
+                    <div id="outcome-2v2" class="outcome-section space-y-2">
+                         <h3 class="text-lg font-medium text-gray-800">2 vs 2 Outcome</h3>
+                         <label for="winner-team-2v2" class="block text-gray-700 text-xs font-bold mb-1">Winning Team:</label>
+                         <select id="winner-team-2v2" name="winner_team" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700"> <option value="">Select Winning Team</option> </select>
+                         <label for="loser-team-2v2" class="block text-gray-700 text-xs font-bold mb-1">Losing Team:</label>
+                         <select id="loser-team-2v2" name="loser_team" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700"> <option value="">Select Losing Team</option> </select>
+                          <label for="draw-2v2" class="flex items-center space-x-2 mt-2">
+                            <input type="checkbox" id="draw-2v2" name="is_draw" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            <span class="text-sm text-gray-700">Record as Draw?</span>
+                        </label>
+                         <div class="mt-2">
+                             <label for="score-2v2" class="block text-gray-700 text-xs font-bold mb-1">Score (Optional):</label>
+                             <input type="text" id="score-2v2" name="score" placeholder="e.g., 21-15, 21-18" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 text-sm">
+                         </div>
+                    </div>
+                    <div id="outcome-ffa" class="outcome-section space-y-2">
+                        <h3 class="text-lg font-medium text-gray-800">Free-for-All Outcome</h3>
+                        <p class="text-sm text-gray-600">Enter players by placement (1st, 2nd, etc.).</p>
+                        <div id="ffa-player-entries">
+                            <div class="flex items-center space-x-2 mb-2"> <span class="font-bold w-8 text-right">1st:</span> <select name="ffa_player_1" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select> </div>
+                            <div class="flex items-center space-x-2 mb-2"> <span class="font-bold w-8 text-right">2nd:</span> <select name="ffa_player_2" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select> </div>
+                        </div>
+                        <button type="button" id="add-ffa-place" class="text-sm text-blue-600 hover:underline mt-2">+ Add Another Place</button>
+                    </div>
+                     <div id="outcome-golf" class="outcome-section space-y-2">
+                        <h3 class="text-lg font-medium text-gray-800">Golf Outcome</h3>
+                        <p class="text-sm text-gray-600">Enter score relative to par for each player.</p>
+                        <div id="golf-player-entries">
+                            <div class="flex items-center space-x-2 mb-2"> <select name="golf_player_1" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select> <input type="number" name="golf_score_1" placeholder="Score (+/- Par)" class="shadow border rounded-lg w-28 py-2 px-3 text-gray-700"> </div>
+                        </div>
+                        <button type="button" id="add-golf-player" class="text-sm text-blue-600 hover:underline mt-2">+ Add Another Player</option>
+                    </div>
+                    <div id="outcome-pickup" class="outcome-section space-y-4">
+                         <h3 class="text-lg font-medium text-gray-800">Pickup Game Outcome</h3>
+                         <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Winning Players:</label>
+                                <div id="pickup-winners-list" class="multi-select-list space-y-1"></div>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Losing Players:</label>
+                                <div id="pickup-losers-list" class="multi-select-list space-y-1"></div>
+                            </div>
+                         </div>
+                          <div class="mt-2">
+                             <label for="score-pickup" class="block text-gray-700 text-xs font-bold mb-1">Score (Optional):</label>
+                             <input type="text" id="score-pickup" name="score" placeholder="e.g., 11-7" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 text-sm">
+                         </div>
+                    </div>
+                    <div id="outcome-boardgame-points" class="outcome-section space-y-2">
+                        <h3 class="text-lg font-medium text-gray-800">Points-Based Game Outcome</h3>
+                        <p class="text-sm text-gray-600">Enter score for each player.</p>
+                        <div id="boardgame-points-entries">
+                            <div class="flex items-center space-x-2 mb-2"> <select name="boardgame_player_1" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select> <input type="number" name="boardgame_score_1" placeholder="Score" class="shadow border rounded-lg w-28 py-2 px-3 text-gray-700"> </div>
+                        </div>
+                        <button type="button" id="add-boardgame-player" class="text-sm text-blue-600 hover:underline mt-2">+ Add Another Player</option>
+                    </div>
+                </div>
+                 <button type="submit" class="mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow">Record Game</button>
+                 <button type="button" class="ml-2 text-gray-600 hover:text-gray-800 cancel-admin-action">Cancel</button>
+             </form>
+        </section>
+
+        <section id="admin-create-tournament-section" class="page-section hidden admin-only bg-white p-6 rounded-lg shadow-lg max-w-lg mx-auto"> <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Create New Tournament</h2> <form id="create-tournament-form"> <div class="mb-4"> <label for="tournament-name" class="block text-gray-700 text-sm font-bold mb-2">Tournament Name:</label> <input type="text" id="tournament-name" name="tournament-name" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" required> </div> <div class="mb-4"> <label for="tournament-game-type-select" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label> <select id="tournament-game-type-select" name="tournament-game-type" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700" required> <option value="">Select Type</option> <option value="1v1">1 vs 1 (General)</option> <option value="2v2">2 vs 2 (General)</option> <option value="ffa">Free-for-All (FFA - General)</option> <option value="team">Team vs Team (General)</option> <option value="pool">Pool</option> <option value="puttpong">PuttPong</option> <option value="golf">Golf</option> <option value="basketball_pickup">Basketball (Pickup)</option> <option value="basketball_horse">Basketball (HORSE)</option> <option value="volleyball_pickup">Volleyball (Pickup)</option> <option value="board_card">Board / Card Game</option> <option value="cornhole">Cornhole</option> <option value="pickleball">Pickleball</option> </select> </div> <div class="mb-4"> <label for="tournament-format" class="block text-gray-700 text-sm font-bold mb-2">Format:</label> <select id="tournament-format" name="tournament-format" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700" required> <option value="">Select Format</option> <option value="single-elim">Single Elimination</option> <option value="double-elim">Double Elimination</option> <option value="round-robin">Round Robin</option> </select> </div> <div class="mb-4"> <label for="tournament-start-date" class="block text-gray-700 text-sm font-bold mb-2">Start Date (Optional):</label> <input type="date" id="tournament-start-date" name="tournament-start-date" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"> </div> <div class="mb-4"> <label class="block text-gray-700 text-sm font-bold mb-2">Participants:</label> <div id="tournament-participants-list" class="h-40 border rounded-lg p-2 overflow-y-auto bg-gray-50"> <p class="text-gray-500 text-sm">Select Game Type to see participants.</p> </div> <p class="text-xs text-gray-500 mt-1">Select participants. Seeding will be based on current rankings for the selected game type.</p> </div> <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow">Create Tournament</button> <button type="button" class="ml-2 text-gray-600 hover:text-gray-800 cancel-admin-action">Cancel</button> </form> </section>
+
+    </div>
+
+    <div id="player-info-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="close-modal-button" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+            <div class="flex items-center space-x-4 mb-6">
+                <img id="modal-player-icon" src="https://placehold.co/80x80/E0E7FF/4F46E5?text=P" alt="Player Icon" class="w-20 h-20 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-3xl font-bold">
+                <div>
+                    <h2 id="modal-player-name" class="text-2xl font-bold text-gray-900">[Player Name]</h2>
+                    <p class="text-sm text-gray-600">Overall Rank: <span id="modal-player-overall-rank" class="font-medium">[Rank]</span> (<span id="modal-player-overall-rating">[Rating]</span>)</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <h3 class="text-lg font-semibold text-indigo-700 border-b pb-1">Game Stats</h3>
+                <div id="modal-player-game-stats" class="text-sm space-y-1">
+                    <p><strong>Cornhole:</strong> Rank #2 (1380 Elo), 15 Wins, 8 Losses</p>
+                    <p><strong>Pickleball (2v2):</strong> Rank #1 (Team: Alice & Charlie - 1320 Elo)</p>
+                    <p><strong>Golf:</strong> Avg Score: +1.5</p>
+                    <p><strong>Pool (FFA):</strong> 3 Wins (1st Place)</p>
+                </div>
+                <h3 class="text-lg font-semibold text-indigo-700 border-b pb-1">Recent Activity</h3>
+                <ul id="modal-player-recent-activity" class="text-sm space-y-2 list-disc list-inside">
+                    <li>Won vs Charlie in Cornhole (1v1) - <span class="text-gray-500">Now</span></li>
+                    <li>Lost vs Bob/Dave in Pickleball (2v2 w/ Alice) - <span class="text-gray-500">1h ago</span></li>
+                    <li>Played Golf (+2) - <span class="text-gray-500">Yesterday</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center text-gray-500 text-sm mt-10 pb-4">
+        &copy; 2025 Friendly Competition Tracker. Built for fun!
+    </footer>
+
+    <script>
+        // --- Basic Page Navigation & Admin Simulation ---
+        const ADMIN_PASSWORD = "admin"; // Simple password for demo purposes
+
+        // --- DOM Element References ---
+        // Use const for elements expected to always exist
+        const sections = document.querySelectorAll('.page-section');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+        const logoutButton = document.getElementById('logout-button');
+        const cancelAdminButtons = document.querySelectorAll('.cancel-admin-action');
+        const gameTypeSelect = document.getElementById('game-type-select');
+        const subTypeWrapper = document.getElementById('sub-type-wrapper');
+        const outcomeWrapper = document.getElementById('outcome-wrapper');
+        const tournamentGameTypeSelect = document.getElementById('tournament-game-type-select');
+        const tournamentParticipantsList = document.getElementById('tournament-participants-list');
+        const rankingsGameFilter = document.getElementById('rankings-game-filter');
+        const rankingTablesContainer = document.getElementById('ranking-tables-container');
+        const playersSectionContent = document.querySelector('#players-section .grid');
+        const playerInfoModal = document.getElementById('player-info-modal');
+        const closeModalButton = document.getElementById('close-modal-button');
+        // Add references for sub-type selects
+        const poolModeSelect = document.getElementById('pool-game-mode');
+        const boardCardScoringSelect = document.getElementById('board-card-scoring');
+
+        // --- Placeholder Data ---
+        const placeholderPlayers = [
+            { id: 'p1', name: 'Alice', overallRank: 1, overallRating: 1350, iconLetter: 'A' },
+            { id: 'p2', name: 'Bob', overallRank: 4, overallRating: 1250, iconLetter: 'B' },
+            { id: 'p3', name: 'Charlie', overallRank: 2, overallRating: 1310, iconLetter: 'C' },
+            { id: 'p4', name: 'Dave', overallRank: 3, overallRating: 1280, iconLetter: 'D' },
+            { id: 'p5', name: 'Eve', overallRank: 5, overallRating: 1200, iconLetter: 'E' }
+        ];
+        const placeholderTeams = [
+            { id: 't1', name: 'Alice & Charlie', players: ['p1', 'p3'], rating: 1320 },
+            { id: 't2', name: 'Bob & Dave', players: ['p2', 'p4'], rating: 1260 },
+            { id: 't3', name: 'Team Alpha', players: [], rating: 1290 },
+            { id: 't4', name: 'Team Beta', players: [], rating: 1250 }
+        ];
+        const placeholderPlayerDetails = {
+             p1: { name: 'Alice', overallRank: 1, overallRating: 1350, iconLetter: 'A', stats: '<strong>Cornhole:</strong> Rank #2 (1380 Elo), 15 Wins, 8 Losses<br><strong>Pickleball (2v2):</strong> Rank #1 (Team: Alice & Charlie - 1320 Elo)<br><strong>Golf:</strong> Avg Score: +1.5', activity: '<li>Won vs Charlie in Cornhole (1v1) - <span class="text-gray-500">Now</span></li><li>Lost vs Bob/Dave in Pickleball (2v2 w/ Charlie) - <span class="text-gray-500">1h ago</span></li><li>Played Golf (+2) - <span class="text-gray-500">Yesterday</span></li>' },
+             p2: { name: 'Bob', overallRank: 4, overallRating: 1250, iconLetter: 'B', stats: '<strong>Pool (FFA):</strong> Rank #1, 3 Wins (1st Place)<br><strong>Pickleball (2v2):</strong> Rank #3 (Team: Bob & Dave - 1260 Elo)<br><strong>Cornhole:</strong> Rank #5 (1190 Elo)', activity: '<li>Won Pool (FFA) - <span class="text-gray-500">15m ago</span></li><li>Won vs Alice/Charlie in Pickleball (2v2 w/ Dave) - <span class="text-gray-500">1h ago</span></li><li>Played Golf (+5) - <span class="text-gray-500">Yesterday</span></li>' },
+             p3: { name: 'Charlie', overallRank: 2, overallRating: 1310, iconLetter: 'C', stats: '<strong>Cornhole:</strong> Rank #1 (1400 Elo)<br><strong>Pickleball (2v2):</strong> Rank #1 (Team: Alice & Charlie - 1320 Elo)<br><strong>Golf:</strong> Avg Score: -1.0', activity: '<li>Lost vs Alice in Cornhole (1v1) - <span class="text-gray-500">Now</span></li><li>Lost vs Bob/Dave in Pickleball (2v2 w/ Alice) - <span class="text-gray-500">1h ago</span></li><li>Played Golf (-1) - <span class="text-gray-500">Yesterday</span></li>' },
+             p4: { name: 'Dave', overallRank: 3, overallRating: 1280, iconLetter: 'D', stats: '<strong>Pickleball (2v2):</strong> Rank #3 (Team: Bob & Dave - 1260 Elo)<br><strong>Pool (FFA):</strong> Rank #2', activity: '<li>Placed 2nd in Pool (FFA) - <span class="text-gray-500">15m ago</span></li><li>Won vs Alice/Charlie in Pickleball (2v2 w/ Bob) - <span class="text-gray-500">1h ago</span></li>' },
+             p5: { name: 'Eve', overallRank: 5, overallRating: 1200, iconLetter: 'E', stats: '<strong>Pool (FFA):</strong> Rank #3<br><strong>Board Games:</strong> 5 Wins', activity: '<li>Placed 3rd in Pool (FFA) - <span class="text-gray-500">15m ago</span></li>' },
+        };
+
+        // --- Utility Functions (with null checks) ---
+        function populateSelect(selectElement, options, valueField = 'id', textField = 'name', prompt = 'Select...') {
+            if (!selectElement) {
+                console.error("populateSelect: Provided selectElement is null or undefined.");
+                return;
+            }
+            selectElement.innerHTML = `<option value="">${prompt}</option>`;
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option[valueField];
+                optionElement.textContent = option[textField];
+                selectElement.appendChild(optionElement);
+            });
+        }
+
+        function populateCheckboxes(containerElement, options, name, valueField = 'id', textField = 'name') {
+            if (!containerElement) {
+                 console.error("populateCheckboxes: Provided containerElement is null or undefined.");
+                 return;
+            }
+            containerElement.innerHTML = '';
+            if (!options || options.length === 0) {
+                containerElement.innerHTML = `<p class="text-gray-500 text-sm">No available ${name} found.</p>`;
+                return;
+            }
+            options.forEach(option => {
+                const label = document.createElement('label');
+                label.className = 'flex items-center space-x-2';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = `${name}[]`;
+                checkbox.value = option[valueField];
+                checkbox.className = 'rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50';
+                label.appendChild(checkbox);
+                const text = document.createElement('span');
+                text.textContent = option[textField];
+                label.appendChild(text);
+                containerElement.appendChild(label);
+            });
+        }
+
+        function populateMultiSelectCheckboxes(containerElement, options, name, valueField = 'id', textField = 'name') {
+            if (!containerElement) {
+                console.error("populateMultiSelectCheckboxes: Provided containerElement is null or undefined.");
+                return;
+            }
+            containerElement.innerHTML = '';
+            if (!options || options.length === 0) {
+                containerElement.innerHTML = `<p class="text-gray-500 text-sm">No available players found.</p>`;
+                return;
+            }
+            options.forEach(option => {
+                const label = document.createElement('label');
+                label.className = 'flex items-center space-x-2 p-1 hover:bg-gray-100 rounded';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = `${name}[]`;
+                checkbox.value = option[valueField];
+                checkbox.className = 'rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50';
+                label.appendChild(checkbox);
+                const text = document.createElement('span');
+                text.className = 'text-sm';
+                text.textContent = option[textField];
+                label.appendChild(text);
+                containerElement.appendChild(label);
+            });
+        }
+
+        // --- Page Section Navigation ---
+        function showSection(targetId) {
+            const cleanTargetId = targetId.startsWith('#') ? targetId.substring(1) : targetId;
+            let sectionFound = false;
+            sections.forEach(section => {
+                if (section.id === cleanTargetId) {
+                    section.classList.remove('hidden');
+                    sectionFound = true;
+                    // If showing players section, populate it
+                    if (cleanTargetId === 'players-section') {
+                        populatePlayersList(); // Ensure this function also checks if playersSectionContent exists
+                    }
+                    // If showing rankings, ensure default is visible if filter is overall
+                    if (cleanTargetId === 'rankings-section') {
+                        updateRankingsVisibility(); // Use a helper
+                    }
+                } else {
+                    section.classList.add('hidden');
+                }
+            });
+             if (sectionFound) {
+                window.scrollTo(0, 0);
+            } else {
+                 console.warn(`Section with ID "${cleanTargetId}" not found. Showing home.`);
+                 showSection('home-section'); // Fallback to home if target is invalid
+            }
+        }
+
+        // --- Player List and Modal Functions ---
+        function populatePlayersList() {
+            if (!playersSectionContent) {
+                console.error("Player section content area not found.");
+                return;
+            }
+            playersSectionContent.innerHTML = ''; // Clear existing list
+            placeholderPlayers.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'player-entry bg-white p-4 rounded-lg shadow hover:shadow-md cursor-pointer flex items-center space-x-3';
+                div.setAttribute('data-player-id', player.id);
+                const iconUrl = `https://placehold.co/40x40/E0E7FF/4F46E5?text=${player.iconLetter}`;
+                div.innerHTML = `
+                    <img src="${iconUrl}" alt="Player Icon ${player.name}" class="w-10 h-10 rounded-full flex-shrink-0" onerror="this.onerror=null; this.src='https://placehold.co/40x40/cccccc/ffffff?text=?';">
+                    <span class="font-medium text-gray-800">${player.name}</span>
+                `;
+                div.addEventListener('click', () => openPlayerModal(player.id));
+                playersSectionContent.appendChild(div);
+            });
+        }
+
+        function openPlayerModal(playerId) {
+            const details = placeholderPlayerDetails[playerId];
+            if (!details || !playerInfoModal) {
+                 console.error("Cannot open player modal: Details or modal element not found.");
+                 return;
+            }
+
+            // Safely get modal elements and populate
+            const iconElement = document.getElementById('modal-player-icon');
+            const nameElement = document.getElementById('modal-player-name');
+            const rankElement = document.getElementById('modal-player-overall-rank');
+            const ratingElement = document.getElementById('modal-player-overall-rating');
+            const statsElement = document.getElementById('modal-player-game-stats');
+            const activityElement = document.getElementById('modal-player-recent-activity');
+
+            if (iconElement) {
+                iconElement.src = `https://placehold.co/80x80/E0E7FF/4F46E5?text=${details.iconLetter}`;
+                iconElement.alt = `Player Icon ${details.name}`;
+            }
+            if (nameElement) nameElement.textContent = details.name;
+            if (rankElement) rankElement.textContent = details.overallRank;
+            if (ratingElement) ratingElement.textContent = details.overallRating;
+            if (statsElement) statsElement.innerHTML = details.stats;
+            if (activityElement) activityElement.innerHTML = details.activity;
+
+            playerInfoModal.classList.add('active');
+        }
+
+        function closePlayerModal() {
+            if (playerInfoModal) {
+                playerInfoModal.classList.remove('active');
+            }
+        }
+
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            // Navigation Links
+            navLinks.forEach(link => {
+                link.addEventListener('click', (event) => {
+                    const targetId = link.getAttribute('data-target');
+                    if (targetId) {
+                         event.preventDefault();
+                         showSection(targetId);
+                         // Optional: Update URL hash for history (can cause issues if not handled carefully)
+                         // try { window.history.pushState(null, '', `#${targetId}`); } catch (e) {}
+                    } else {
+                         console.warn("Nav link missing data-target:", link);
+                    }
+                });
+            });
+
+            // Admin Login/Logout
+            if (loginForm) {
+                loginForm.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    const passwordInput = document.getElementById('password');
+                    if (passwordInput) login(passwordInput.value);
+                });
+            }
+            if (logoutButton) logoutButton.addEventListener('click', logout);
+            cancelAdminButtons.forEach(button => {
+                button.addEventListener('click', () => showSection('admin-section'));
+            });
+
+            // Dynamic Form Logic (Record Game)
+            if (gameTypeSelect) gameTypeSelect.addEventListener('change', updateRecordGameForm);
+            if (poolModeSelect) poolModeSelect.addEventListener('change', updateRecordGameForm);
+            if (boardCardScoringSelect) boardCardScoringSelect.addEventListener('change', updateRecordGameForm);
+
+             // Dynamic Form Logic (Create Tournament)
+             if (tournamentGameTypeSelect) {
+                 tournamentGameTypeSelect.addEventListener('change', updateTournamentParticipants);
+             }
+
+            // Add Player/Place/Score Buttons
+            setupAddPlayerButton('add-ffa-place', 'ffa-player-entries', (num) => `
+                <span class="font-bold w-8 text-right">${num}${num === 1 ? 'st' : num === 2 ? 'nd' : num === 3 ? 'rd' : 'th'}:</span>
+                <select name="ffa_player_${num}" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select>
+            `);
+            setupAddPlayerButton('add-golf-player', 'golf-player-entries', (num) => `
+                <select name="golf_player_${num}" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select>
+                <input type="number" name="golf_score_${num}" placeholder="Score (+/- Par)" class="shadow border rounded-lg w-28 py-2 px-3 text-gray-700">
+            `);
+             setupAddPlayerButton('add-boardgame-player', 'boardgame-points-entries', (num) => `
+                <select name="boardgame_player_${num}" class="shadow border rounded-lg flex-grow py-2 px-3 text-gray-700"> <option value="">Select Player</option> </select>
+                <input type="number" name="boardgame_score_${num}" placeholder="Score" class="shadow border rounded-lg w-28 py-2 px-3 text-gray-700">
+            `);
+
+            // Rankings Filter
+            if (rankingsGameFilter) {
+                rankingsGameFilter.addEventListener('change', updateRankingsVisibility);
+            }
+
+            // Player Modal Close Logic
+            if (closeModalButton) closeModalButton.addEventListener('click', closePlayerModal);
+            if (playerInfoModal) {
+                playerInfoModal.addEventListener('click', (event) => {
+                    // Close only if the click is on the overlay itself, not the content
+                    if (event.target === playerInfoModal) closePlayerModal();
+                });
+            }
+
+            // Form Submission Handlers (Placeholders)
+            handleFormSubmit('add-player-form', 'Player Added!');
+            handleFormSubmit('add-team-form', 'Team Added!');
+            handleFormSubmit('record-game-form', 'Game Recorded!');
+            handleFormSubmit('create-tournament-form', 'Tournament Created!');
+        }
+
+        // --- Admin Login/Logout Logic ---
+        function checkLoginState() {
+            const isLoggedIn = sessionStorage.getItem('isAdminLoggedIn') === 'true';
+            if (isLoggedIn) {
+                document.body.classList.add('admin-logged-in');
+            } else {
+                document.body.classList.remove('admin-logged-in');
+                // Ensure admin sections are hidden if logged out
+                sections.forEach(section => {
+                    if (section.classList.contains('admin-only') && !section.classList.contains('hidden')) {
+                       section.classList.add('hidden');
+                    }
+                });
+            }
+             // Return state for conditional logic during init
+             return isLoggedIn;
+        }
+
+        function login(password) {
+            if (password === ADMIN_PASSWORD) {
+                sessionStorage.setItem('isAdminLoggedIn', 'true');
+                checkLoginState();
+                showSection('admin-section');
+                if(loginError) loginError.classList.add('hidden');
+                const passwordInput = document.getElementById('password');
+                if(passwordInput) passwordInput.value = '';
+            } else {
+                if(loginError) loginError.classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('isAdminLoggedIn');
+            checkLoginState();
+            showSection('home-section');
+        }
+
+        // --- Dynamic Form Logic ---
+        function updateRecordGameForm() {
+            if (!gameTypeSelect || !outcomeWrapper || !subTypeWrapper) return; // Ensure elements exist
+
+            const selectedType = gameTypeSelect.value;
+            const allOutcomeSections = outcomeWrapper.querySelectorAll('.outcome-section');
+            const allSubTypeSections = subTypeWrapper.querySelectorAll('.sub-type-section');
+
+            allOutcomeSections.forEach(sec => sec.classList.remove('active'));
+            allSubTypeSections.forEach(sec => sec.classList.remove('active'));
+
+            let targetOutcomeSectionId = null;
+            let targetSubTypeSectionId = null;
+
+            // 1. Show Sub-Type section
+            switch (selectedType) {
+                case 'pool': targetSubTypeSectionId = 'sub-type-pool'; break;
+                case 'board_card': targetSubTypeSectionId = 'sub-type-board_card'; break;
+            }
+            if (targetSubTypeSectionId) {
+                const subTypeSection = document.getElementById(targetSubTypeSectionId);
+                if (subTypeSection) subTypeSection.classList.add('active');
+            }
+
+            // 2. Determine Outcome section
+            const currentPoolMode = poolModeSelect?.value; // Use optional chaining
+            const currentBoardCardScoring = boardCardScoringSelect?.value;
+
+            switch (selectedType) {
+                case '1v1': case 'puttpong': case 'basketball_horse': case 'cornhole': case 'pickleball': // Default pickleball to 1v1
+                    targetOutcomeSectionId = 'outcome-1v1';
+                    populateSelect(document.getElementById('winner-1v1'), placeholderPlayers);
+                    populateSelect(document.getElementById('loser-1v1'), placeholderPlayers);
+                    break;
+                case '2v2': case 'team':
+                    targetOutcomeSectionId = 'outcome-2v2';
+                    populateSelect(document.getElementById('winner-team-2v2'), placeholderTeams);
+                    populateSelect(document.getElementById('loser-team-2v2'), placeholderTeams);
+                    break;
+                case 'ffa':
+                    targetOutcomeSectionId = 'outcome-ffa';
+                    document.querySelectorAll('#outcome-ffa select').forEach(select => populateSelect(select, placeholderPlayers));
+                    break;
+                case 'golf':
+                     targetOutcomeSectionId = 'outcome-golf';
+                     document.querySelectorAll('#outcome-golf select').forEach(select => populateSelect(select, placeholderPlayers));
+                    break;
+                case 'basketball_pickup': case 'volleyball_pickup':
+                    targetOutcomeSectionId = 'outcome-pickup';
+                    populateMultiSelectCheckboxes(document.getElementById('pickup-winners-list'), placeholderPlayers, 'pickup_winners');
+                    populateMultiSelectCheckboxes(document.getElementById('pickup-losers-list'), placeholderPlayers, 'pickup_losers');
+                    break;
+                case 'pool':
+                    if (currentPoolMode === '8ball_1v1' || currentPoolMode === '9ball_1v1') targetOutcomeSectionId = 'outcome-1v1';
+                    else if (currentPoolMode === '8ball_2v2') targetOutcomeSectionId = 'outcome-2v2';
+                    else if (currentPoolMode === 'cutthroat_ffa') targetOutcomeSectionId = 'outcome-ffa';
+                    // Repopulate selects if outcome type changed
+                    if(targetOutcomeSectionId === 'outcome-1v1') { populateSelect(document.getElementById('winner-1v1'), placeholderPlayers); populateSelect(document.getElementById('loser-1v1'), placeholderPlayers); }
+                    if(targetOutcomeSectionId === 'outcome-2v2') { populateSelect(document.getElementById('winner-team-2v2'), placeholderTeams); populateSelect(document.getElementById('loser-team-2v2'), placeholderTeams); }
+                    if(targetOutcomeSectionId === 'outcome-ffa') { document.querySelectorAll('#outcome-ffa select').forEach(select => populateSelect(select, placeholderPlayers)); }
+                    break;
+                case 'board_card':
+                     if (currentBoardCardScoring === 'win_loss_1v1') targetOutcomeSectionId = 'outcome-1v1';
+                     else if (currentBoardCardScoring === 'win_loss_2v2' || currentBoardCardScoring === 'win_loss_team') targetOutcomeSectionId = 'outcome-2v2';
+                     else if (currentBoardCardScoring === 'points') targetOutcomeSectionId = 'outcome-boardgame-points';
+                     else if (currentBoardCardScoring === 'placement') targetOutcomeSectionId = 'outcome-ffa';
+                     // Repopulate selects if outcome type changed
+                     if(targetOutcomeSectionId === 'outcome-1v1') { populateSelect(document.getElementById('winner-1v1'), placeholderPlayers); populateSelect(document.getElementById('loser-1v1'), placeholderPlayers); }
+                     if(targetOutcomeSectionId === 'outcome-2v2') { populateSelect(document.getElementById('winner-team-2v2'), placeholderTeams); populateSelect(document.getElementById('loser-team-2v2'), placeholderTeams); }
+                     if(targetOutcomeSectionId === 'outcome-boardgame-points') { document.querySelectorAll('#outcome-boardgame-points select').forEach(select => populateSelect(select, placeholderPlayers)); }
+                     if(targetOutcomeSectionId === 'outcome-ffa') { document.querySelectorAll('#outcome-ffa select').forEach(select => populateSelect(select, placeholderPlayers)); }
+                    break;
+            }
+
+            // 3. Show Outcome section
+            if (targetOutcomeSectionId) {
+                const targetSection = document.getElementById(targetOutcomeSectionId);
+                if (targetSection) targetSection.classList.add('active');
+                else console.error(`Outcome section with ID "${targetOutcomeSectionId}" not found.`);
+            }
+        }
+
+        function updateTournamentParticipants() {
+            if (!tournamentGameTypeSelect || !tournamentParticipantsList) return;
+            const selectedType = tournamentGameTypeSelect.value;
+            let participants = [];
+            let participantType = 'players';
+            switch (selectedType) {
+                case '1v1': case 'ffa': case 'golf': case 'basketball_horse': case 'cornhole': case 'pool': case 'puttpong': case 'board_card':
+                    participants = placeholderPlayers; participantType = 'participants'; break;
+                case '2v2': case 'team': case 'pickleball':
+                    participants = placeholderTeams; participantType = 'participants'; break;
+                case 'basketball_pickup': case 'volleyball_pickup':
+                    participants = placeholderPlayers; participantType = 'participants'; console.warn("Pickup game participants need special handling."); break;
+                default: participants = []; break;
+            }
+            if (participants.length > 0) populateCheckboxes(tournamentParticipantsList, participants, participantType);
+            else tournamentParticipantsList.innerHTML = '<p class="text-gray-500 text-sm">Select a valid Game Type to see participants.</p>';
+        }
+
+
+        // Add Player/Place/Score Button Logic
+        function setupAddPlayerButton(buttonId, containerId, entryHtmlGenerator) {
+            const addButton = document.getElementById(buttonId);
+            const container = document.getElementById(containerId);
+            if (addButton && container) {
+                addButton.addEventListener('click', () => {
+                    const currentEntries = container.querySelectorAll('.flex, .player-entry-row').length;
+                    const nextEntryNum = currentEntries + 1;
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center space-x-2 mb-2 player-entry-row';
+                    div.innerHTML = entryHtmlGenerator(nextEntryNum);
+                    div.querySelectorAll('select').forEach(select => populateSelect(select, placeholderPlayers)); // Populate new selects
+                    container.appendChild(div);
+                });
+            } else {
+                // Don't log error here, as not all buttons exist on every form state
+                // console.error(`Setup failed for button ${buttonId} or container ${containerId}`);
+            }
+        }
+
+        // --- Rankings Filter Logic ---
+        function updateRankingsVisibility() {
+            if (!rankingsGameFilter || !rankingTablesContainer) return;
+            const selectedGame = rankingsGameFilter.value;
+            const allTables = rankingTablesContainer.querySelectorAll('.ranking-table');
+            allTables.forEach(table => table.classList.remove('active'));
+
+            const targetTableId = `ranking-table-${selectedGame}`;
+            const targetTable = document.getElementById(targetTableId);
+
+            if (targetTable) {
+                targetTable.classList.add('active');
+                // TODO: Fetch and display actual data for selectedGame
+                console.log(`Should display rankings for: ${selectedGame}`);
+            } else {
+                console.warn(`Ranking table with ID "${targetTableId}" not found. Showing overall.`);
+                const overallTable = document.getElementById('ranking-table-overall');
+                if(overallTable) overallTable.classList.add('active'); // Fallback to overall
+            }
+        }
+
+        // --- Form Submission Handlers (Placeholder) ---
+        function handleFormSubmit(formId, successMessage) {
+             const form = document.getElementById(formId);
+             if (form) {
+                 form.addEventListener('submit', (event) => {
+                     event.preventDefault();
+                     // Basic validation example: Check if required selects have values
+                     let isValid = true;
+                     form.querySelectorAll('select[required]').forEach(select => {
+                         if (!select.value) {
+                             isValid = false;
+                             select.classList.add('border-red-500'); // Highlight invalid field
+                         } else {
+                              select.classList.remove('border-red-500');
+                         }
+                     });
+                     // Add more validation as needed
+
+                     if (!isValid) {
+                         alert("Please fill out all required fields.");
+                         return;
+                     }
+
+                     console.log(`Form submitted: ${formId}`, Object.fromEntries(new FormData(form)));
+                     alert(`${successMessage} (Data logged to console)`);
+
+                     if (formId !== 'login-form') {
+                          showSection('admin-section');
+                          form.reset(); // Reset form fields
+                          // Reset dynamic sections after successful submission
+                          if (formId === 'record-game-form' && outcomeWrapper && subTypeWrapper) {
+                               outcomeWrapper.querySelectorAll('.outcome-section').forEach(sec => sec.classList.remove('active'));
+                               subTypeWrapper.querySelectorAll('.sub-type-section').forEach(sec => sec.classList.remove('active'));
+                               updateRecordGameForm(); // Re-initialize form state
+                          } else if (formId === 'create-tournament-form' && tournamentParticipantsList) {
+                               tournamentParticipantsList.innerHTML = '<p class="text-gray-500 text-sm">Select Game Type to see participants.</p>';
+                          }
+                     }
+                 });
+             }
+        }
+
+        // --- Initialization ---
+        function initializeApp() {
+            console.log("Initializing App...");
+            const isLoggedIn = checkLoginState(); // Check login state first
+
+            // Populate static selects that don't depend on dynamic choices
+            populateSelect(document.getElementById('team-player1'), placeholderPlayers);
+            populateSelect(document.getElementById('team-player2'), placeholderPlayers);
+
+            setupEventListeners(); // Setup all event listeners
+
+            // Determine initial section based on hash or default to home
+            const initialHash = window.location.hash;
+            let navigatedByHash = false;
+            if (initialHash && initialHash !== '#') {
+                // Try to find a nav link corresponding to the hash
+                const targetLink = document.querySelector(`.nav-link[href="${initialHash}"]`);
+                if (targetLink) {
+                     const targetId = targetLink.getAttribute('data-target');
+                     const targetSection = document.getElementById(targetId);
+                     const isAdminOnly = targetSection?.classList.contains('admin-only');
+
+                     // Navigate if section exists AND (it's not admin-only OR user is logged in)
+                     if (targetId && targetSection && (!isAdminOnly || isLoggedIn)) {
+                        showSection(targetId);
+                        navigatedByHash = true;
+                     } else if (targetId && targetSection && isAdminOnly && !isLoggedIn) {
+                         console.log("Blocked hash navigation to admin section while logged out.");
+                         // Stay on default (home) or redirect to login? Let's default to home.
+                     }
+                }
+            }
+
+            // Default to home if no valid hash navigation occurred
+            if (!navigatedByHash) {
+                 // Check if any section is currently visible (e.g., if browser restored state)
+                 const visibleSection = document.querySelector('.page-section:not(.hidden)');
+                 if (!visibleSection) {
+                    showSection('home-section');
+                 } else {
+                     // A section is already visible, potentially due to browser back/forward cache.
+                     // Ensure players list is populated if it's the players section.
+                     if (visibleSection.id === 'players-section') {
+                         populatePlayersList();
+                     }
+                     // Ensure rankings filter reflects visible table if it's the rankings section.
+                     if (visibleSection.id === 'rankings-section') {
+                         updateRankingsVisibility();
+                     }
+                 }
+            }
+
+            // Initial setup for the record game form
+            updateRecordGameForm();
+            console.log("App Initialized.");
+        }
+
+        // --- Run Initialization ---
+        // Use DOMContentLoaded to ensure HTML is parsed before running scripts
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+    </script>
+
+</body>
+</html>

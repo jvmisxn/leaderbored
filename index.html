@@ -14,36 +14,54 @@
         a, button, .player-entry { transition: all 0.2s ease-in-out; }
 
         /* --- Admin visibility control --- */
+        /* Default: Hide all admin-only elements */
         .admin-only { display: none; }
-        body.admin-logged-in #admin-link { display: inline-flex; }
-        body.admin-logged-in #logout-button { display: inline-flex; }
-        body.admin-logged-in td .admin-only { display: inline-flex; gap: 0.5rem; vertical-align: middle; }
-        body.admin-logged-in #player-info-modal .admin-only { display: block; }
+
+        /* When logged in, show SPECIFIC admin elements */
+        /* Use 'inline-flex' for buttons, 'block' or 'flex' for divs as appropriate */
+        body.admin-logged-in #logout-button { display: inline-flex; } /* Logout button in nav */
+        body.admin-logged-in td .admin-only { display: inline-flex; gap: 0.5rem; vertical-align: middle; } /* Action buttons in table cells */
+        body.admin-logged-in #player-info-modal .admin-only { display: block; } /* Container for edit/delete buttons in player modal */
+        body.admin-logged-in .contextual-admin-button-container .admin-only { display: inline-flex; } /* Contextual buttons on pages */
+
+        /* Hide public-only elements when admin is logged in */
         body.admin-logged-in .public-only { display: none; }
         /* --- End Admin visibility control --- */
 
-        .outcome-section, .sub-type-section { display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; }
-        .outcome-section.active, .sub-type-section.active { display: block; }
+        /* Modal styles */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
         .modal-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
         .modal-content { background-color: white; padding: 1.5rem 2rem 2rem 2rem; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); max-width: 95%; width: 550px; max-height: 90vh; overflow-y: auto; position: relative; transform: translateY(-20px) scale(0.98); transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; }
         .modal-overlay.active .modal-content { transform: translateY(0) scale(1); opacity: 1; }
         .modal-close-button { position: absolute; top: 0.5rem; right: 0.75rem; background: none; border: none; font-size: 1.75rem; font-weight: bold; color: #6b7280; cursor: pointer; padding: 0.25rem; line-height: 1; }
         .modal-close-button:hover { color: #1f2937; }
+
+        /* Ranking table visibility */
         .ranking-table { display: none; }
         .ranking-table.active { display: block; }
+
+        /* Multi-select styling (if used) */
         .multi-select-list { max-height: 150px; overflow-y: auto; border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.5rem; background-color: #f9fafb; }
+
+        /* Table cell padding and wrapping */
         td, th { white-space: nowrap; padding-left: 1rem; padding-right: 1rem; padding-top: 0.75rem; padding-bottom: 0.75rem; vertical-align: middle; }
-        td { white-space: normal; }
+        td { white-space: normal; } /* Allow text wrap in data cells */
+
+        /* Validation */
         .border-red-500 { border-color: #ef4444; }
+
+        /* Player Modal Edit Mode */
         .modal-editing .editable-field { display: none; }
         .modal-editing .editing-field { display: block; }
         .editing-field { display: none; }
         .modal-editing .edit-mode-controls { display: inline-flex; }
         .edit-mode-controls { display: none; }
         .modal-editing .view-mode-controls { display: none; }
-        .admin-content-panel { display: none; margin-top: 2rem; }
-        .admin-content-panel.active { display: block; }
+
+        /* Admin Content Panel Visibility (No longer needed) */
+        /* .admin-content-panel { display: none; margin-top: 2rem; } */
+        /* .admin-content-panel.active { display: block; } */
+
     </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-white to-cyan-50 text-gray-800">
@@ -57,7 +75,6 @@
                 <a href="#players" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="players-section">Players</a>
                 <a href="#tournaments" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="tournaments-section">Tournaments</a>
                 <a href="#login" id="login-link" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium public-only nav-link shadow hover:shadow-md" data-target="login-section">Admin Login</a>
-                <a href="#admin" id="admin-link" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium admin-only nav-link shadow hover:shadow-md" data-target="admin-section">Admin Panel</a>
                 <button id="logout-button" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium admin-only shadow hover:shadow-md">Logout</button>
             </div>
         </div>
@@ -138,7 +155,14 @@
         </section>
 
         <section id="results-section" class="page-section hidden space-y-8">
-            <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">All Game Results</h1>
+            <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
+                 <h1 class="text-4xl font-bold text-gray-900">All Game Results</h1>
+                 <div class="contextual-admin-button-container">
+                    <button id="open-record-game-modal-btn" class="admin-only bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                        🏆 Record Game Result
+                    </button>
+                 </div>
+            </div>
             <div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
                 <table class="w-full text-left table-auto text-base">
                     <thead>
@@ -156,23 +180,35 @@
         </section>
 
         <section id="players-section" class="page-section hidden space-y-8">
-             <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Players</h1>
+             <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
+                 <h1 class="text-4xl font-bold text-gray-900">Players</h1>
+                 <div class="contextual-admin-button-container">
+                     <button id="open-add-player-modal-btn" class="admin-only bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                         ➕ Add New Player
+                     </button>
+                 </div>
+             </div>
              <div id="players-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                  <p class="text-gray-500 col-span-full text-center">Loading players...</p>
              </div>
         </section>
 
         <section id="tournaments-section" class="page-section hidden space-y-8">
-             <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Tournaments</h1>
+             <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
+                 <h1 class="text-4xl font-bold text-gray-900">Tournaments</h1>
+                  <div class="contextual-admin-button-container">
+                    <button id="open-create-tournament-modal-btn" class="admin-only bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                        ➕ Create New Tournament
+                    </button>
+                 </div>
+             </div>
              <div class="bg-white p-8 rounded-xl shadow-lg">
                  <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Tournament List</h2>
                  <div id="tournaments-list-full" class="space-y-6">
                      <p class="text-gray-500">Loading tournaments...</p>
                  </div>
              </div>
-             <div class="admin-only mt-6"> <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 admin-nav-button" data-target="admin-content-create-tournament"> Create New Tournament </button>
-             </div>
-        </section>
+             </section>
 
         <section id="tournament-detail-section" class="page-section hidden space-y-8">
              <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Tournament: <span id="tournament-detail-name">[Tournament Name]</span></h1>
@@ -201,78 +237,7 @@
              </div>
         </section>
 
-        <section id="admin-section" class="page-section hidden admin-only space-y-8">
-            <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Admin Panel</h1>
-            <p class="w-full text-green-700 bg-green-100 border border-green-300 p-4 rounded-lg text-center font-medium mb-6">You are logged in as Admin.</p>
-            <div id="admin-button-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                    <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Add / Record</h2>
-                    <div class="space-y-4">
-                        <button class="w-full text-left bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md admin-nav-button" data-target="admin-content-add-player">➕ Add New Player</button>
-                        <button class="w-full text-left bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md admin-nav-button" data-target="admin-content-add-team">➕ Add New Team</button>
-                        <button id="open-record-game-modal-btn" class="w-full text-left bg-green-100 hover:bg-green-200 text-green-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md">🏆 Record Game Result</button>
-                    </div>
-                </div>
-                <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                    <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Manage</h2>
-                    <div class="space-y-4">
-                        <button class="w-full text-left bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md admin-nav-button" data-target="admin-content-manage-teams">✏️ Manage Teams</button>
-                    </div>
-                </div>
-                <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                    <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Tournaments</h2>
-                    <div class="space-y-4">
-                        <button class="w-full text-left bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md admin-nav-button" data-target="admin-content-create-tournament">➕ Create New Tournament</button>
-                        <button class="w-full text-left bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:shadow-md admin-nav-button" data-target="admin-content-manage-tournaments">✏️ Manage Existing Tournament</button>
-                    </div>
-                </div>
-            </div>
-            <div id="admin-content-container">
-                <div id="admin-content-add-player" class="admin-content-panel hidden bg-white p-8 rounded-xl shadow-xl max-w-lg mx-auto">
-                    <h2 class="text-3xl font-semibold mb-6 text-indigo-700">Add New Player</h2>
-                    <form id="add-player-form">
-                        <div class="mb-5"> <label for="player-name" class="block text-gray-700 text-sm font-bold mb-2">Player Name:</label> <input type="text" id="player-name" name="player-name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required> </div>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md">Add Player</button>
-                        <button type="button" class="ml-3 text-gray-600 hover:text-gray-900 font-medium admin-back-button">Cancel</button>
-                    </form>
-                </div>
-                 <div id="admin-content-add-team" class="admin-content-panel hidden bg-white p-8 rounded-xl shadow-xl max-w-lg mx-auto">
-                     <h2 class="text-3xl font-semibold mb-6 text-indigo-700">Add New Team (for 2v2)</h2>
-                     <form id="add-team-form">
-                         <div class="mb-5"> <label for="team-name" class="block text-gray-700 text-sm font-bold mb-2">Team Name:</label> <input type="text" id="team-name" name="team-name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" required> </div>
-                         <div class="mb-5"> <label for="team-player1" class="block text-gray-700 text-sm font-bold mb-2">Player 1:</label> <select id="team-player1" name="team-player1" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Player</option> </select> </div>
-                         <div class="mb-5"> <label for="team-player2" class="block text-gray-700 text-sm font-bold mb-2">Player 2:</label> <select id="team-player2" name="team-player2" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Player</option> </select> </div>
-                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md">Add Team</button>
-                         <button type="button" class="ml-3 text-gray-600 hover:text-gray-900 font-medium admin-back-button">Cancel</button>
-                     </form>
-                </div>
-                 <div id="admin-content-manage-teams" class="admin-content-panel hidden bg-white p-8 rounded-xl shadow-xl max-w-lg mx-auto">
-                    <h2 class="text-3xl font-semibold mb-6 text-indigo-700">Manage Teams</h2>
-                    <p class="text-gray-500">Team management functionality not yet implemented.</p>
-                    <button type="button" class="mt-4 text-gray-600 hover:text-gray-900 font-medium admin-back-button">Back to Admin Panel</button>
-                </div>
-                <div id="admin-content-create-tournament" class="admin-content-panel hidden bg-white p-8 rounded-xl shadow-xl max-w-lg mx-auto">
-                     <h2 class="text-3xl font-semibold mb-6 text-indigo-700">Create New Tournament</h2>
-                     <form id="create-tournament-form">
-                         <div class="mb-5"> <label for="tournament-name" class="block text-gray-700 text-sm font-bold mb-2">Tournament Name:</label> <input type="text" id="tournament-name" name="tournament-name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" required> </div>
-                         <div class="mb-5"> <label for="tournament-game-type-select" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label> <select id="tournament-game-type-select" name="tournament-game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Type</option> <option value="1v1">1 vs 1 (General)</option> <option value="2v2">2 vs 2 (General)</option> <option value="ffa">Free-for-All (FFA - General)</option> <option value="team">Team vs Team (General)</option> <option value="pool">Pool</option> <option value="puttpong">PuttPong</option> <option value="golf">Golf</option> <option value="basketball_pickup">Basketball (Pickup)</option> <option value="basketball_horse">Basketball (HORSE)</option> <option value="volleyball_pickup">Volleyball (Pickup)</option> <option value="board_card">Board / Card Game</option> <option value="cornhole">Cornhole</option> <option value="pickleball">Pickleball</option> </select> </div>
-                         <div class="mb-5"> <label for="tournament-format" class="block text-gray-700 text-sm font-bold mb-2">Format:</label> <select id="tournament-format" name="tournament-format" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Format</option> <option value="single-elim">Single Elimination</option> <option value="double-elim">Double Elimination</option> <option value="round-robin">Round Robin</option> </select> </div>
-                         <div class="mb-5"> <label for="tournament-start-date" class="block text-gray-700 text-sm font-bold mb-2">Start Date (Optional):</label> <input type="date" id="tournament-start-date" name="tournament-start-date" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700"> </div>
-                         <div class="mb-5"> <label class="block text-gray-700 text-sm font-bold mb-2">Participants:</label> <div id="tournament-participants-list" class="h-40 border rounded-lg p-3 overflow-y-auto bg-gray-50 space-y-2"> <p class="text-gray-500 text-sm">Select Game Type to see participants.</p> </div> <p class="text-xs text-gray-500 mt-1">Select participants. Seeding will be based on current rankings for the selected game type.</p> </div>
-                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md">Create Tournament</button>
-                         <button type="button" class="ml-3 text-gray-600 hover:text-gray-900 font-medium admin-back-button">Cancel</button>
-                     </form>
-                </div>
-                <div id="admin-content-manage-tournaments" class="admin-content-panel hidden space-y-8">
-                    <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
-                         <h1 class="text-4xl font-bold text-gray-900">Manage Tournaments</h1>
-                         <button class="text-sm text-gray-600 hover:text-gray-900 font-medium admin-back-button">&larr; Back to Admin Panel</button>
-                    </div>
-                    <div id="manage-tournaments-list-container" class="bg-white p-6 rounded-xl shadow-lg">
-                         <p class="text-gray-500">Loading tournaments...</p>
-                    </div>
-                </div>
-            </div> </section> </div> <div id="player-info-modal" class="modal-overlay">
+        </div> <div id="player-info-modal" class="modal-overlay">
         <div class="modal-content">
              <button id="close-player-modal-btn" class="modal-close-button">&times;</button>
              <div class="flex items-start space-x-6">
@@ -315,6 +280,13 @@
     <div id="record-game-modal" class="modal-overlay">
         </div>
 
+    <div id="add-player-modal" class="modal-overlay">
+        </div>
+
+    <div id="create-tournament-modal" class="modal-overlay">
+        </div>
+
+
     <footer class="text-center text-gray-600 text-base mt-12 mb-6"> &copy; 2025 LeaderBored. Keep it friendly!
     </footer>
 
@@ -328,11 +300,13 @@
         // --- DOM Element References (Assigned in initializeApp) ---
         let sections, navLinks, loginForm, loginError, logoutButton,
             recordGameModal, openRecordGameModalBtn,
+            addPlayerModal, openAddPlayerModalBtn, // New elements for Add Player modal
+            createTournamentModal, openCreateTournamentModalBtn, // New elements for Create Tournament modal
             tournamentGameTypeSelect, tournamentParticipantsList, rankingsGameFilter, rankingTablesContainer,
             resultsTableBody,
             playersGrid,
             playerInfoModal,
-            adminSection, adminButtonGrid, adminContentContainer, adminNavButtons, adminContentPanels, adminBackButtons,
+            // Removed admin panel specific elements
             manageTournamentsListContainer;
 
         // --- Firebase Initialization ---
@@ -367,30 +341,29 @@
             loginForm = document.getElementById('login-form');
             loginError = document.getElementById('login-error');
             logoutButton = document.getElementById('logout-button');
+            // Modals and their trigger buttons
             recordGameModal = document.getElementById('record-game-modal');
             openRecordGameModalBtn = document.getElementById('open-record-game-modal-btn');
-            tournamentGameTypeSelect = document.getElementById('tournament-game-type-select');
-            tournamentParticipantsList = document.getElementById('tournament-participants-list');
+            addPlayerModal = document.getElementById('add-player-modal');
+            openAddPlayerModalBtn = document.getElementById('open-add-player-modal-btn');
+            createTournamentModal = document.getElementById('create-tournament-modal');
+            openCreateTournamentModalBtn = document.getElementById('open-create-tournament-modal-btn');
+            // Other elements
+            tournamentGameTypeSelect = document.getElementById('tournament-game-type-select'); // Still needed for Create Tournament Modal
+            tournamentParticipantsList = document.getElementById('tournament-participants-list'); // Still needed for Create Tournament Modal
             rankingsGameFilter = document.getElementById('rankings-game-filter');
             rankingTablesContainer = document.getElementById('ranking-tables-container');
             resultsTableBody = document.getElementById('results-table-body');
             playersGrid = document.querySelector('#players-section #players-grid');
             playerInfoModal = document.getElementById('player-info-modal');
-            adminSection = document.getElementById('admin-section');
-            adminButtonGrid = document.getElementById('admin-button-grid'); // Grid inside admin section
-            adminContentContainer = document.getElementById('admin-content-container'); // Container for sub-panels
-            adminNavButtons = document.querySelectorAll('.admin-nav-button'); // Buttons to show sub-panels
-            adminContentPanels = document.querySelectorAll('.admin-content-panel'); // The sub-panels themselves
-            adminBackButtons = document.querySelectorAll('.admin-back-button'); // Back buttons in sub-panels
-            manageTournamentsListContainer = document.getElementById('manage-tournaments-list-container');
+            manageTournamentsListContainer = document.getElementById('manage-tournaments-list-container'); // Still needed if we keep manage tournaments view
 
-            // Add checks
+            // Remove checks for admin panel elements
             if (!resultsTableBody) console.error("Critical Error: Results table body (#results-table-body) not found!");
             if (!playersGrid) console.error("Critical Error: Players grid container (#players-grid) not found!");
-            if (!adminSection) console.error("Critical Error: Admin section (#admin-section) not found!");
-            if (!adminButtonGrid) console.error("Critical Error: Admin button grid (#admin-button-grid) not found!");
-            if (!adminContentContainer) console.error("Critical Error: Admin content container (#admin-content-container) not found!");
-
+            if (!openRecordGameModalBtn) console.warn("Record Game button not found.");
+            if (!openAddPlayerModalBtn) console.warn("Add Player button not found.");
+            if (!openCreateTournamentModalBtn) console.warn("Create Tournament button not found.");
         }
 
 
@@ -421,10 +394,6 @@
             sections.forEach(section => {
                 if (section && section.id) {
                      section.classList.add('hidden');
-                     // Also ensure admin sub-panels are hidden when leaving admin section
-                     if (section.id === 'admin-section') {
-                        adminContentPanels?.forEach(panel => panel.classList.add('hidden', 'active'));
-                     }
                 }
             });
 
@@ -435,10 +404,10 @@
                 targetSection.classList.remove('hidden'); // Make section visible
                 sectionFound = true;
 
-                // If navigating TO the admin section, ensure the overview is shown first
-                if (cleanTargetId === 'admin-section') {
-                    showAdminOverview(); // Reset to show button grid, hide content panels
-                }
+                // Remove admin panel specific logic
+                // if (cleanTargetId === 'admin-section') {
+                //     showAdminOverview();
+                // }
 
                 // Populate dynamic content (if DB is ready)
                 if (db) {
@@ -447,7 +416,6 @@
                     if (cleanTargetId === 'results-section' && resultsTableBody) populateResultsTable();
                     if (cleanTargetId === 'players-section' && playersGrid) populatePlayersList();
                     if (cleanTargetId === 'tournaments-section' && document.getElementById('tournaments-list-full')) populateTournamentsList('tournaments-list-full');
-                    // Note: Admin panel sub-content is populated when showAdminContentPanel is called
                 } else {
                     console.warn(`[NAV] DB not ready, skipping population for section ${cleanTargetId}`);
                 }
@@ -470,53 +438,9 @@
             }
         }
 
-        // --- Admin Panel Navigation ---
-        function showAdminContentPanel(targetPanelId) {
-            if (!adminButtonGrid || !adminContentPanels || !adminContentContainer) {
-                console.error("Admin navigation elements not found (grid, panels, or container).");
-                return;
-            }
-            console.log(`[ADMIN NAV] Showing content panel: ${targetPanelId}`);
-            adminButtonGrid.classList.add('hidden'); // Hide the main buttons
-            adminContentPanels.forEach(panel => panel.classList.add('hidden')); // Hide all sub-panels
-
-            const targetPanel = document.getElementById(targetPanelId);
-            if (targetPanel && targetPanel.classList.contains('admin-content-panel')) {
-                targetPanel.classList.remove('hidden'); // Show the target sub-panel
-                targetPanel.classList.add('active'); // Mark as active (if needed for styling)
-                console.log(`[ADMIN NAV] Panel ${targetPanelId} displayed.`);
-                // Populate content specific to the panel (if DB ready)
-                if (db) {
-                    if (targetPanelId === 'admin-content-manage-tournaments' && manageTournamentsListContainer) populateManageTournamentsList();
-                    if (targetPanelId === 'admin-content-add-team') populateAddTeamDropdowns();
-                    if (targetPanelId === 'admin-content-create-tournament') populateTournamentParticipantsSelect();
-                } else {
-                     console.warn(`[ADMIN PANEL] DB not ready, skipping population for panel ${targetPanelId}`);
-                }
-
-            } else {
-                console.warn(`Admin content panel with ID "${targetPanelId}" not found or invalid.`);
-                showAdminOverview(); // Fallback to overview if target doesn't exist
-            }
-        }
-
-        // Shows the main admin button grid, hides sub-panels
-        function showAdminOverview() {
-            // Ensure elements are available before manipulating them
-            if (!adminButtonGrid || !adminContentPanels) {
-                 console.error("Admin grid or content panels not found in showAdminOverview");
-                 return;
-            }
-            console.log("[ADMIN NAV] Showing admin overview (button grid).");
-            // Hide all sub-panels first
-            adminContentPanels.forEach(panel => {
-                panel.classList.add('hidden');
-                panel.classList.remove('active');
-            });
-            // Explicitly remove 'hidden' from the button grid
-            adminButtonGrid.classList.remove('hidden');
-            console.log("[ADMIN NAV] Admin button grid should now be visible (hidden class removed).");
-        }
+        // --- Admin Panel Navigation REMOVED ---
+        // function showAdminContentPanel(targetPanelId) { ... }
+        // function showAdminOverview() { ... }
 
 
         // --- Player List and Modal Functions (Firestore) ---
@@ -527,7 +451,7 @@
                  if (!db) throw new Error("Firestore database (db) is not initialized.");
                  const snapshot = await db.collection('players').orderBy('name').get();
                  if (snapshot.empty) {
-                     playersGrid.innerHTML = '<p class="text-gray-500 col-span-full text-center">No players found. Add players via Admin Panel.</p>';
+                     playersGrid.innerHTML = '<p class="text-gray-500 col-span-full text-center">No players found. Add players via Admin Login.</p>'; // Updated message
                      return;
                  }
                  playersGrid.innerHTML = ''; // Clear loading
@@ -613,7 +537,7 @@
                 // Fetch games involving the player
                 const gamesQuery = db.collection('games')
                                     .where('participants', 'array-contains', playerId)
-                                    // .orderBy('date_played', 'desc') // <<< Temporarily removed for testing
+                                    // .orderBy('date_played', 'desc') // <<< Temporarily removed for testing - Needs Firestore Index
                                     .limit(limit);
                 const snapshot = await gamesQuery.get();
 
@@ -689,7 +613,6 @@
         function openRecordGameModal() {
             if (!recordGameModal || !db) { console.error("Record game modal or DB not ready."); return; }
 
-            // Define the HTML structure for the modal content (simple 1v1 Win/Loss/Draw)
             const modalContentHTML = `
                 <div class="modal-content">
                     <button id="close-record-game-modal-btn" class="modal-close-button">&times;</button>
@@ -736,9 +659,8 @@
                     </form>
                 </div>`;
 
-            recordGameModal.innerHTML = modalContentHTML; // Inject the HTML
+            recordGameModal.innerHTML = modalContentHTML;
 
-            // Get newly added elements inside the modal
             const closeButton = recordGameModal.querySelector('#close-record-game-modal-btn');
             const cancelButton = recordGameModal.querySelector('#cancel-record-game-modal-btn');
             const modalForm = recordGameModal.querySelector('#record-game-form');
@@ -748,28 +670,19 @@
             const winnerLabel = recordGameModal.querySelector('label[for="winner_player"]');
             const loserLabel = recordGameModal.querySelector('label[for="loser_player"]');
 
-
-            // Add event listeners for modal controls
             if (closeButton) closeButton.addEventListener('click', closeRecordGameModal);
             if (cancelButton) cancelButton.addEventListener('click', closeRecordGameModal);
             if (modalForm) modalForm.addEventListener('submit', handleRecordGameSubmit);
 
-            // Handle Draw Checkbox state change
              if(drawCheckbox && winnerLabel && loserLabel && winnerSelect && loserSelect) {
                  drawCheckbox.addEventListener('change', (e) => {
                      const isChecked = e.target.checked;
                      winnerLabel.textContent = isChecked ? 'Player 1:' : 'Winner:';
                      loserLabel.textContent = isChecked ? 'Player 2:' : 'Loser:';
-                     // Make selects non-required if draw is checked (optional, depends on desired validation)
-                     // winnerSelect.required = !isChecked;
-                     // loserSelect.required = !isChecked;
                  });
              }
 
-            // Populate player dropdowns
             populateRecordGameDropdowns();
-
-            // Show the modal
             recordGameModal.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
@@ -777,10 +690,111 @@
         function closeRecordGameModal() {
             if (recordGameModal) {
                 recordGameModal.classList.remove('active');
-                recordGameModal.innerHTML = ''; // Clear content
+                recordGameModal.innerHTML = '';
                 document.body.style.overflow = '';
             }
         }
+
+        // --- Add Player Modal Functions (NEW) ---
+        function openAddPlayerModal() {
+            if (!addPlayerModal || !db) { console.error("Add Player modal or DB not ready."); return; }
+
+            const modalContentHTML = `
+                <div class="modal-content">
+                    <button id="close-add-player-modal-btn" class="modal-close-button">&times;</button>
+                    <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Add New Player</h2>
+                    <form id="add-player-form">
+                        <div class="mb-5">
+                            <label for="modal-player-name" class="block text-gray-700 text-sm font-bold mb-2">Player Name:</label>
+                            <input type="text" id="modal-player-name" name="player-name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                         <div class="mb-5">
+                            <label for="modal-player-icon-url" class="block text-gray-700 text-sm font-bold mb-2">Icon URL (Optional):</label>
+                            <input type="url" id="modal-player-icon-url" name="player-icon-url" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://example.com/icon.png">
+                        </div>
+                        <div class="mt-6 flex justify-end space-x-3">
+                            <button type="button" id="cancel-add-player-modal-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-5 rounded-lg">Cancel</button>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-lg">Add Player</button>
+                        </div>
+                    </form>
+                </div>`;
+
+            addPlayerModal.innerHTML = modalContentHTML;
+
+            const closeButton = addPlayerModal.querySelector('#close-add-player-modal-btn');
+            const cancelButton = addPlayerModal.querySelector('#cancel-add-player-modal-btn');
+            const modalForm = addPlayerModal.querySelector('#add-player-form');
+
+            if (closeButton) closeButton.addEventListener('click', closeAddPlayerModal);
+            if (cancelButton) cancelButton.addEventListener('click', closeAddPlayerModal);
+            if (modalForm) {
+                // Use a specific handler for this modal's form submission
+                modalForm.addEventListener('submit', handleAddPlayerSubmit);
+            }
+
+            addPlayerModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAddPlayerModal() {
+             if (addPlayerModal) {
+                addPlayerModal.classList.remove('active');
+                addPlayerModal.innerHTML = ''; // Clear content
+                document.body.style.overflow = '';
+            }
+        }
+
+        // --- Create Tournament Modal Functions (NEW) ---
+        function openCreateTournamentModal() {
+             if (!createTournamentModal || !db) { console.error("Create Tournament modal or DB not ready."); return; }
+
+             // Reuse the form structure, just wrap it in modal content
+             const modalContentHTML = `
+                <div class="modal-content">
+                    <button id="close-create-tournament-modal-btn" class="modal-close-button">&times;</button>
+                    <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Create New Tournament</h2>
+                    <form id="create-tournament-form">
+                         <div class="mb-5"> <label for="tournament-name" class="block text-gray-700 text-sm font-bold mb-2">Tournament Name:</label> <input type="text" id="tournament-name" name="tournament-name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" required> </div>
+                         <div class="mb-5"> <label for="tournament-game-type-select" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label> <select id="tournament-game-type-select" name="tournament-game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Type</option> <option value="1v1">1 vs 1 (General)</option> <option value="2v2">2 vs 2 (General)</option> <option value="ffa">Free-for-All (FFA - General)</option> <option value="team">Team vs Team (General)</option> <option value="pool">Pool</option> <option value="puttpong">PuttPong</option> <option value="golf">Golf</option> <option value="basketball_pickup">Basketball (Pickup)</option> <option value="basketball_horse">Basketball (HORSE)</option> <option value="volleyball_pickup">Volleyball (Pickup)</option> <option value="board_card">Board / Card Game</option> <option value="cornhole">Cornhole</option> <option value="pickleball">Pickleball</option> </select> </div>
+                         <div class="mb-5"> <label for="tournament-format" class="block text-gray-700 text-sm font-bold mb-2">Format:</label> <select id="tournament-format" name="tournament-format" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required> <option value="">Select Format</option> <option value="single-elim">Single Elimination</option> <option value="double-elim">Double Elimination</option> <option value="round-robin">Round Robin</option> </select> </div>
+                         <div class="mb-5"> <label for="tournament-start-date" class="block text-gray-700 text-sm font-bold mb-2">Start Date (Optional):</label> <input type="date" id="tournament-start-date" name="tournament-start-date" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700"> </div>
+                         <div class="mb-5"> <label class="block text-gray-700 text-sm font-bold mb-2">Participants:</label> <div id="tournament-participants-list" class="h-40 border rounded-lg p-3 overflow-y-auto bg-gray-50 space-y-2"> <p class="text-gray-500 text-sm">Select Game Type to see participants.</p> </div> <p class="text-xs text-gray-500 mt-1">Select participants. Seeding will be based on current rankings for the selected game type.</p> </div>
+                         <div class="mt-6 flex justify-end space-x-3">
+                             <button type="button" id="cancel-create-tournament-modal-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-5 rounded-lg">Cancel</button>
+                             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md">Create Tournament</button>
+                         </div>
+                     </form>
+                </div>`;
+
+            createTournamentModal.innerHTML = modalContentHTML;
+
+            const closeButton = createTournamentModal.querySelector('#close-create-tournament-modal-btn');
+            const cancelButton = createTournamentModal.querySelector('#cancel-create-tournament-modal-btn');
+            const modalForm = createTournamentModal.querySelector('#create-tournament-form');
+
+            if (closeButton) closeButton.addEventListener('click', closeCreateTournamentModal);
+            if (cancelButton) cancelButton.addEventListener('click', closeCreateTournamentModal);
+            if (modalForm) {
+                // Use a specific handler for this modal's form submission
+                modalForm.addEventListener('submit', handleCreateTournamentSubmit);
+                // Populate participant list when game type changes (if needed)
+                const gameTypeSelect = modalForm.querySelector('#tournament-game-type-select');
+                if (gameTypeSelect) gameTypeSelect.addEventListener('change', populateTournamentParticipantsSelect); // Reuse existing function
+                populateTournamentParticipantsSelect(); // Initial population attempt
+            }
+
+            createTournamentModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCreateTournamentModal() {
+            if (createTournamentModal) {
+                createTournamentModal.classList.remove('active');
+                createTournamentModal.innerHTML = ''; // Clear content
+                document.body.style.overflow = '';
+            }
+        }
+
 
         // --- Populate Dropdowns from Firestore ---
         async function populateRecordGameDropdowns() {
@@ -808,7 +822,9 @@
         }
 
         async function populateAddTeamDropdowns() {
-            const player1Select = document.getElementById('team-player1');
+            // This function might still be needed if you implement team management later
+            // For now, it's not directly used by the main UI flow
+            const player1Select = document.getElementById('team-player1'); // Assuming this ID exists if you add team modal
             const player2Select = document.getElementById('team-player2');
             if (!player1Select || !player2Select || !db) { console.warn("Team player selects or DB not found."); return; }
             player1Select.innerHTML = '<option value="">Select Player</option>';
@@ -825,10 +841,51 @@
         }
 
         async function populateTournamentParticipantsSelect() {
-             const participantsContainer = document.getElementById('tournament-participants-list');
-             if (participantsContainer) {
-                  participantsContainer.innerHTML = '<p class="text-gray-500 p-4">Participant selection logic not yet implemented.</p>';
-                  // TODO: Implement fetching players/teams based on selected game type and adding checkboxes.
+             // This function populates the participant list in the Create Tournament modal
+             const participantsContainer = document.getElementById('tournament-participants-list'); // Make sure this ID exists in the modal
+             const gameTypeSelect = document.getElementById('tournament-game-type-select'); // Make sure this ID exists in the modal
+
+             if (!participantsContainer || !gameTypeSelect) {
+                 console.warn("Cannot populate tournament participants: elements missing.");
+                 return;
+             }
+
+             const selectedGameType = gameTypeSelect.value;
+             participantsContainer.innerHTML = '<p class="text-gray-500 p-2">Loading participants...</p>'; // Loading state
+
+             // TODO: Implement actual logic based on selectedGameType
+             // - Fetch players if 1v1/FFA
+             // - Fetch teams if 2v2/Team
+             // - Create checkboxes or list items for selection
+             if (selectedGameType === "1v1" || selectedGameType === "ffa") {
+                 try {
+                     if (!db) throw new Error("DB not connected");
+                     const snapshot = await db.collection('players').orderBy('name').get();
+                     if (snapshot.empty) {
+                         participantsContainer.innerHTML = '<p class="text-gray-500 p-2">No players found.</p>';
+                     } else {
+                         participantsContainer.innerHTML = ''; // Clear loading
+                         snapshot.forEach(doc => {
+                             const player = { id: doc.id, ...doc.data() };
+                             const div = document.createElement('div');
+                             div.className = 'flex items-center';
+                             div.innerHTML = `
+                                 <input type="checkbox" id="participant-${player.id}" name="participants" value="${player.id}" class="form-checkbox h-4 w-4 text-indigo-600">
+                                 <label for="participant-${player.id}" class="ml-2 text-sm text-gray-700">${player.name || 'Unnamed'}</label>
+                             `;
+                             participantsContainer.appendChild(div);
+                         });
+                     }
+                 } catch (error) {
+                     console.error("Error fetching players for tournament:", error);
+                     participantsContainer.innerHTML = '<p class="text-red-500 p-2">Error loading players.</p>';
+                 }
+
+             } else if (selectedGameType === "2v2" || selectedGameType === "team") {
+                  participantsContainer.innerHTML = '<p class="text-gray-500 p-2 italic">Team selection not yet implemented.</p>';
+                  // TODO: Fetch teams and create checkboxes
+             } else {
+                  participantsContainer.innerHTML = '<p class="text-gray-500 p-2">Select a game type (1v1, 2v2, etc.)</p>';
              }
          }
 
@@ -921,6 +978,8 @@
 
         // --- Manage Tournaments List Population ---
         async function populateManageTournamentsList() {
+            // This function might be repurposed or removed if full management isn't needed
+            // For now, it's not called by the main UI flow
             if (!manageTournamentsListContainer || !db) { console.warn("Manage tournaments container or DB not ready."); return; }
             manageTournamentsListContainer.innerHTML = '<p class="text-gray-500">Loading tournaments...</p>';
             try {
@@ -974,7 +1033,7 @@
                      console.log(`[FIRESTORE] Firestore document deleted: games/${gameId}`);
                      if (tableRowElement) tableRowElement.remove();
                      alert(`Game ${gameId} deleted.`);
-                     await populateDashboard();
+                     await populateDashboard(); // Refresh dashboard
                  } catch (error) {
                      console.error("Error deleting game:", error);
                      alert(`Failed to delete game ${gameId}. See console for details.`);
@@ -992,8 +1051,9 @@
                  try {
                      await db.collection('tournaments').doc(tournamentId).delete();
                      console.log(`[FIRESTORE] Firestore document deleted: tournaments/${tournamentId}`);
-                     if (listItemElement) listItemElement.remove();
+                     if (listItemElement) listItemElement.remove(); // Remove from UI if in manage view
                      alert(`Tournament deleted.`);
+                     // Refresh public tournament lists
                      await populateTournamentsList('dashboard-tournaments-list', 3);
                      await populateTournamentsList('tournaments-list-full');
                  } catch (error) {
@@ -1035,7 +1095,7 @@
                  playerInfoModal.querySelector('#modal-player-name').textContent = newName;
                  const iconSrc = newIconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(newName || '?')}&background=E0E7FF&color=4F46E5&size=80`;
                  playerInfoModal.querySelector('#modal-player-icon').src = iconSrc;
-                 if (playersGrid) await populatePlayersList();
+                 if (playersGrid) await populatePlayersList(); // Refresh player grid
             } catch (error) {
                 console.error(`Error updating player ${playerId}:`, error);
                 alert(`Failed to update player: ${error.message}`);
@@ -1052,6 +1112,7 @@
                      await db.collection('players').doc(playerId).delete();
                      alert(`${playerName} deleted successfully!`);
                      closePlayerModal();
+                     // Refresh relevant lists
                      if (playersGrid) await populatePlayersList();
                      await populateDashboard();
                      await populateResultsTable();
@@ -1287,22 +1348,28 @@
             navLinks?.forEach(link => link.addEventListener('click', handleNavLinkClick));
             loginForm?.addEventListener('submit', handleLoginFormSubmit);
             logoutButton?.addEventListener('click', logout);
-            adminNavButtons?.forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const targetPanelId = event.currentTarget.getAttribute('data-target');
-                    if (targetPanelId) showAdminContentPanel(targetPanelId);
-                });
-            });
-            adminBackButtons?.forEach(button => button.addEventListener('click', showAdminOverview));
+
+            // Contextual Admin Buttons
             openRecordGameModalBtn?.addEventListener('click', openRecordGameModal);
-            [recordGameModal, playerInfoModal].forEach(modal => {
+            openAddPlayerModalBtn?.addEventListener('click', openAddPlayerModal);
+            openCreateTournamentModalBtn?.addEventListener('click', openCreateTournamentModal);
+
+            // Remove listeners for old admin panel buttons
+            // adminNavButtons?.forEach(...)
+            // adminBackButtons?.forEach(...)
+
+            // Modal Overlay Click-to-Close (for ALL modals)
+            [recordGameModal, playerInfoModal, addPlayerModal, createTournamentModal].forEach(modal => {
                  modal?.addEventListener('click', (event) => {
-                     if (event.target === modal) {
+                     if (event.target === modal) { // Only close if overlay itself is clicked
                          if (modal.id === 'record-game-modal') closeRecordGameModal();
                          if (modal.id === 'player-info-modal') closePlayerModal();
+                         if (modal.id === 'add-player-modal') closeAddPlayerModal();
+                         if (modal.id === 'create-tournament-modal') closeCreateTournamentModal();
                      }
                  });
             });
+
             rankingsGameFilter?.addEventListener('change', updateRankingsVisibility);
             playerInfoModal?.querySelector('.modal-content')?.addEventListener('click', (event) => {
                 if (event.target.matches('#close-player-modal-btn')) closePlayerModal();
@@ -1311,9 +1378,9 @@
                 else if (event.target.matches('#cancel-player-edit-btn')) togglePlayerModalEdit(false);
                 else if (event.target.matches('#delete-player-btn')) deletePlayer();
             });
-            handleAdminFormSubmit('add-player-form', addPlayerHandler);
-            handleAdminFormSubmit('add-team-form', addTeamHandler);
-            handleAdminFormSubmit('create-tournament-form', createTournamentHandler);
+
+            // Form submissions are now handled inside the modal open functions or specific handlers
+
             playersGrid?.addEventListener('click', (event) => {
                 const playerEntry = event.target.closest('.player-entry');
                 if (playerEntry) {
@@ -1363,14 +1430,7 @@
                  document.body.classList.add('admin-logged-in');
              } else {
                  document.body.classList.remove('admin-logged-in');
-                 const currentHash = window.location.hash.substring(1);
-                 const currentSection = document.getElementById(currentHash);
-                 // If logged out while on an admin-only page, redirect to home
-                 if (currentSection && currentSection.id === 'admin-section') { // More specific check
-                     console.log("[AUTH] Redirecting from admin page to home on logout check.");
-                     // Use setTimeout to allow CSS changes to apply before navigation potentially triggers content loading
-                     setTimeout(() => showSection('home-section'), 0);
-                 }
+                 // No need to redirect from admin panel anymore as it doesn't exist as a separate page
              }
              return isLoggedIn;
         }
@@ -1378,7 +1438,7 @@
             if (password === ADMIN_PASSWORD) {
                 sessionStorage.setItem('isAdminLoggedIn', 'true');
                 checkLoginState();
-                showSection('admin-section'); // Navigate after setting state
+                showSection('home'); // Navigate to home after login
                 loginError?.classList.add('hidden');
                 const passwordInput = document.getElementById('password');
                 if(passwordInput) passwordInput.value = '';
@@ -1388,84 +1448,108 @@
         }
         function logout() {
             sessionStorage.removeItem('isAdminLoggedIn');
-            checkLoginState(); // Update UI and potentially redirect
+            checkLoginState(); // Update UI
+            showSection('home'); // Navigate to home on logout
         }
 
-        // --- Form Submission Handlers ---
-        function handleAdminFormSubmit(formId, specificHandler) {
-            const form = document.getElementById(formId);
-            form?.addEventListener('submit', async (event) => {
-                event.preventDefault();
-                let isValid = true;
-                form.querySelectorAll('input[required], select[required]').forEach(field => {
-                    field.classList.remove('border-red-500');
-                    if (!field.value) { isValid = false; field.classList.add('border-red-500'); }
-                });
-                 if (formId === 'add-team-form') {
-                     const p1 = form.querySelector('#team-player1')?.value;
-                     const p2 = form.querySelector('#team-player2')?.value;
-                     if (p1 && p2 && p1 === p2) {
-                         isValid = false; alert("A team must have two different players.");
-                         form.querySelector('#team-player1')?.classList.add('border-red-500');
-                         form.querySelector('#team-player2')?.classList.add('border-red-500');
-                     }
-                 }
-                if (!isValid) { alert("Please fill out all required fields correctly."); return; }
+        // --- Form Submission Handlers (Now triggered from modals) ---
 
-                try {
-                     if (!db) throw new Error("Database not connected. Cannot submit form.");
-                     const success = await specificHandler(form);
-                     if (success) {
-                         form.reset();
-                         showAdminOverview();
-                         if (db) {
-                            if (formId === 'add-player-form' && playersGrid) populatePlayersList();
-                            if (formId === 'create-tournament-form') {
-                                populateTournamentsList('dashboard-tournaments-list', 3);
-                                populateTournamentsList('tournaments-list-full');
-                            }
-                         }
-                     }
-                } catch (error) {
-                    console.error(`Error during ${formId} submission:`, error);
-                    alert(`An unexpected error occurred: ${error.message}`);
-                }
+        // Specific handler for the Add Player modal form
+        async function handleAddPlayerSubmit(event) {
+            event.preventDefault();
+            const form = event.target; // Get the form element from the event
+            if (!db) { alert("Database connection error."); return; }
+
+            let isValid = true;
+            form.querySelectorAll('input[required]').forEach(field => {
+                field.classList.remove('border-red-500'); // Reset border
+                if (!field.value) { isValid = false; field.classList.add('border-red-500'); }
             });
-        }
+            if (!isValid) { alert("Please fill out all required fields."); return; }
 
-        // Specific Firestore handlers for admin forms
-        async function addPlayerHandler(form) {
             const formData = new FormData(form);
             const playerName = formData.get('player-name')?.trim();
-            if (!playerName) { alert("Player name is missing."); return false; }
+            const playerIconUrl = formData.get('player-icon-url')?.trim() || null; // Get optional icon URL
+
+            if (!playerName) { /* Should be caught by required */ return; }
+
             try {
-                 await db.collection('players').add({ name: playerName, elo_overall: 1200, date_created: firebase.firestore.FieldValue.serverTimestamp() });
+                 const playerData = {
+                     name: playerName,
+                     elo_overall: 1200, // Default Elo
+                     date_created: firebase.firestore.FieldValue.serverTimestamp()
+                 };
+                 if (playerIconUrl) {
+                     playerData.iconUrl = playerIconUrl; // Add iconUrl only if provided
+                 }
+
+                 await db.collection('players').add(playerData);
                  alert(`Player "${playerName}" added successfully!`);
-                 return true;
-            } catch (error) { console.error("Error adding player:", error); alert(`Failed to add player: ${error.message}`); return false; }
+                 closeAddPlayerModal(); // Close modal on success
+                 if (playersGrid) await populatePlayersList(); // Refresh player list on the page
+
+            } catch (error) {
+                 console.error("Error adding player:", error);
+                 alert(`Failed to add player: ${error.message}`);
+            }
         }
-         async function addTeamHandler(form) {
-             const formData = new FormData(form);
-             const teamName = formData.get('team-name')?.trim();
-             const p1 = formData.get('team-player1');
-             const p2 = formData.get('team-player2');
-             if (!teamName || !p1 || !p2) return false;
-             console.log("Adding team (not fully implemented):", teamName, p1, p2);
-             alert("Adding teams is not fully implemented in Firestore yet.");
-             // TODO: Implement adding to 'teams' collection
-             return true;
-         }
-         async function createTournamentHandler(form) {
-             const formData = new FormData(form);
-             const participants = []; // Placeholder
-             const tournamentData = { name: formData.get('tournament-name')?.trim(), game_type: formData.get('tournament-game-type'), format: formData.get('tournament-format'), start_date: formData.get('tournament-start-date') || null, participants: participants, status: 'Upcoming', date_created: firebase.firestore.FieldValue.serverTimestamp() };
-             if (!tournamentData.name || !tournamentData.game_type || !tournamentData.format) return false;
+
+        // Specific handler for the Create Tournament modal form
+        async function handleCreateTournamentSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            if (!db) { alert("Database connection error."); return; }
+
+            let isValid = true;
+            form.querySelectorAll('input[required], select[required]').forEach(field => {
+                field.classList.remove('border-red-500'); // Reset border
+                if (!field.value) { isValid = false; field.classList.add('border-red-500'); }
+            });
+            if (!isValid) { alert("Please fill out all required fields."); return; }
+
+            const formData = new FormData(form);
+            // Get selected participants from checkboxes
+            const selectedParticipants = [];
+            form.querySelectorAll('input[name="participants"]:checked').forEach(checkbox => {
+                selectedParticipants.push(checkbox.value);
+            });
+
+            // Basic validation: Ensure at least 2 participants for most formats? (Optional)
+            const format = formData.get('tournament-format');
+            if (format !== 'ffa' && selectedParticipants.length < 2) { // Example check
+                 alert("Please select at least two participants for this format.");
+                 // Optionally highlight the participants section
+                 // const participantsListDiv = form.querySelector('#tournament-participants-list');
+                 // if(participantsListDiv) participantsListDiv.classList.add('border-red-500'); // Add border or similar
+                 return;
+            }
+
+
+             const tournamentData = {
+                 name: formData.get('tournament-name')?.trim(),
+                 game_type: formData.get('tournament-game-type'),
+                 format: format,
+                 start_date: formData.get('tournament-start-date') || null,
+                 participants: selectedParticipants, // Use actual selected participants
+                 status: 'Upcoming',
+                 date_created: firebase.firestore.FieldValue.serverTimestamp(),
+                 // TODO: Add bracket generation logic here or upon starting the tournament
+             };
+
+             if (!tournamentData.name || !tournamentData.game_type || !tournamentData.format) { /* caught by required */ return; }
+
              try {
                  await db.collection('tournaments').add(tournamentData);
                  alert(`Tournament "${tournamentData.name}" created successfully!`);
-                 return true;
-             } catch (error) { console.error("Error creating tournament:", error); alert(`Failed to create tournament: ${error.message}`); return false; }
-         }
+                 closeCreateTournamentModal(); // Close modal
+                 // Refresh tournament lists
+                 await populateTournamentsList('dashboard-tournaments-list', 3);
+                 await populateTournamentsList('tournaments-list-full');
+             } catch (error) {
+                 console.error("Error creating tournament:", error);
+                 alert(`Failed to create tournament: ${error.message}`);
+             }
+        }
 
 
         // Specific handler for the Record Game modal form submission
@@ -1515,8 +1599,8 @@
                  alert("Game result recorded successfully!");
                  closeRecordGameModal();
                  if (db) {
-                    await populateResultsTable();
-                    await populateDashboard();
+                    await populateResultsTable(); // Refresh results page
+                    await populateDashboard(); // Refresh dashboard
                  }
              } catch (error) {
                  console.error("Error saving game result:", error);
@@ -1545,12 +1629,8 @@
                      const targetIdFromHash = initialHash.substring(1);
                      const targetSection = document.getElementById(targetIdFromHash);
                      if (targetSection?.classList.contains('page-section')) {
-                          const isAdminOnly = targetSection.classList.contains('admin-only');
-                          if (!isAdminOnly || isLoggedIn) {
-                              initialSectionId = targetIdFromHash;
-                          } else {
-                               initialSectionId = 'login-section';
-                          }
+                          // Admin section check removed here, login check handles visibility of buttons
+                          initialSectionId = targetIdFromHash;
                      }
                 }
                 // Initial section display and population is handled here
@@ -1569,4 +1649,4 @@
     </script>
 
 </body>
-</html> 
+</html>

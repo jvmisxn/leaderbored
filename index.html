@@ -14,17 +14,11 @@
         a, button, .player-entry { transition: all 0.2s ease-in-out; }
 
         /* --- Admin visibility control --- */
-        /* Default: Hide all admin-only elements */
         .admin-only { display: none; }
-
-        /* When logged in, show SPECIFIC admin elements */
-        /* Use 'inline-flex' for buttons, 'block' or 'flex' for divs as appropriate */
-        body.admin-logged-in #logout-button { display: inline-flex; } /* Logout button in nav */
-        body.admin-logged-in td .admin-only { display: inline-flex; gap: 0.5rem; vertical-align: middle; } /* Action buttons in table cells */
-        body.admin-logged-in #player-info-modal .admin-only { display: block; } /* Container for edit/delete buttons in player modal */
-        body.admin-logged-in .contextual-admin-button-container .admin-only { display: inline-flex; } /* Contextual buttons on pages */
-
-        /* Hide public-only elements when admin is logged in */
+        body.admin-logged-in #logout-button { display: inline-flex; }
+        body.admin-logged-in td .admin-only { display: inline-flex; gap: 0.5rem; vertical-align: middle; }
+        body.admin-logged-in #player-info-modal .admin-only { display: block; }
+        body.admin-logged-in .contextual-admin-button-container .admin-only { display: inline-flex; }
         body.admin-logged-in .public-only { display: none; }
         /* --- End Admin visibility control --- */
 
@@ -45,7 +39,7 @@
 
         /* Table cell padding and wrapping */
         td, th { white-space: nowrap; padding-left: 1rem; padding-right: 1rem; padding-top: 0.75rem; padding-bottom: 0.75rem; vertical-align: middle; }
-        td { white-space: normal; } /* Allow text wrap in data cells */
+        td { white-space: normal; }
 
         /* Validation */
         .border-red-500 { border-color: #ef4444; }
@@ -57,10 +51,6 @@
         .modal-editing .edit-mode-controls { display: inline-flex; }
         .edit-mode-controls { display: none; }
         .modal-editing .view-mode-controls { display: none; }
-
-        /* Admin Content Panel Visibility (No longer needed) */
-        /* .admin-content-panel { display: none; margin-top: 2rem; } */
-        /* .admin-content-panel.active { display: block; } */
 
     </style>
 </head>
@@ -148,6 +138,14 @@
                          <table class="w-full text-left table-auto text-base">
                              <thead> <tr class="bg-gray-100"> <th class="px-4 py-3">Rank</th> <th class="px-4 py-3">Team</th> <th class="px-4 py-3">Rating</th> </tr> </thead>
                              <tbody id="overall-2v2-rankings-body"> <tr class="border-b"><td colspan="3" class="text-center text-gray-500 py-4">Loading...</td></tr> </tbody>
+                         </table>
+                     </div>
+                 </div>
+                 <div id="ranking-table-pool" class="ranking-table hidden"> <div class="bg-white p-8 rounded-xl shadow-lg">
+                         <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Pool Rankings (Elo)</h2>
+                         <table class="w-full text-left table-auto text-base">
+                             <thead> <tr class="bg-gray-100"> <th class="px-4 py-3">Rank</th> <th class="px-4 py-3">Player</th> <th class="px-4 py-3">Rating</th> </tr> </thead>
+                             <tbody id="pool-rankings-body"> <tr class="border-b"><td colspan="3" class="text-center text-gray-500 py-4">Loading...</td></tr> </tbody>
                          </table>
                      </div>
                  </div>
@@ -240,12 +238,14 @@
         </div> <div id="player-info-modal" class="modal-overlay">
         <div class="modal-content">
              <button id="close-player-modal-btn" class="modal-close-button">&times;</button>
-             <div class="flex items-start space-x-6">
+             <div class="flex items-start space-x-6 mb-4">
                  <img id="modal-player-icon" src="https://placehold.co/80x80/cccccc/ffffff?text=?" alt="Player Icon" class="w-20 h-20 rounded-full flex-shrink-0 object-cover border-2 border-indigo-200">
                  <div class="flex-grow">
                      <h2 id="modal-player-name" class="text-3xl font-semibold mb-1 editable-field">Player Name</h2>
                      <input type="text" id="modal-edit-player-name-input" class="editing-field shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 text-xl font-semibold mb-1" placeholder="Player Name">
-                     <p class="text-base text-gray-600">Overall Rank: <span id="modal-player-overall-rank" class="font-medium">N/A</span> | Elo: <span id="modal-player-overall-rating" class="font-medium">N/A</span></p>
+                     <div class="text-sm text-gray-600 mt-1" id="modal-player-overall-stats">
+                         Loading stats...
+                     </div>
                       <div class="editing-field mt-2">
                           <label for="modal-edit-player-icon-input" class="block text-gray-700 text-sm font-bold mb-1">Icon URL:</label>
                           <input type="url" id="modal-edit-player-icon-input" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://example.com/icon.png">
@@ -262,13 +262,13 @@
                     </div>
                 </div>
              </div>
-             <div class="mt-6 border-t pt-5">
-                 <h3 class="text-xl font-semibold mb-3 text-indigo-600">Game Stats (Placeholder)</h3>
-                 <div id="modal-player-game-stats" class="text-sm text-gray-700">
-                     <p class="text-gray-500">Loading stats...</p>
+             <div class="mt-4 border-t pt-4">
+                 <h3 class="text-xl font-semibold mb-3 text-indigo-600">Game Ratings (Elo)</h3>
+                 <div id="modal-player-game-stats" class="text-sm text-gray-700 grid grid-cols-2 gap-x-4 gap-y-1">
+                     <p class="text-gray-500 col-span-2">Loading ratings...</p>
                  </div>
              </div>
-             <div class="mt-6 border-t pt-5">
+             <div class="mt-4 border-t pt-4">
                  <h3 class="text-xl font-semibold mb-3 text-indigo-600">Recent Activity</h3>
                  <ul id="modal-player-recent-activity" class="list-disc list-inside space-y-1 text-sm text-gray-700">
                      <li class="text-gray-500">Loading activity...</li>
@@ -277,15 +277,9 @@
          </div>
     </div>
 
-    <div id="record-game-modal" class="modal-overlay">
-        </div>
-
-    <div id="add-player-modal" class="modal-overlay">
-        </div>
-
-    <div id="create-tournament-modal" class="modal-overlay">
-        </div>
-
+    <div id="record-game-modal" class="modal-overlay"></div>
+    <div id="add-player-modal" class="modal-overlay"></div>
+    <div id="create-tournament-modal" class="modal-overlay"></div>
 
     <footer class="text-center text-gray-600 text-base mt-12 mb-6"> &copy; 2025 LeaderBored. Keep it friendly!
     </footer>
@@ -295,18 +289,21 @@
 
     <script>
         // --- Basic Page Navigation & Admin Simulation ---
-        const ADMIN_PASSWORD = "admin"; // IMPORTANT: Use server-side auth in a real app!
+        const ADMIN_PASSWORD = "admin";
+        const DEFAULT_ELO = 1200; // Default starting Elo
+        const K_FACTOR = 32; // Elo K-factor (adjust sensitivity)
+        // Define game types that use Elo
+        const ELO_GAME_TYPES = ['pool', 'puttpong', 'cornhole', 'pickleball', 'basketball_horse']; // Add other 1v1 games here
 
-        // --- DOM Element References (Assigned in initializeApp) ---
+        // --- DOM Element References ---
         let sections, navLinks, loginForm, loginError, logoutButton,
             recordGameModal, openRecordGameModalBtn,
-            addPlayerModal, openAddPlayerModalBtn, // New elements for Add Player modal
-            createTournamentModal, openCreateTournamentModalBtn, // New elements for Create Tournament modal
+            addPlayerModal, openAddPlayerModalBtn,
+            createTournamentModal, openCreateTournamentModalBtn,
             tournamentGameTypeSelect, tournamentParticipantsList, rankingsGameFilter, rankingTablesContainer,
             resultsTableBody,
             playersGrid,
             playerInfoModal,
-            // Removed admin panel specific elements
             manageTournamentsListContainer;
 
         // --- Firebase Initialization ---
@@ -341,24 +338,21 @@
             loginForm = document.getElementById('login-form');
             loginError = document.getElementById('login-error');
             logoutButton = document.getElementById('logout-button');
-            // Modals and their trigger buttons
             recordGameModal = document.getElementById('record-game-modal');
             openRecordGameModalBtn = document.getElementById('open-record-game-modal-btn');
             addPlayerModal = document.getElementById('add-player-modal');
             openAddPlayerModalBtn = document.getElementById('open-add-player-modal-btn');
             createTournamentModal = document.getElementById('create-tournament-modal');
             openCreateTournamentModalBtn = document.getElementById('open-create-tournament-modal-btn');
-            // Other elements
-            tournamentGameTypeSelect = document.getElementById('tournament-game-type-select'); // Still needed for Create Tournament Modal
-            tournamentParticipantsList = document.getElementById('tournament-participants-list'); // Still needed for Create Tournament Modal
+            // tournamentGameTypeSelect and participants list are found within the create tournament modal when opened
             rankingsGameFilter = document.getElementById('rankings-game-filter');
             rankingTablesContainer = document.getElementById('ranking-tables-container');
             resultsTableBody = document.getElementById('results-table-body');
             playersGrid = document.querySelector('#players-section #players-grid');
             playerInfoModal = document.getElementById('player-info-modal');
-            manageTournamentsListContainer = document.getElementById('manage-tournaments-list-container'); // Still needed if we keep manage tournaments view
+            manageTournamentsListContainer = document.getElementById('manage-tournaments-list-container');
 
-            // Remove checks for admin panel elements
+            // Add checks
             if (!resultsTableBody) console.error("Critical Error: Results table body (#results-table-body) not found!");
             if (!playersGrid) console.error("Critical Error: Players grid container (#players-grid) not found!");
             if (!openRecordGameModalBtn) console.warn("Record Game button not found.");
@@ -390,29 +384,19 @@
             const cleanTargetId = targetId.startsWith('#') ? targetId.substring(1) : targetId;
             let sectionFound = false;
 
-            // Hide ALL top-level sections first
             sections.forEach(section => {
-                if (section && section.id) {
-                     section.classList.add('hidden');
-                }
+                if (section && section.id) section.classList.add('hidden');
             });
 
-            // Show the target top-level section
             const targetSection = document.getElementById(cleanTargetId);
             if (targetSection && targetSection.classList.contains('page-section')) {
                 console.log(`[NAV] Showing section: ${targetSection.id}`);
-                targetSection.classList.remove('hidden'); // Make section visible
+                targetSection.classList.remove('hidden');
                 sectionFound = true;
 
-                // Remove admin panel specific logic
-                // if (cleanTargetId === 'admin-section') {
-                //     showAdminOverview();
-                // }
-
-                // Populate dynamic content (if DB is ready)
                 if (db) {
                     if (cleanTargetId === 'home-section') populateDashboard();
-                    if (cleanTargetId === 'rankings-section' && rankingTablesContainer) updateRankingsVisibility();
+                    if (cleanTargetId === 'rankings-section' && rankingTablesContainer) updateRankingsVisibility(); // Populate initial view
                     if (cleanTargetId === 'results-section' && resultsTableBody) populateResultsTable();
                     if (cleanTargetId === 'players-section' && playersGrid) populatePlayersList();
                     if (cleanTargetId === 'tournaments-section' && document.getElementById('tournaments-list-full')) populateTournamentsList('tournaments-list-full');
@@ -431,16 +415,13 @@
                  }
             }
 
-            // Update URL hash only if navigation was successful
             if (sectionFound) {
                 window.location.hash = cleanTargetId;
-                window.scrollTo(0, 0); // Scroll to top
+                window.scrollTo(0, 0);
             }
         }
 
         // --- Admin Panel Navigation REMOVED ---
-        // function showAdminContentPanel(targetPanelId) { ... }
-        // function showAdminOverview() { ... }
 
 
         // --- Player List and Modal Functions (Firestore) ---
@@ -451,7 +432,7 @@
                  if (!db) throw new Error("Firestore database (db) is not initialized.");
                  const snapshot = await db.collection('players').orderBy('name').get();
                  if (snapshot.empty) {
-                     playersGrid.innerHTML = '<p class="text-gray-500 col-span-full text-center">No players found. Add players via Admin Login.</p>'; // Updated message
+                     playersGrid.innerHTML = '<p class="text-gray-500 col-span-full text-center">No players found. Add players via Admin Login.</p>';
                      return;
                  }
                  playersGrid.innerHTML = ''; // Clear loading
@@ -478,14 +459,21 @@
             if (!modalContent) { console.error("Modal content div not found."); return; }
 
             // Reset fields and show loading
-            modalContent.querySelector('#modal-player-name').textContent = 'Loading...';
-            modalContent.querySelector('#modal-player-game-stats').innerHTML = '<p class="text-gray-500">Loading stats...</p>';
-            modalContent.querySelector('#modal-player-recent-activity').innerHTML = '<li class="text-gray-500">Loading activity...</li>';
-            modalContent.querySelector('#modal-player-icon').src = 'https://placehold.co/80x80/cccccc/ffffff?text=?';
-            modalContent.querySelector('#modal-edit-player-name-input').value = '';
-            modalContent.querySelector('#modal-edit-player-icon-input').value = '';
-            modalContent.querySelector('#modal-player-overall-rank').textContent = '...';
-            modalContent.querySelector('#modal-player-overall-rating').textContent = '...';
+            const nameEl = modalContent.querySelector('#modal-player-name');
+            const statsEl = modalContent.querySelector('#modal-player-game-stats');
+            const activityEl = modalContent.querySelector('#modal-player-recent-activity');
+            const iconEl = modalContent.querySelector('#modal-player-icon');
+            const nameInputEl = modalContent.querySelector('#modal-edit-player-name-input');
+            const iconInputEl = modalContent.querySelector('#modal-edit-player-icon-input');
+            const overallStatsEl = modalContent.querySelector('#modal-player-overall-stats'); // New element for W/L/D
+
+            if(nameEl) nameEl.textContent = 'Loading...';
+            if(statsEl) statsEl.innerHTML = '<p class="text-gray-500 col-span-2">Loading ratings...</p>';
+            if(activityEl) activityEl.innerHTML = '<li class="text-gray-500">Loading activity...</li>';
+            if(iconEl) iconEl.src = 'https://placehold.co/80x80/cccccc/ffffff?text=?';
+            if(nameInputEl) nameInputEl.value = '';
+            if(iconInputEl) iconInputEl.value = '';
+            if(overallStatsEl) overallStatsEl.innerHTML = 'Loading stats...'; // Reset overall stats display
             playerInfoModal.classList.remove('modal-editing');
 
             playerInfoModal.classList.add('active');
@@ -499,19 +487,47 @@
                  const details = { id: docSnap.id, ...docSnap.data() };
                  playerInfoModal.setAttribute('data-current-player-id', playerId);
 
-                 // Populate elements
+                 // Populate basic details
                  const iconSrc = details.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(details.name || '?')}&background=E0E7FF&color=4F46E5&size=80`;
-                 modalContent.querySelector('#modal-player-icon').src = iconSrc;
-                 modalContent.querySelector('#modal-player-icon').alt = `Icon ${details.name || ''}`;
-                 modalContent.querySelector('#modal-player-name').textContent = details.name || 'Unnamed Player';
-                 modalContent.querySelector('#modal-edit-player-name-input').value = details.name || '';
-                 modalContent.querySelector('#modal-edit-player-icon-input').value = details.iconUrl || '';
-                 modalContent.querySelector('#modal-player-overall-rank').textContent = details.overallRank || 'N/A'; // TODO: Calculate rank
-                 modalContent.querySelector('#modal-player-overall-rating').textContent = Math.round(details.elo_overall || 1200);
+                 if(iconEl) { iconEl.src = iconSrc; iconEl.alt = `Icon ${details.name || ''}`; }
+                 if(nameEl) nameEl.textContent = details.name || 'Unnamed Player';
+                 if(nameInputEl) nameInputEl.value = details.name || '';
+                 if(iconInputEl) iconInputEl.value = details.iconUrl || '';
 
-                 // Populate stats and activity
-                 modalContent.querySelector('#modal-player-game-stats').innerHTML = '<p class="text-gray-600 italic">Detailed game statistics not yet implemented.</p>';
-                 await populatePlayerRecentActivity(modalContent.querySelector('#modal-player-recent-activity'), playerId, 5);
+                 // Populate Overall Stats (W/L/D/Played)
+                 if (overallStatsEl) {
+                     const wins = details.wins || 0;
+                     const losses = details.losses || 0;
+                     const draws = details.draws || 0;
+                     const played = details.games_played || 0;
+                     overallStatsEl.innerHTML = `
+                        Overall: <span class="font-medium text-green-600">${wins}W</span> /
+                        <span class="font-medium text-red-600">${losses}L</span> /
+                        <span class="font-medium text-gray-600">${draws}D</span>
+                        (${played} Played) | Elo: <span id="modal-player-overall-rating" class="font-medium">${Math.round(details.elo_overall || DEFAULT_ELO)}</span>
+                     `;
+                 }
+
+                 // Populate game-specific Elos
+                 if (statsEl) {
+                    statsEl.innerHTML = ''; // Clear loading
+                    const elos = details.elos || {};
+                    // Use the defined ELO_GAME_TYPES constant
+                    let statsHtml = '';
+                    ELO_GAME_TYPES.forEach(gameKey => {
+                        const rating = Math.round(elos[gameKey] || DEFAULT_ELO);
+                        // Simple display name mapping
+                        const gameName = gameKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // Format key like 'pool' -> 'Pool', 'basketball_horse' -> 'Basketball Horse'
+                        statsHtml += `<div class="font-medium text-gray-900">${gameName}:</div><div class="text-indigo-600">${rating}</div>`;
+                    });
+                    if (!statsHtml) {
+                        statsHtml = '<p class="text-gray-500 col-span-2 italic">No specific game ratings found.</p>';
+                    }
+                    statsEl.innerHTML = statsHtml;
+                 }
+
+                 // Populate recent activity (reuse existing function)
+                 await populatePlayerRecentActivity(activityEl, playerId, 5);
 
              } catch (error) {
                   console.error("[PLAYER MODAL] Error:", error);
@@ -528,16 +544,15 @@
              }
         }
         // --- Function to populate recent activity in player modal ---
-        // <<< MODIFIED FOR TESTING - REMOVED ORDERBY >>>
         async function populatePlayerRecentActivity(activityElement, playerId, limit = 5) {
             if (!db || !playerId || !activityElement) return;
             activityElement.innerHTML = '<li class="text-gray-500">Loading activity...</li>';
-            console.log(`[ACTIVITY DEBUG] Fetching activity for ${playerId} (OrderBy removed for testing)`);
+            console.log(`[ACTIVITY DEBUG] Fetching activity for ${playerId}`);
             try {
-                // Fetch games involving the player
+                // NOTE: Requires Firestore index: games: participants (Array), date_played (Descending)
                 const gamesQuery = db.collection('games')
                                     .where('participants', 'array-contains', playerId)
-                                    // .orderBy('date_played', 'desc') // <<< Temporarily removed for testing - Needs Firestore Index
+                                    .orderBy('date_played', 'desc')
                                     .limit(limit);
                 const snapshot = await gamesQuery.get();
 
@@ -548,7 +563,6 @@
                 activityElement.innerHTML = ''; // Clear loading
                 console.log(`[ACTIVITY DEBUG] Found ${snapshot.size} activities for ${playerId}.`);
 
-                // Player Name Cache (local to this function call)
                 const playerCacheModal = {};
                 const getPlayerNameModal = async (pid) => {
                    if (!pid) return 'N/A';
@@ -561,20 +575,17 @@
                    } catch (err) { return 'Error'; }
                 };
 
-                // Process each game
                 for (const doc of snapshot.docs) {
                      const game = { id: doc.id, ...doc.data() };
-                     let description = "Game played"; // Default description
+                     let description = "Game played";
                      const gameDate = game.date_played?.toDate ? game.date_played.toDate().toLocaleDateString() : 'Unknown Date';
-                     const gameType = game.game_type || 'Unknown Game'; // Handle missing game type
+                     const gameType = game.game_type || 'Unknown Game';
 
-                     // Format description based on game data
                     const participants = game.participants || [];
                     const participantNames = await Promise.all(participants.map(id => getPlayerNameModal(id)));
-                    const currentPlayerName = playerCacheModal[playerId] || await getPlayerNameModal(playerId); // Get current player's name
+                    const currentPlayerName = playerCacheModal[playerId] || await getPlayerNameModal(playerId);
 
                     if (game.outcome === 'Win/Loss' && participants.length >= 2) {
-                        // Assumes winner is participants[0], loser is participants[1]
                         const winnerName = await getPlayerNameModal(participants[0]);
                         const loserName = await getPlayerNameModal(participants[1]);
                          if (winnerName === currentPlayerName) {
@@ -582,19 +593,17 @@
                          } else if (loserName === currentPlayerName) {
                              description = `Lost to ${winnerName} in ${gameType}`;
                          } else {
-                            // Should not happen if player is in participants, but good fallback
                             description = `${winnerName} beat ${loserName} in ${gameType}`;
                          }
                     } else if (game.outcome === 'Draw' && participants.length >= 2) {
                         const opponentName = participantNames.find(name => name !== currentPlayerName) || 'opponent';
                         description = `Drew against ${opponentName} in ${gameType}`;
-                    } else { // Fallback for other outcomes or missing data
+                    } else {
                         const otherPlayerNames = participantNames.filter(name => name !== currentPlayerName).join(', ');
                         description = `Played ${gameType}${otherPlayerNames ? ' with ' + otherPlayerNames : ''}`;
                     }
-                     if (game.score) description += ` (${game.score})`; // Append score if available
+                     if (game.score) description += ` (${game.score})`;
 
-                    // Create list item
                     const li = document.createElement('li');
                     li.innerHTML = `<span class="text-gray-500 text-xs mr-2">[${gameDate}]</span> ${description}`;
                     activityElement.appendChild(li);
@@ -602,9 +611,13 @@
                 console.log(`[ACTIVITY DEBUG] Finished populating activity for ${playerId}.`);
 
             } catch (error) {
-                // Log the specific error object
                 console.error(`Error fetching recent activity for player ${playerId}:`, JSON.stringify(error));
-                activityElement.innerHTML = `<li class="text-red-500">Error loading activity: ${error.message || JSON.stringify(error)}</li>`;
+                if (error.code === 'failed-precondition') {
+                     activityElement.innerHTML = `<li class="text-red-500">Error: Firestore index required. Please check the console for a link to create it.</li>`;
+                     console.error("Firestore requires a composite index for this query. Please create it in the Firebase console. The query involves filtering 'participants' (array-contains) and ordering by 'date_played' (desc).");
+                } else {
+                    activityElement.innerHTML = `<li class="text-red-500">Error loading activity: ${error.message || JSON.stringify(error)}</li>`;
+                }
             }
         }
 
@@ -616,13 +629,12 @@
             const modalContentHTML = `
                 <div class="modal-content">
                     <button id="close-record-game-modal-btn" class="modal-close-button">&times;</button>
-                    <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Record Game Result (1v1)</h2>
+                    <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Record Game Result</h2>
                     <form id="record-game-form">
                         <div class="mb-4">
                             <label for="game-type-select-modal" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label>
                             <select id="game-type-select-modal" name="game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
                                 <option value="">Select Game Type</option>
-                                <option value="1v1">1 vs 1 (General)</option>
                                 <option value="pool">Pool</option>
                                 <option value="puttpong">PuttPong</option>
                                 <option value="basketball_horse">Basketball (HORSE)</option>
@@ -644,7 +656,7 @@
                         </div>
                         <div class="mb-4">
                             <label for="score" class="block text-gray-700 text-sm font-bold mb-2">Score (Optional):</label>
-                            <input type="text" id="score" name="score" placeholder="e.g. 21-15, 8-3" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700">
+                            <input type="text" id="score" name="score" placeholder="e.g. 8-3, 21-15" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700">
                         </div>
                         <div class="mb-4">
                              <label class="inline-flex items-center">
@@ -695,7 +707,7 @@
             }
         }
 
-        // --- Add Player Modal Functions (NEW) ---
+        // --- Add Player Modal Functions ---
         function openAddPlayerModal() {
             if (!addPlayerModal || !db) { console.error("Add Player modal or DB not ready."); return; }
 
@@ -727,10 +739,7 @@
 
             if (closeButton) closeButton.addEventListener('click', closeAddPlayerModal);
             if (cancelButton) cancelButton.addEventListener('click', closeAddPlayerModal);
-            if (modalForm) {
-                // Use a specific handler for this modal's form submission
-                modalForm.addEventListener('submit', handleAddPlayerSubmit);
-            }
+            if (modalForm) modalForm.addEventListener('submit', handleAddPlayerSubmit);
 
             addPlayerModal.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -739,16 +748,15 @@
         function closeAddPlayerModal() {
              if (addPlayerModal) {
                 addPlayerModal.classList.remove('active');
-                addPlayerModal.innerHTML = ''; // Clear content
+                addPlayerModal.innerHTML = '';
                 document.body.style.overflow = '';
             }
         }
 
-        // --- Create Tournament Modal Functions (NEW) ---
+        // --- Create Tournament Modal Functions ---
         function openCreateTournamentModal() {
              if (!createTournamentModal || !db) { console.error("Create Tournament modal or DB not ready."); return; }
 
-             // Reuse the form structure, just wrap it in modal content
              const modalContentHTML = `
                 <div class="modal-content">
                     <button id="close-create-tournament-modal-btn" class="modal-close-button">&times;</button>
@@ -775,11 +783,9 @@
             if (closeButton) closeButton.addEventListener('click', closeCreateTournamentModal);
             if (cancelButton) cancelButton.addEventListener('click', closeCreateTournamentModal);
             if (modalForm) {
-                // Use a specific handler for this modal's form submission
                 modalForm.addEventListener('submit', handleCreateTournamentSubmit);
-                // Populate participant list when game type changes (if needed)
                 const gameTypeSelect = modalForm.querySelector('#tournament-game-type-select');
-                if (gameTypeSelect) gameTypeSelect.addEventListener('change', populateTournamentParticipantsSelect); // Reuse existing function
+                if (gameTypeSelect) gameTypeSelect.addEventListener('change', populateTournamentParticipantsSelect);
                 populateTournamentParticipantsSelect(); // Initial population attempt
             }
 
@@ -790,7 +796,7 @@
         function closeCreateTournamentModal() {
             if (createTournamentModal) {
                 createTournamentModal.classList.remove('active');
-                createTournamentModal.innerHTML = ''; // Clear content
+                createTournamentModal.innerHTML = '';
                 document.body.style.overflow = '';
             }
         }
@@ -1029,11 +1035,16 @@
              if (!db) { console.error("Firestore not initialized."); return; }
              if (confirm(`Are you sure you want to delete game result ${gameId}?\nThis may affect rankings and cannot be undone.`)) {
                  try {
+                     // TODO: Before deleting the game, consider reversing the Elo change.
                      await db.collection('games').doc(gameId).delete();
                      console.log(`[FIRESTORE] Firestore document deleted: games/${gameId}`);
                      if (tableRowElement) tableRowElement.remove();
                      alert(`Game ${gameId} deleted.`);
                      await populateDashboard(); // Refresh dashboard
+                     // Refresh rankings if the current view might be affected
+                     if (document.getElementById('rankings-section') && !document.getElementById('rankings-section').classList.contains('hidden')) {
+                         await updateRankingsVisibility();
+                     }
                  } catch (error) {
                      console.error("Error deleting game:", error);
                      alert(`Failed to delete game ${gameId}. See console for details.`);
@@ -1086,6 +1097,7 @@
 
             if (!newName) { alert("Player name cannot be empty."); nameInput?.focus(); return; }
 
+            // Only update name and iconUrl here. Elo and stats are updated via game results.
             const updatedData = { name: newName, iconUrl: newIconUrl };
 
             try {
@@ -1107,7 +1119,8 @@
              const playerName = playerInfoModal.querySelector('#modal-player-name')?.textContent || 'this player';
              if (!playerId) { alert("Error: No player ID found."); return; }
 
-             if (confirm(`Are you sure you want to delete ${playerName} (${playerId})?\nThis cannot be undone and may affect game records.`)) {
+             // IMPORTANT: Need to handle deleting games/tournament participation associated with the player in a real app
+             if (confirm(`Are you sure you want to delete ${playerName} (${playerId})?\nThis cannot be undone and will remove them from all records.`)) {
                  try {
                      await db.collection('players').doc(playerId).delete();
                      alert(`${playerName} deleted successfully!`);
@@ -1116,6 +1129,7 @@
                      if (playersGrid) await populatePlayersList();
                      await populateDashboard();
                      await populateResultsTable();
+                     await updateRankingsVisibility(); // Refresh rankings
 
                  } catch (error) {
                      console.error(`Error deleting player ${playerId}:`, error);
@@ -1130,8 +1144,8 @@
             if (!db) { console.warn("[DASHBOARD] DB not ready, skipping population."); return; }
             await Promise.all([
                 populateRecentGamesList('recent-games-list', 5),
-                populateTopPlayersList('top-players-list', 5),
-                populateTopTeamsList('top-teams-list', 5),
+                populateTopPlayersList('top-players-list', 5), // Shows overall Elo
+                populateTopTeamsList('top-teams-list', 5), // Placeholder
                 populateTournamentsList('dashboard-tournaments-list', 3)
             ]);
             console.log("[DASHBOARD] Population complete.");
@@ -1143,6 +1157,7 @@
             if (!listElement || !db) { console.warn(`Recent games list #${elementId} or DB not ready.`); return; }
             listElement.innerHTML = `<li class="text-gray-500">Loading recent games...</li>`;
             try {
+                // Requires index: games: date_played (desc)
                 const q = db.collection('games').orderBy('date_played', 'desc').limit(limit);
                 const snapshot = await q.get();
                 if (snapshot.empty) {
@@ -1196,7 +1211,12 @@
                 }
             } catch (error) {
                 console.error(`Error fetching recent games for ${elementId}:`, error);
-                listElement.innerHTML = `<li class="text-red-500">Error loading games: ${error.message}</li>`;
+                 if (error.code === 'failed-precondition') {
+                     listElement.innerHTML = `<li class="text-red-500">Error: Firestore index missing for date sorting. Check console.</li>`;
+                     console.error("Firestore index needed: games collection, date_played (descending).");
+                 } else {
+                    listElement.innerHTML = `<li class="text-red-500">Error loading games: ${error.message}</li>`;
+                 }
             }
         }
 
@@ -1206,6 +1226,7 @@
              if (!listElement || !db) { console.warn(`Top players list #${elementId} or DB not ready.`); return; }
              listElement.innerHTML = '<li class="text-gray-500">Loading rankings...</li>';
              try {
+                 // Requires index: players: elo_overall (desc)
                  const snapshot = await db.collection('players').orderBy('elo_overall', 'desc').limit(limit).get();
                  if (snapshot.empty) {
                      listElement.innerHTML = '<li class="text-gray-500">No players found.</li>'; return;
@@ -1218,13 +1239,18 @@
                      li.className = "flex justify-between items-center";
                      li.innerHTML = `
                          <span>${rank}. ${player.name || 'Unnamed'}</span>
-                         <span class="text-sm font-medium text-indigo-600">${Math.round(player.elo_overall || 1200)}</span>`;
+                         <span class="text-sm font-medium text-indigo-600">${Math.round(player.elo_overall || DEFAULT_ELO)}</span>`;
                      listElement.appendChild(li);
                      rank++;
                  });
              } catch (error) {
                  console.error(`Error fetching top players:`, error);
-                 listElement.innerHTML = `<li class="text-red-500">Error loading rankings.</li>`;
+                  if (error.code === 'failed-precondition') {
+                     listElement.innerHTML = `<li class="text-red-500">Error: Firestore index missing for overall Elo sorting. Check console.</li>`;
+                     console.error("Firestore index needed: players collection, elo_overall (descending).");
+                 } else {
+                    listElement.innerHTML = `<li class="text-red-500">Error loading rankings.</li>`;
+                 }
              }
         }
         async function populateTopTeamsList(elementId = 'top-teams-list', limit = 5) {
@@ -1240,6 +1266,7 @@
              if (!listElement || !db) { console.warn(`Tournament list #${listElementId} or DB not ready.`); return; }
              listElement.innerHTML = `<li class="text-gray-500">Loading tournaments...</li>`;
              try {
+                 // Requires index: tournaments: date_created (desc)
                  const q = db.collection('tournaments').orderBy('date_created', 'desc').limit(limit);
                  const snapshot = await q.get();
                  if (snapshot.empty) {
@@ -1274,7 +1301,12 @@
                  });
              } catch (error) {
                   console.error(`Error fetching tournaments for ${listElementId}:`, error);
-                  listElement.innerHTML = `<li class="text-red-500">Error loading tournaments: ${error.message}</li>`;
+                  if (error.code === 'failed-precondition') {
+                     listElement.innerHTML = `<li class="text-red-500">Error: Firestore index missing for tournament date sorting. Check console.</li>`;
+                     console.error("Firestore index needed: tournaments collection, date_created (descending).");
+                 } else {
+                    listElement.innerHTML = `<li class="text-red-500">Error loading tournaments: ${error.message}</li>`;
+                 }
              }
         }
 
@@ -1285,32 +1317,50 @@
                 return;
             }
             const selectedGame = rankingsGameFilter.value;
-            rankingTablesContainer.querySelectorAll('.ranking-table').forEach(table => table.classList.remove('active'));
+            console.log(`[RANKING] Filter changed to: ${selectedGame}`);
+            rankingTablesContainer.querySelectorAll('.ranking-table').forEach(table => table.classList.remove('active', 'hidden')); // Reset state
+            rankingTablesContainer.querySelectorAll('.ranking-table').forEach(table => table.classList.add('hidden')); // Hide all
 
             const targetTable = document.getElementById(`ranking-table-${selectedGame}`);
             if (targetTable) {
+                 targetTable.classList.remove('hidden'); // Show selected table container
                  targetTable.classList.add('active');
+
+                 // Call the appropriate population function
                  if (selectedGame === 'overall') {
                      await populateOverallRankings();
+                 } else if (selectedGame === 'pool') {
+                     await populatePoolRankings(); // Call new pool function
                  } else {
-                     const tbody = targetTable.querySelector('tbody');
-                     if (tbody) tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500 italic">Rankings for ${selectedGame} not yet implemented.</td></tr>`;
+                     // Placeholder for other games - needs specific population functions
+                     const tbody = targetTable.querySelector('tbody'); // Find tbody within the target table
+                     if (tbody) {
+                         tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500 italic">Rankings for ${selectedGame} not yet implemented.</td></tr>`;
+                     } else {
+                         console.warn(`TBody not found within ranking table for ${selectedGame}`);
+                     }
                  }
             } else {
+                 console.warn(`Ranking table container for "${selectedGame}" (ID: ranking-table-${selectedGame}) not found.`);
+                 // Fallback to overall if specific table doesn't exist
                  const overallTable = document.getElementById('ranking-table-overall');
                  if (overallTable) {
+                      overallTable.classList.remove('hidden');
                       overallTable.classList.add('active');
                       await populateOverallRankings();
                  }
             }
         }
+        // Populates Overall 1v1 and 2v2 tables
         async function populateOverallRankings() {
              const elo1v1Body = document.getElementById('overall-1v1-rankings-body');
              const elo2v2Body = document.getElementById('overall-2v2-rankings-body');
 
+             // Populate 1v1 Overall Rankings
              if (elo1v1Body && db) {
-                 elo1v1Body.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">Loading 1v1 rankings...</td></tr>';
+                 elo1v1Body.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">Loading rankings...</td></tr>';
                  try {
+                     // Requires index: players: elo_overall (desc)
                      const snapshot = await db.collection('players').orderBy('elo_overall', 'desc').limit(20).get();
                      if (snapshot.empty) {
                         elo1v1Body.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">No players found.</td></tr>';
@@ -1324,20 +1374,75 @@
                              tr.innerHTML = `
                                  <td class="px-4 py-2">${rank}</td>
                                  <td class="px-4 py-2">${player.name || 'Unnamed'}</td>
-                                 <td class="px-4 py-2">${Math.round(player.elo_overall || 1200)}</td>
+                                 <td class="px-4 py-2">${Math.round(player.elo_overall || DEFAULT_ELO)}</td>
                              `;
                              elo1v1Body.appendChild(tr);
                              rank++;
                          });
                      }
                  } catch (error) {
-                      console.error("Error loading 1v1 rankings:", error);
-                      elo1v1Body.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-red-500">Error loading rankings.</td></tr>';
+                      console.error("Error loading Overall 1v1 rankings:", error);
+                      if (error.code === 'failed-precondition') {
+                         elo1v1Body.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-red-500">Error: Firestore index missing (players: elo_overall desc).</td></tr>';
+                         console.error("Firestore index needed: players collection, elo_overall (descending).");
+                      } else {
+                         elo1v1Body.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-red-500">Error loading rankings.</td></tr>';
+                      }
                  }
              }
 
+             // Populate 2v2 Overall Rankings (Placeholder)
              if (elo2v2Body) {
                  elo2v2Body.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500 italic">2v2 Team rankings not implemented.</td></tr>';
+             }
+        }
+        // Populates Pool Rankings Table (NEW)
+        async function populatePoolRankings() {
+             const poolBody = document.getElementById('pool-rankings-body');
+             if (!poolBody || !db) {
+                 console.warn("Pool rankings body or DB not ready.");
+                 if(poolBody) poolBody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-red-500">Initialization error.</td></tr>';
+                 return;
+             }
+
+             poolBody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">Loading Pool rankings...</td></tr>';
+             try {
+                 // Requires index: players: elos.pool (desc)
+                 // Using dot notation for the nested field
+                 const snapshot = await db.collection('players').orderBy('elos.pool', 'desc').limit(20).get();
+                 if (snapshot.empty) {
+                    poolBody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">No players with Pool ratings found.</td></tr>';
+                 } else {
+                     poolBody.innerHTML = '';
+                     let rank = 1;
+                     snapshot.forEach(doc => {
+                         const player = doc.data();
+                         // Only show players who actually have a rating for this game
+                         if (player.elos && player.elos.pool !== undefined) {
+                             const tr = document.createElement('tr');
+                             tr.className = 'border-b';
+                             tr.innerHTML = `
+                                 <td class="px-4 py-2">${rank}</td>
+                                 <td class="px-4 py-2">${player.name || 'Unnamed'}</td>
+                                 <td class="px-4 py-2">${Math.round(player.elos.pool)}</td>
+                             `;
+                             poolBody.appendChild(tr);
+                             rank++;
+                         }
+                     });
+                     // Handle case where players exist but none have a pool rating
+                     if (rank === 1) {
+                          poolBody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">No players with Pool ratings found.</td></tr>';
+                     }
+                 }
+             } catch (error) {
+                  console.error("Error loading Pool rankings:", error);
+                  if (error.code === 'failed-precondition') {
+                     poolBody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-red-500">Error: Firestore index missing (players: elos.pool desc). Check console.</td></tr>';
+                     console.error("Firestore index needed: players collection, elos.pool (descending).");
+                  } else {
+                     poolBody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-red-500">Error loading rankings.</td></tr>';
+                  }
              }
         }
 
@@ -1353,10 +1458,6 @@
             openRecordGameModalBtn?.addEventListener('click', openRecordGameModal);
             openAddPlayerModalBtn?.addEventListener('click', openAddPlayerModal);
             openCreateTournamentModalBtn?.addEventListener('click', openCreateTournamentModal);
-
-            // Remove listeners for old admin panel buttons
-            // adminNavButtons?.forEach(...)
-            // adminBackButtons?.forEach(...)
 
             // Modal Overlay Click-to-Close (for ALL modals)
             [recordGameModal, playerInfoModal, addPlayerModal, createTournamentModal].forEach(modal => {
@@ -1430,7 +1531,6 @@
                  document.body.classList.add('admin-logged-in');
              } else {
                  document.body.classList.remove('admin-logged-in');
-                 // No need to redirect from admin panel anymore as it doesn't exist as a separate page
              }
              return isLoggedIn;
         }
@@ -1457,36 +1557,48 @@
         // Specific handler for the Add Player modal form
         async function handleAddPlayerSubmit(event) {
             event.preventDefault();
-            const form = event.target; // Get the form element from the event
+            const form = event.target;
             if (!db) { alert("Database connection error."); return; }
 
             let isValid = true;
             form.querySelectorAll('input[required]').forEach(field => {
-                field.classList.remove('border-red-500'); // Reset border
+                field.classList.remove('border-red-500');
                 if (!field.value) { isValid = false; field.classList.add('border-red-500'); }
             });
             if (!isValid) { alert("Please fill out all required fields."); return; }
 
             const formData = new FormData(form);
             const playerName = formData.get('player-name')?.trim();
-            const playerIconUrl = formData.get('player-icon-url')?.trim() || null; // Get optional icon URL
+            const playerIconUrl = formData.get('player-icon-url')?.trim() || null;
 
-            if (!playerName) { /* Should be caught by required */ return; }
+            if (!playerName) return;
 
             try {
+                 // Initialize elos map with default ratings for all games + overall
+                 const initialElos = { overall: DEFAULT_ELO };
+                 ELO_GAME_TYPES.forEach(gameType => {
+                     initialElos[gameType] = DEFAULT_ELO;
+                 });
+
                  const playerData = {
                      name: playerName,
-                     elo_overall: 1200, // Default Elo
+                     elo_overall: DEFAULT_ELO, // Keep overall separate for now
+                     elos: initialElos, // Nested map for game-specific Elos
+                     // Initialize overall stats
+                     wins: 0,
+                     losses: 0,
+                     draws: 0,
+                     games_played: 0,
                      date_created: firebase.firestore.FieldValue.serverTimestamp()
                  };
                  if (playerIconUrl) {
-                     playerData.iconUrl = playerIconUrl; // Add iconUrl only if provided
+                     playerData.iconUrl = playerIconUrl;
                  }
 
                  await db.collection('players').add(playerData);
                  alert(`Player "${playerName}" added successfully!`);
-                 closeAddPlayerModal(); // Close modal on success
-                 if (playersGrid) await populatePlayersList(); // Refresh player list on the page
+                 closeAddPlayerModal();
+                 if (playersGrid) await populatePlayersList();
 
             } catch (error) {
                  console.error("Error adding player:", error);
@@ -1502,47 +1614,39 @@
 
             let isValid = true;
             form.querySelectorAll('input[required], select[required]').forEach(field => {
-                field.classList.remove('border-red-500'); // Reset border
+                field.classList.remove('border-red-500');
                 if (!field.value) { isValid = false; field.classList.add('border-red-500'); }
             });
             if (!isValid) { alert("Please fill out all required fields."); return; }
 
             const formData = new FormData(form);
-            // Get selected participants from checkboxes
             const selectedParticipants = [];
             form.querySelectorAll('input[name="participants"]:checked').forEach(checkbox => {
                 selectedParticipants.push(checkbox.value);
             });
 
-            // Basic validation: Ensure at least 2 participants for most formats? (Optional)
             const format = formData.get('tournament-format');
-            if (format !== 'ffa' && selectedParticipants.length < 2) { // Example check
+            if (format !== 'ffa' && selectedParticipants.length < 2) {
                  alert("Please select at least two participants for this format.");
-                 // Optionally highlight the participants section
-                 // const participantsListDiv = form.querySelector('#tournament-participants-list');
-                 // if(participantsListDiv) participantsListDiv.classList.add('border-red-500'); // Add border or similar
                  return;
             }
-
 
              const tournamentData = {
                  name: formData.get('tournament-name')?.trim(),
                  game_type: formData.get('tournament-game-type'),
                  format: format,
                  start_date: formData.get('tournament-start-date') || null,
-                 participants: selectedParticipants, // Use actual selected participants
+                 participants: selectedParticipants,
                  status: 'Upcoming',
                  date_created: firebase.firestore.FieldValue.serverTimestamp(),
-                 // TODO: Add bracket generation logic here or upon starting the tournament
              };
 
-             if (!tournamentData.name || !tournamentData.game_type || !tournamentData.format) { /* caught by required */ return; }
+             if (!tournamentData.name || !tournamentData.game_type || !tournamentData.format) return;
 
              try {
                  await db.collection('tournaments').add(tournamentData);
                  alert(`Tournament "${tournamentData.name}" created successfully!`);
-                 closeCreateTournamentModal(); // Close modal
-                 // Refresh tournament lists
+                 closeCreateTournamentModal();
                  await populateTournamentsList('dashboard-tournaments-list', 3);
                  await populateTournamentsList('tournaments-list-full');
              } catch (error) {
@@ -1568,7 +1672,13 @@
              const winnerId = winnerSelect.value;
              const loserId = loserSelect.value;
              const isDraw = form.querySelector('#is_draw').checked;
+             const gameType = form.querySelector('#game-type-select-modal').value;
 
+             if (!gameType) {
+                 alert("Please select a game type.");
+                 form.querySelector('#game-type-select-modal').classList.add('border-red-500');
+                 isValid = false;
+             }
              if (!isDraw && winnerId === loserId) {
                  alert("Winner and Loser cannot be the same player unless it's a draw.");
                  winnerSelect.classList.add('border-red-500'); loserSelect.classList.add('border-red-500'); isValid = false;
@@ -1580,7 +1690,7 @@
              if (!isValid) { alert("Please correct the errors in the form."); return; }
 
              const gameData = {
-                 game_type: form.querySelector('#game-type-select-modal').value,
+                 game_type: gameType,
                  date_played: firebase.firestore.FieldValue.serverTimestamp(),
                  score: form.querySelector('#score').value.trim() || null,
                  outcome: isDraw ? 'Draw' : 'Win/Loss',
@@ -1588,30 +1698,232 @@
              };
 
              console.log("[GAME RECORD] Recording game data:", gameData);
+
              try {
-                 // Placeholder for ELO Calculation
-                 // const eloUpdates = isDraw ? await calculateEloUpdateDraw(...) : await calculateEloUpdate(...);
+                 // --- ELO Calculation & Stat Updates ---
+                 let eloUpdates = {};
+                 // Prepare stat updates (increment wins/losses/draws/played)
+                 const FieldValue = firebase.firestore.FieldValue; // For increment
+                 const winnerStatUpdates = { games_played: FieldValue.increment(1) };
+                 const loserStatUpdates = { games_played: FieldValue.increment(1) };
+
+                 if (!isDraw) {
+                    eloUpdates = await calculateEloUpdate(winnerId, loserId, gameType);
+                    winnerStatUpdates.wins = FieldValue.increment(1);
+                    loserStatUpdates.losses = FieldValue.increment(1);
+                 } else {
+                    eloUpdates = await calculateEloUpdateDraw(winnerId, loserId, gameType);
+                    winnerStatUpdates.draws = FieldValue.increment(1); // Increment draws for player 1
+                    loserStatUpdates.draws = FieldValue.increment(1); // Increment draws for player 2
+                 }
+                 console.log("[ELO] Calculated Elo Updates:", eloUpdates);
+
+                 // Combine Elo and Stat updates
+                 const finalUpdates = {};
+                 if (eloUpdates[winnerId]) {
+                     finalUpdates[winnerId] = { ...eloUpdates[winnerId], ...winnerStatUpdates };
+                 } else {
+                     finalUpdates[winnerId] = winnerStatUpdates; // Only stats if no Elo change
+                 }
+                 if (eloUpdates[loserId]) {
+                     finalUpdates[loserId] = { ...eloUpdates[loserId], ...loserStatUpdates };
+                 } else {
+                      finalUpdates[loserId] = loserStatUpdates; // Only stats if no Elo change
+                 }
+                 console.log("[STATS & ELO] Combined Updates:", finalUpdates);
+                 // --- End ELO & Stat Updates ---
+
+                 // Save game document to Firestore
                  const docRef = await db.collection('games').add(gameData);
                  console.log("[FIRESTORE] Recorded new game with ID:", docRef.id);
-                 // Placeholder for ELO Update
-                 // if (Object.keys(eloUpdates).length > 0) await updatePlayerElos(eloUpdates);
+
+                 // --- Update Player Elo & Stats using Batch Write ---
+                 if (Object.keys(finalUpdates).length > 0) {
+                    await updatePlayerElos(finalUpdates); // Use the combined updates
+                 } else {
+                    console.warn("[ELO/STATS] No Elo or Stat updates to apply.");
+                 }
+                 // --- End Elo & Stat Update ---
 
                  alert("Game result recorded successfully!");
                  closeRecordGameModal();
                  if (db) {
                     await populateResultsTable(); // Refresh results page
                     await populateDashboard(); // Refresh dashboard
+                    // Refresh rankings if visible
+                    if (document.getElementById('rankings-section') && !document.getElementById('rankings-section').classList.contains('hidden')) {
+                         await updateRankingsVisibility();
+                    }
                  }
              } catch (error) {
-                 console.error("Error saving game result:", error);
+                 console.error("Error saving game result or updating Elo/Stats:", error);
                  alert(`Error saving game result: ${error.message}`);
              }
         }
 
-        // --- Placeholder ELO Calculation & Update Functions ---
-        async function calculateEloUpdate(winnerId, loserId, gameType = 'overall') { console.warn("calculateEloUpdate not implemented"); return {}; }
-        async function calculateEloUpdateDraw(player1Id, player2Id, gameType = 'overall') { console.warn("calculateEloUpdateDraw not implemented"); return {}; }
-        async function updatePlayerElos(eloUpdates) { console.warn("updatePlayerElos not implemented. Updates:", eloUpdates); /* Use Batch Write */ }
+        // --- Elo Calculation & Update Functions ---
+        /**
+         * Calculates the Elo rating change for a win/loss outcome.
+         * @param {string} winnerId - The Firestore document ID of the winner.
+         * @param {string} loserId - The Firestore document ID of the loser.
+         * @param {string} gameType - The key for the specific game's Elo (e.g., 'pool', 'cornhole').
+         * @returns {Promise<object>} An object containing the Elo updates for Firestore batch write.
+         */
+        async function calculateEloUpdate(winnerId, loserId, gameType) {
+            if (!db || !winnerId || !loserId || !gameType) {
+                console.error("[ELO Calc] Missing required parameters or DB connection.");
+                return {};
+            }
+            console.log(`[ELO Calc] Calculating update for ${gameType}: Winner=${winnerId}, Loser=${loserId}`);
+
+            try {
+                const winnerRef = db.collection('players').doc(winnerId);
+                const loserRef = db.collection('players').doc(loserId);
+
+                const [winnerDoc, loserDoc] = await Promise.all([winnerRef.get(), loserRef.get()]);
+
+                if (!winnerDoc.exists || !loserDoc.exists) {
+                    console.error("[ELO Calc] Winner or loser document not found.");
+                    alert("Error: Could not find player data for Elo calculation.");
+                    return {};
+                }
+
+                const winnerData = winnerDoc.data();
+                const loserData = loserDoc.data();
+
+                // Get current Elo for the specific game, defaulting to DEFAULT_ELO
+                const winnerElo = winnerData.elos?.[gameType] || DEFAULT_ELO;
+                const loserElo = loserData.elos?.[gameType] || DEFAULT_ELO;
+
+                console.log(`[ELO Calc] Current ${gameType} Elo: Winner=${winnerElo}, Loser=${loserElo}`);
+
+                // Elo calculation
+                const exponent = (loserElo - winnerElo) / 400;
+                const expectedScoreWinner = 1 / (1 + Math.pow(10, exponent));
+                const expectedScoreLoser = 1 - expectedScoreWinner;
+
+                // Calculate new Elo ratings (Winner score = 1, Loser score = 0)
+                const newWinnerElo = Math.round(winnerElo + K_FACTOR * (1 - expectedScoreWinner));
+                const newLoserElo = Math.round(loserElo + K_FACTOR * (0 - expectedScoreLoser));
+
+                console.log(`[ELO Calc] New ${gameType} Elo: Winner=${newWinnerElo}, Loser=${newLoserElo}`);
+
+                // Prepare update object using dot notation for nested fields
+                const winnerUpdates = {};
+                winnerUpdates[`elos.${gameType}`] = newWinnerElo; // Update specific game Elo
+
+                const loserUpdates = {};
+                loserUpdates[`elos.${gameType}`] = newLoserElo;
+
+                return {
+                    [winnerId]: winnerUpdates,
+                    [loserId]: loserUpdates
+                };
+
+            } catch (error) {
+                console.error("[ELO Calc] Error calculating Elo update:", error);
+                alert(`Error calculating Elo: ${error.message}`);
+                return {};
+            }
+        }
+
+        /**
+         * Calculates the Elo rating change for a draw outcome.
+         * @param {string} player1Id - Firestore ID of player 1.
+         * @param {string} player2Id - Firestore ID of player 2.
+         * @param {string} gameType - The key for the specific game's Elo.
+         * @returns {Promise<object>} An object containing the Elo updates for Firestore batch write.
+         */
+        async function calculateEloUpdateDraw(player1Id, player2Id, gameType) {
+             if (!db || !player1Id || !player2Id || !gameType) {
+                console.error("[ELO Calc Draw] Missing required parameters or DB connection.");
+                return {};
+            }
+            console.log(`[ELO Calc Draw] Calculating update for ${gameType} Draw: P1=${player1Id}, P2=${player2Id}`);
+
+            try {
+                const p1Ref = db.collection('players').doc(player1Id);
+                const p2Ref = db.collection('players').doc(player2Id);
+
+                const [p1Doc, p2Doc] = await Promise.all([p1Ref.get(), p2Ref.get()]);
+
+                if (!p1Doc.exists || !p2Doc.exists) {
+                    console.error("[ELO Calc Draw] Player document not found.");
+                     alert("Error: Could not find player data for Elo calculation.");
+                    return {};
+                }
+
+                const p1Data = p1Doc.data();
+                const p2Data = p2Doc.data();
+
+                const p1Elo = p1Data.elos?.[gameType] || DEFAULT_ELO;
+                const p2Elo = p2Data.elos?.[gameType] || DEFAULT_ELO;
+
+                console.log(`[ELO Calc Draw] Current ${gameType} Elo: P1=${p1Elo}, P2=${p2Elo}`);
+
+                const exponent1 = (p2Elo - p1Elo) / 400;
+                const expectedScoreP1 = 1 / (1 + Math.pow(10, exponent1));
+                const expectedScoreP2 = 1 - expectedScoreP1;
+
+                // Calculate new Elo ratings (Actual score = 0.5 for both in a draw)
+                const newP1Elo = Math.round(p1Elo + K_FACTOR * (0.5 - expectedScoreP1));
+                const newP2Elo = Math.round(p2Elo + K_FACTOR * (0.5 - expectedScoreP2));
+
+                 console.log(`[ELO Calc Draw] New ${gameType} Elo: P1=${newP1Elo}, P2=${newP2Elo}`);
+
+                // Prepare update objects using dot notation
+                const p1Updates = {};
+                p1Updates[`elos.${gameType}`] = newP1Elo;
+
+                const p2Updates = {};
+                p2Updates[`elos.${gameType}`] = newP2Elo;
+
+                return {
+                    [player1Id]: p1Updates,
+                    [player2Id]: p2Updates
+                };
+
+            } catch (error) {
+                console.error("[ELO Calc Draw] Error calculating Elo update:", error);
+                alert(`Error calculating Elo for draw: ${error.message}`);
+                return {};
+            }
+        }
+
+        /**
+         * Updates player Elo ratings and stats in Firestore using a batched write.
+         * @param {object} combinedUpdates - Object where keys are player IDs and values are update objects containing Elo and stat increments.
+         * Example: { "player1ID": { "elos.pool": 1234, "wins": FieldValue.increment(1), "games_played": FieldValue.increment(1) }, ... }
+         */
+        async function updatePlayerElos(combinedUpdates) { // Renamed slightly for clarity
+             if (!db || Object.keys(combinedUpdates).length === 0) {
+                 console.warn("[ELO/STATS Update] No updates to apply or DB not connected.");
+                 return;
+             }
+             console.log("[ELO/STATS Update] Starting batch update:", combinedUpdates);
+             const batch = db.batch();
+
+             Object.entries(combinedUpdates).forEach(([playerId, updates]) => {
+                 if (playerId && typeof updates === 'object' && updates !== null) {
+                     const playerRef = db.collection('players').doc(playerId);
+                     // The 'updates' object contains field paths (like "elos.pool", "wins") and new values/increments
+                     batch.update(playerRef, updates);
+                     console.log(`[ELO/STATS Update] Adding update for ${playerId}:`, updates);
+                 } else {
+                     console.warn(`[ELO/STATS Update] Skipping invalid update entry for player ID: ${playerId}`, updates);
+                 }
+             });
+
+             try {
+                 await batch.commit();
+                 console.log("[FIRESTORE] Batch Elo/Stat update committed successfully.");
+             } catch (error) {
+                 console.error("[FIRESTORE] Batch Elo/Stat update failed:", error);
+                 alert(`Failed to update player ratings/stats: ${error.message}`);
+                 throw error; // Rethrow so the calling function knows it failed
+             }
+        }
+        // --- End Elo Functions ---
 
         // --- Initialization Function ---
         function initializeApp() {
@@ -1629,7 +1941,6 @@
                      const targetIdFromHash = initialHash.substring(1);
                      const targetSection = document.getElementById(targetIdFromHash);
                      if (targetSection?.classList.contains('page-section')) {
-                          // Admin section check removed here, login check handles visibility of buttons
                           initialSectionId = targetIdFromHash;
                      }
                 }

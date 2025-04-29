@@ -277,10 +277,17 @@
          </div>
     </div>
 
-    <div id="record-game-modal" class="modal-overlay"></div>
-    <div id="add-player-modal" class="modal-overlay"></div>
-    <div id="create-tournament-modal" class="modal-overlay"></div>
-    <div id="add-game-modal" class="modal-overlay"></div>
+    <div id="record-game-modal" class="modal-overlay">
+        </div>
+
+    <div id="add-player-modal" class="modal-overlay">
+        </div>
+
+    <div id="create-tournament-modal" class="modal-overlay">
+        </div>
+
+    <div id="add-game-modal" class="modal-overlay">
+        </div>
 
     <footer class="text-center text-gray-600 text-base mt-12 mb-6"> &copy; 2025 LeaderBored. Keep it friendly!
     </footer>
@@ -290,7 +297,7 @@
 
     <script>
         // --- Basic Page Navigation & Admin Simulation ---
-        const ADMIN_PASSWORD = "admin";
+        const ADMIN_PASSWORD = "admin"; // Simple password for demo
         const DEFAULT_ELO = 1200; // Default starting Elo
         const K_FACTOR = 32; // Elo K-factor (adjust sensitivity)
 
@@ -312,27 +319,28 @@
 
         // --- DOM Element References ---
         let sections, navLinks, loginForm, loginError, logoutButton,
-            recordGameModal, openRecordGameModalBtn,
+            recordGameModal, openRecordGameModalBtn, // recordGameModal is now also used for editing
             addPlayerModal, openAddPlayerModalBtn,
             createTournamentModal, openCreateTournamentModalBtn,
-            addGameModal, openAddGameModalBtn, // New elements for Add Game
+            addGameModal, openAddGameModalBtn,
             rankingsGameFilter, rankingTablesContainer,
             resultsTableBody,
             playersGrid,
             playerInfoModal,
-            manageTournamentsListContainer; // Keep if needed for future management features
+            manageTournamentsListContainer;
 
         // --- Firebase Initialization ---
         let app, db;
         try {
+            // IMPORTANT: Replace with your actual Firebase configuration
             const firebaseConfig = {
-              apiKey: "AIzaSyCF3az8WEAMVpAx5cbp917EUhNM5cRzvwA",
-              authDomain: "leaderbored2.firebaseapp.com",
-              projectId: "leaderbored2",
-              storageBucket: "leaderbored2.appspot.com",
-              messagingSenderId: "449176616925",
-              appId: "1:449176616925:web:8149e2e8b43a9a72104034",
-              measurementId: "G-8LRFJGV2XY"
+              apiKey: "AIzaSyCF3az8WEAMVpAx5cbp917EUhNM5cRzvwA", // Replace
+              authDomain: "leaderbored2.firebaseapp.com", // Replace
+              projectId: "leaderbored2", // Replace
+              storageBucket: "leaderbored2.appspot.com", // Replace
+              messagingSenderId: "449176616925", // Replace
+              appId: "1:449176616925:web:8149e2e8b43a9a72104034", // Replace
+              measurementId: "G-8LRFJGV2XY" // Optional: Replace
             };
             if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
                 console.error("Firebase config is missing critical values (apiKey or projectId).");
@@ -355,29 +363,30 @@
             loginError = document.getElementById('login-error');
             logoutButton = document.getElementById('logout-button');
             // Modals and their trigger buttons
-            recordGameModal = document.getElementById('record-game-modal');
+            recordGameModal = document.getElementById('record-game-modal'); // Used for Record AND Edit
             openRecordGameModalBtn = document.getElementById('open-record-game-modal-btn');
             addPlayerModal = document.getElementById('add-player-modal');
             openAddPlayerModalBtn = document.getElementById('open-add-player-modal-btn');
             createTournamentModal = document.getElementById('create-tournament-modal');
             openCreateTournamentModalBtn = document.getElementById('open-create-tournament-modal-btn');
-            addGameModal = document.getElementById('add-game-modal'); // New
-            openAddGameModalBtn = document.getElementById('open-add-game-modal-btn'); // New
+            addGameModal = document.getElementById('add-game-modal');
+            openAddGameModalBtn = document.getElementById('open-add-game-modal-btn');
             // Other elements
             rankingsGameFilter = document.getElementById('rankings-game-filter');
             rankingTablesContainer = document.getElementById('ranking-tables-container');
             resultsTableBody = document.getElementById('results-table-body');
             playersGrid = document.querySelector('#players-section #players-grid');
             playerInfoModal = document.getElementById('player-info-modal');
-            manageTournamentsListContainer = document.getElementById('manage-tournaments-list-container');
+            manageTournamentsListContainer = document.getElementById('manage-tournaments-list-container'); // Might be unused
 
             // Add checks
             if (!resultsTableBody) console.error("Critical Error: Results table body (#results-table-body) not found!");
             if (!playersGrid) console.error("Critical Error: Players grid container (#players-grid) not found!");
+            if (!recordGameModal) console.error("Critical Error: Record/Edit Game Modal container (#record-game-modal) not found!");
             if (!openRecordGameModalBtn) console.warn("Record Game button not found.");
             if (!openAddPlayerModalBtn) console.warn("Add Player button not found.");
             if (!openCreateTournamentModalBtn) console.warn("Create Tournament button not found.");
-            if (!openAddGameModalBtn) console.warn("Add Game button not found."); // New check
+            if (!openAddGameModalBtn) console.warn("Add Game button not found.");
         }
 
 
@@ -385,7 +394,7 @@
         // Populates a select dropdown from an object { key: value, ... }
         function populateSelectWithOptions(selectElement, optionsObject, prompt = 'Select...') {
              if (!selectElement) { console.warn("populateSelectWithOptions: Provided selectElement is null or undefined."); return; }
-             const currentValue = selectElement.value;
+             const currentValue = selectElement.value; // Preserve current selection if possible
              selectElement.innerHTML = `<option value="">${prompt}</option>`;
              for (const key in optionsObject) {
                  if (Object.hasOwnProperty.call(optionsObject, key)) {
@@ -406,6 +415,7 @@
         function updateGameTypeDropdowns() {
             console.log("[UI Update] Updating game type dropdowns...");
             const recordGameSelect = document.getElementById('game-type-select-modal'); // In Record Game Modal
+            const editGameSelect = document.getElementById('edit-game-type-select-modal'); // In Edit Game Modal
             const rankingsFilterSelect = document.getElementById('rankings-game-filter'); // On Rankings Page
             const tournamentGameSelect = document.getElementById('tournament-game-type-select'); // In Create Tournament Modal
 
@@ -413,6 +423,7 @@
             const rankingsOptions = { overall: "Overall (1v1/2v2)", ...gameTypesConfig };
 
             if (recordGameSelect) populateSelectWithOptions(recordGameSelect, gameTypesConfig, 'Select Game Type');
+            if (editGameSelect) populateSelectWithOptions(editGameSelect, gameTypesConfig, 'Select Game Type'); // Update edit modal too
             if (rankingsFilterSelect) populateSelectWithOptions(rankingsFilterSelect, rankingsOptions); // Use combined options
             if (tournamentGameSelect) populateSelectWithOptions(tournamentGameSelect, gameTypesConfig, 'Select Type'); // Populate in create tournament modal
         }
@@ -434,6 +445,7 @@
                 targetSection.classList.remove('hidden');
                 sectionFound = true;
 
+                // Populate content if DB is ready
                 if (db) {
                     if (cleanTargetId === 'home-section') populateDashboard();
                     if (cleanTargetId === 'rankings-section' && rankingTablesContainer) {
@@ -459,12 +471,10 @@
             }
 
             if (sectionFound) {
-                window.location.hash = cleanTargetId;
-                window.scrollTo(0, 0);
+                window.location.hash = cleanTargetId; // Update URL hash
+                window.scrollTo(0, 0); // Scroll to top
             }
         }
-
-        // --- Admin Panel Navigation REMOVED ---
 
 
         // --- Player List and Modal Functions (Firestore) ---
@@ -484,6 +494,7 @@
                      const div = document.createElement('div');
                      div.className = 'player-entry bg-white p-5 rounded-lg shadow hover:shadow-md cursor-pointer flex items-center space-x-4 transition duration-200 ease-in-out';
                      div.setAttribute('data-player-id', player.id);
+                     // Use ui-avatars.com for fallback icons
                      const iconUrl = player.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name || '?')}&background=E0E7FF&color=4F46E5&size=48`;
                      div.innerHTML = `
                          <img src="${iconUrl}" alt="Icon ${player.name || ''}" class="w-12 h-12 rounded-full flex-shrink-0 object-cover bg-gray-200" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=?&background=cccccc&color=ffffff&size=48';">
@@ -501,7 +512,7 @@
             const modalContent = playerInfoModal.querySelector('.modal-content');
             if (!modalContent) { console.error("Modal content div not found."); return; }
 
-            // Reset fields and show loading
+            // Reset fields and show loading states
             const nameEl = modalContent.querySelector('#modal-player-name');
             const statsEl = modalContent.querySelector('#modal-player-game-stats');
             const activityEl = modalContent.querySelector('#modal-player-recent-activity');
@@ -513,14 +524,14 @@
             if(nameEl) nameEl.textContent = 'Loading...';
             if(statsEl) statsEl.innerHTML = '<p class="text-gray-500 col-span-2">Loading ratings...</p>';
             if(activityEl) activityEl.innerHTML = '<li class="text-gray-500">Loading activity...</li>';
-            if(iconEl) iconEl.src = 'https://placehold.co/80x80/cccccc/ffffff?text=?';
+            if(iconEl) iconEl.src = 'https://placehold.co/80x80/cccccc/ffffff?text=?'; // Placeholder
             if(nameInputEl) nameInputEl.value = '';
             if(iconInputEl) iconInputEl.value = '';
             if(overallStatsEl) overallStatsEl.innerHTML = 'Loading stats...';
-            playerInfoModal.classList.remove('modal-editing');
+            playerInfoModal.classList.remove('modal-editing'); // Ensure view mode initially
 
-            playerInfoModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            playerInfoModal.classList.add('active'); // Show modal
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
 
              try {
                  const playerDocRef = db.collection('players').doc(playerId);
@@ -528,7 +539,7 @@
                  if (!docSnap.exists) throw new Error(`Player document not found for ID: ${playerId}`);
 
                  const details = { id: docSnap.id, ...docSnap.data() };
-                 playerInfoModal.setAttribute('data-current-player-id', playerId);
+                 playerInfoModal.setAttribute('data-current-player-id', playerId); // Store ID for edit/delete
 
                  // Populate basic details
                  const iconSrc = details.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(details.name || '?')}&background=E0E7FF&color=4F46E5&size=80`;
@@ -537,7 +548,7 @@
                  if(nameInputEl) nameInputEl.value = details.name || '';
                  if(iconInputEl) iconInputEl.value = details.iconUrl || '';
 
-                 // Populate Overall Stats (W/L/D/Played)
+                 // Populate Overall Stats (W/L/D/Played/Elo)
                  if (overallStatsEl) {
                      const wins = details.wins || 0;
                      const losses = details.losses || 0;
@@ -568,20 +579,20 @@
                  }
 
                  // Populate recent activity (reuse existing function)
-                 await populatePlayerRecentActivity(activityEl, playerId, 5);
+                 await populatePlayerRecentActivity(activityEl, playerId, 5); // Limit to 5 recent games
 
              } catch (error) {
                   console.error("[PLAYER MODAL] Error:", error);
                   alert(`Error loading player details: ${error.message}`);
-                  closePlayerModal();
+                  closePlayerModal(); // Close modal on error
              }
         }
         function closePlayerModal() {
              if (playerInfoModal) {
                  playerInfoModal.classList.remove('active');
-                 playerInfoModal.classList.remove('modal-editing');
-                 playerInfoModal.removeAttribute('data-current-player-id');
-                 document.body.style.overflow = '';
+                 playerInfoModal.classList.remove('modal-editing'); // Reset edit state
+                 playerInfoModal.removeAttribute('data-current-player-id'); // Clear stored ID
+                 document.body.style.overflow = ''; // Restore background scrolling
              }
         }
         // --- Function to populate recent activity in player modal ---
@@ -604,6 +615,7 @@
                 activityElement.innerHTML = ''; // Clear loading
                 console.log(`[ACTIVITY DEBUG] Found ${snapshot.size} activities for ${playerId}.`);
 
+                // Cache player names to reduce Firestore reads within the loop
                 const playerCacheModal = {};
                 const getPlayerNameModal = async (pid) => {
                    if (!pid) return 'N/A';
@@ -613,9 +625,10 @@
                        const name = playerDoc.exists ? playerDoc.data().name : 'Unknown';
                        playerCacheModal[pid] = name;
                        return name;
-                   } catch (err) { return 'Error'; }
+                   } catch (err) { console.warn(`Error fetching player ${pid} for activity:`, err); return 'Error'; }
                 };
 
+                // Process each game document
                 for (const doc of snapshot.docs) {
                      const game = { id: doc.id, ...doc.data() };
                      let description = "Game played";
@@ -625,26 +638,30 @@
 
                     const participants = game.participants || [];
                     const participantNames = await Promise.all(participants.map(id => getPlayerNameModal(id)));
-                    const currentPlayerName = playerCacheModal[playerId] || await getPlayerNameModal(playerId);
+                    const currentPlayerName = playerCacheModal[playerId] || await getPlayerNameModal(playerId); // Ensure current player name is fetched
 
+                    // Create descriptive text based on outcome and participants
                     if (game.outcome === 'Win/Loss' && participants.length >= 2) {
-                        const winnerName = await getPlayerNameModal(participants[0]);
-                        const loserName = await getPlayerNameModal(participants[1]);
+                        const winnerName = await getPlayerNameModal(participants[0]); // Assumes winner is first
+                        const loserName = await getPlayerNameModal(participants[1]); // Assumes loser is second
                          if (winnerName === currentPlayerName) {
                              description = `Beat ${loserName} in ${gameType}`;
                          } else if (loserName === currentPlayerName) {
                              description = `Lost to ${winnerName} in ${gameType}`;
                          } else {
+                            // If the current player wasn't involved (shouldn't happen with query but good fallback)
                             description = `${winnerName} beat ${loserName} in ${gameType}`;
                          }
                     } else if (game.outcome === 'Draw' && participants.length >= 2) {
+                        // Find the opponent's name
                         const opponentName = participantNames.find(name => name !== currentPlayerName) || 'opponent';
                         description = `Drew against ${opponentName} in ${gameType}`;
                     } else {
+                        // Generic description if outcome isn't Win/Loss or Draw, or if participants < 2
                         const otherPlayerNames = participantNames.filter(name => name !== currentPlayerName).join(', ');
                         description = `Played ${gameType}${otherPlayerNames ? ' with ' + otherPlayerNames : ''}`;
                     }
-                     if (game.score) description += ` (${game.score})`;
+                     if (game.score) description += ` (${game.score})`; // Append score if available
 
                     const li = document.createElement('li');
                     li.innerHTML = `<span class="text-gray-500 text-xs mr-2">[${gameDate}]</span> ${description}`;
@@ -666,7 +683,8 @@
 
         // --- Record Game Modal Functions ---
         function openRecordGameModal() {
-            if (!recordGameModal || !db) { console.error("Record game modal or DB not ready."); return; }
+            // Note: The modal container #record-game-modal is now shared with Edit Game
+            if (!recordGameModal || !db) { console.error("Record game modal container or DB not ready."); return; }
 
             const modalContentHTML = `
                 <div class="modal-content">
@@ -677,7 +695,7 @@
                             <label for="game-type-select-modal" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label>
                             <select id="game-type-select-modal" name="game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
                                 <option value="">Select Game Type</option>
-                            </select>
+                                </select>
                         </div>
                         <div class="mb-4">
                             <label for="winner_player" class="block text-gray-700 text-sm font-bold mb-2">Winner:</label>
@@ -708,8 +726,9 @@
                     </form>
                 </div>`;
 
-            recordGameModal.innerHTML = modalContentHTML;
+            recordGameModal.innerHTML = modalContentHTML; // Inject HTML into the container
 
+            // Get references to elements within the newly injected HTML
             const closeButton = recordGameModal.querySelector('#close-record-game-modal-btn');
             const cancelButton = recordGameModal.querySelector('#cancel-record-game-modal-btn');
             const modalForm = recordGameModal.querySelector('#record-game-form');
@@ -718,41 +737,45 @@
             const loserSelect = recordGameModal.querySelector('#loser_player');
             const winnerLabel = recordGameModal.querySelector('label[for="winner_player"]');
             const loserLabel = recordGameModal.querySelector('label[for="loser_player"]');
-            const gameTypeSelect = recordGameModal.querySelector('#game-type-select-modal'); // Get the select element
+            const gameTypeSelect = recordGameModal.querySelector('#game-type-select-modal');
 
+            // Attach event listeners
             if (closeButton) closeButton.addEventListener('click', closeRecordGameModal);
             if (cancelButton) cancelButton.addEventListener('click', closeRecordGameModal);
             if (modalForm) modalForm.addEventListener('submit', handleRecordGameSubmit);
 
-             if(drawCheckbox && winnerLabel && loserLabel && winnerSelect && loserSelect) {
+             // Logic to change labels based on Draw checkbox
+             if(drawCheckbox && winnerLabel && loserLabel) {
                  drawCheckbox.addEventListener('change', (e) => {
                      const isChecked = e.target.checked;
                      winnerLabel.textContent = isChecked ? 'Player 1:' : 'Winner:';
                      loserLabel.textContent = isChecked ? 'Player 2:' : 'Loser:';
+                     // Optionally disable/enable score or adjust validation based on draw
                  });
              }
 
-            // Populate game type dropdown dynamically
+            // Populate game type dropdown dynamically using current config
             if (gameTypeSelect) {
                 populateSelectWithOptions(gameTypeSelect, gameTypesConfig, 'Select Game Type');
             }
 
             populateRecordGameDropdowns(); // Populate player dropdowns
-            recordGameModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            recordGameModal.classList.add('active'); // Show the modal
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
         }
 
         function closeRecordGameModal() {
+            // Closes the modal used for both Recording and Editing
             if (recordGameModal) {
                 recordGameModal.classList.remove('active');
-                recordGameModal.innerHTML = '';
+                recordGameModal.innerHTML = ''; // Clear content to ensure clean state next time
                 document.body.style.overflow = '';
             }
         }
 
         // --- Add Player Modal Functions ---
         function openAddPlayerModal() {
-            if (!addPlayerModal || !db) { console.error("Add Player modal or DB not ready."); return; }
+            if (!addPlayerModal || !db) { console.error("Add Player modal container or DB not ready."); return; }
 
             const modalContentHTML = `
                 <div class="modal-content">
@@ -774,8 +797,9 @@
                     </form>
                 </div>`;
 
-            addPlayerModal.innerHTML = modalContentHTML;
+            addPlayerModal.innerHTML = modalContentHTML; // Inject HTML
 
+            // Get references and attach listeners
             const closeButton = addPlayerModal.querySelector('#close-add-player-modal-btn');
             const cancelButton = addPlayerModal.querySelector('#cancel-add-player-modal-btn');
             const modalForm = addPlayerModal.querySelector('#add-player-form');
@@ -784,21 +808,21 @@
             if (cancelButton) cancelButton.addEventListener('click', closeAddPlayerModal);
             if (modalForm) modalForm.addEventListener('submit', handleAddPlayerSubmit);
 
-            addPlayerModal.classList.add('active');
+            addPlayerModal.classList.add('active'); // Show modal
             document.body.style.overflow = 'hidden';
         }
 
         function closeAddPlayerModal() {
              if (addPlayerModal) {
                 addPlayerModal.classList.remove('active');
-                addPlayerModal.innerHTML = '';
+                addPlayerModal.innerHTML = ''; // Clear content
                 document.body.style.overflow = '';
             }
         }
 
         // --- Create Tournament Modal Functions ---
         function openCreateTournamentModal() {
-             if (!createTournamentModal || !db) { console.error("Create Tournament modal or DB not ready."); return; }
+             if (!createTournamentModal || !db) { console.error("Create Tournament modal container or DB not ready."); return; }
 
              const modalContentHTML = `
                 <div class="modal-content">
@@ -817,12 +841,13 @@
                      </form>
                 </div>`;
 
-            createTournamentModal.innerHTML = modalContentHTML;
+            createTournamentModal.innerHTML = modalContentHTML; // Inject HTML
 
+            // Get references and attach listeners
             const closeButton = createTournamentModal.querySelector('#close-create-tournament-modal-btn');
             const cancelButton = createTournamentModal.querySelector('#cancel-create-tournament-modal-btn');
             const modalForm = createTournamentModal.querySelector('#create-tournament-form');
-            const gameTypeSelect = modalForm.querySelector('#tournament-game-type-select'); // Get select
+            const gameTypeSelect = modalForm.querySelector('#tournament-game-type-select');
 
             if (closeButton) closeButton.addEventListener('click', closeCreateTournamentModal);
             if (cancelButton) cancelButton.addEventListener('click', closeCreateTournamentModal);
@@ -831,24 +856,25 @@
                 if (gameTypeSelect) {
                      // Populate game type dropdown dynamically
                     populateSelectWithOptions(gameTypeSelect, gameTypesConfig, 'Select Type');
+                    // Add listener to populate participants when game type changes
                     gameTypeSelect.addEventListener('change', populateTournamentParticipantsSelect);
                 }
-                populateTournamentParticipantsSelect(); // Initial population attempt
+                populateTournamentParticipantsSelect(); // Initial population attempt (might show placeholder)
             }
 
-            createTournamentModal.classList.add('active');
+            createTournamentModal.classList.add('active'); // Show modal
             document.body.style.overflow = 'hidden';
         }
 
         function closeCreateTournamentModal() {
             if (createTournamentModal) {
                 createTournamentModal.classList.remove('active');
-                createTournamentModal.innerHTML = '';
+                createTournamentModal.innerHTML = ''; // Clear content
                 document.body.style.overflow = '';
             }
         }
 
-        // --- Add Game Modal Functions (NEW) ---
+        // --- Add Game Modal Functions ---
         function openAddGameModal() {
             if (!addGameModal) { console.error("Add Game modal element not found."); return; }
 
@@ -874,8 +900,9 @@
                     </form>
                 </div>`;
 
-            addGameModal.innerHTML = modalContentHTML;
+            addGameModal.innerHTML = modalContentHTML; // Inject HTML
 
+            // Get references and attach listeners
             const closeButton = addGameModal.querySelector('#close-add-game-modal-btn');
             const cancelButton = addGameModal.querySelector('#cancel-add-game-modal-btn');
             const modalForm = addGameModal.querySelector('#add-game-form');
@@ -884,20 +911,21 @@
             if (cancelButton) cancelButton.addEventListener('click', closeAddGameModal);
             if (modalForm) modalForm.addEventListener('submit', handleAddGameSubmit);
 
-            addGameModal.classList.add('active');
+            addGameModal.classList.add('active'); // Show modal
             document.body.style.overflow = 'hidden';
         }
 
         function closeAddGameModal() {
              if (addGameModal) {
                 addGameModal.classList.remove('active');
-                addGameModal.innerHTML = '';
+                addGameModal.innerHTML = ''; // Clear content
                 document.body.style.overflow = '';
             }
         }
 
 
         // --- Populate Dropdowns from Firestore ---
+        // Populates player dropdowns for the Record Game modal
         async function populateRecordGameDropdowns() {
             const winnerSelect = document.getElementById('winner_player');
             const loserSelect = document.getElementById('loser_player');
@@ -922,30 +950,30 @@
             }
         }
 
-        async function populateAddTeamDropdowns() {
-            // May not be needed if Add Team feature isn't implemented
-        }
-
+        // Populates the participant checklist in the Create Tournament modal
         async function populateTournamentParticipantsSelect() {
              const participantsContainer = document.getElementById('tournament-participants-list');
-             const gameTypeSelect = document.getElementById('tournament-game-type-select');
+             const gameTypeSelect = document.getElementById('tournament-game-type-select'); // Check if game type is selected
 
              if (!participantsContainer || !gameTypeSelect) {
                  console.warn("Cannot populate tournament participants: elements missing.");
+                 if(participantsContainer) participantsContainer.innerHTML = '<p class="text-gray-500 p-2">Error initializing participant list.</p>';
                  return;
              }
 
              const selectedGameType = gameTypeSelect.value;
              participantsContainer.innerHTML = '<p class="text-gray-500 p-2">Loading participants...</p>';
 
-             if (selectedGameType === "1v1" || selectedGameType === "ffa") {
+             // Currently only supports individual players (1v1, FFA)
+             // TODO: Extend to support teams if needed
+             if (selectedGameType) { // Only load if a game type is selected
                  try {
                      if (!db) throw new Error("DB not connected");
                      const snapshot = await db.collection('players').orderBy('name').get();
                      if (snapshot.empty) {
                          participantsContainer.innerHTML = '<p class="text-gray-500 p-2">No players found.</p>';
                      } else {
-                         participantsContainer.innerHTML = '';
+                         participantsContainer.innerHTML = ''; // Clear loading message
                          snapshot.forEach(doc => {
                              const player = { id: doc.id, ...doc.data() };
                              const div = document.createElement('div');
@@ -961,11 +989,8 @@
                      console.error("Error fetching players for tournament:", error);
                      participantsContainer.innerHTML = '<p class="text-red-500 p-2">Error loading players.</p>';
                  }
-
-             } else if (selectedGameType === "2v2" || selectedGameType === "team") {
-                  participantsContainer.innerHTML = '<p class="text-gray-500 p-2 italic">Team selection not yet implemented.</p>';
              } else {
-                  participantsContainer.innerHTML = '<p class="text-gray-500 p-2">Select a game type (1v1, 2v2, etc.)</p>';
+                  participantsContainer.innerHTML = '<p class="text-gray-500 p-2">Select a game type first.</p>';
              }
          }
 
@@ -979,15 +1004,17 @@
 
             try {
                 const gamesCollection = db.collection('games');
-                const snapshot = await gamesCollection.orderBy('date_played', 'asc').get();
+                // Order by date, newest first for better visibility
+                const snapshot = await gamesCollection.orderBy('date_played', 'desc').get();
 
                 if (snapshot.empty) {
                     resultsTableBody.innerHTML = '<tr><td colspan="4" class="text-gray-500 text-center py-4">No game results found.</td></tr>';
                     return;
                 }
 
-                resultsTableBody.innerHTML = '';
+                resultsTableBody.innerHTML = ''; // Clear loading state
 
+                // Player name cache to reduce reads
                 const playerCache = {};
                 const getPlayerName = async (playerId) => {
                    if (!playerId) return 'N/A';
@@ -1000,21 +1027,24 @@
                    } catch (err) { console.warn(`[RESULTS] Error fetching player ${playerId}:`, err); return 'Error'; }
                 };
 
+                // Iterate through game documents and build table rows
                 for (const doc of snapshot.docs) {
                     const game = { id: doc.id, ...doc.data() };
                     const tr = document.createElement('tr');
                     tr.className = 'border-b hover:bg-gray-50';
-                    tr.setAttribute('data-game-id', game.id);
+                    tr.setAttribute('data-game-id', game.id); // Store game ID on the row
 
+                    // Format date
                     let gameDateStr = 'N/A';
                     if (game.date_played && typeof game.date_played.toDate === 'function') {
                         try { gameDateStr = game.date_played.toDate().toLocaleDateString(); }
                         catch (e) { console.warn("Error formatting date:", e, game.date_played); }
                     }
 
-                    // Use gameTypesConfig for display name
+                    // Get game type display name from config
                     const gameTypeDisplay = gameTypesConfig[game.game_type] || game.game_type || 'N/A';
 
+                    // Build description string
                     let description = gameTypeDisplay;
                     const participants = game.participants || [];
 
@@ -1022,23 +1052,26 @@
                         const participantNames = await Promise.all(participants.map(id => getPlayerName(id)));
 
                         if (game.outcome === 'Win/Loss' && participants.length >= 2) {
+                             // Assumes winner is first in participants array for Win/Loss
                              description = `${gameTypeDisplay}: <b>${participantNames[0]}</b> defeated ${participantNames[1]}`;
                         } else if (game.outcome === 'Draw' && participants.length >= 2) {
                              description = `${gameTypeDisplay}: ${participantNames[0]} drew with ${participantNames[1]}`;
-                        } else if (game.outcome === 'Ranked' && participants.length > 0) {
+                        } else if (game.outcome === 'Ranked' && participants.length > 0) { // Example for other outcomes
                              description = `${gameTypeDisplay}: ${participantNames.map((name, index) => `${index + 1}. ${name}`).join(', ')}`;
-                        } else {
+                        } else { // Fallback for unknown or simple participation
                             description = `${gameTypeDisplay}: ${participantNames.join(' vs ')}`;
                         }
-                        if (game.score) description += ` <span class="text-gray-600">(${game.score})</span>`;
+                        if (game.score) description += ` <span class="text-gray-600">(${game.score})</span>`; // Add score if present
                     }
 
+                    // Add Edit/Delete buttons (visible only to admin)
                     const actionsCellContent = `
                         <div class="admin-only">
                             <button class="text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 px-2 py-1 rounded edit-game-btn">Edit</button>
                             <button class="text-xs bg-red-100 text-red-700 hover:bg-red-200 px-2 py-1 rounded delete-game-btn">Delete</button>
                         </div>`;
 
+                    // Populate table row cells
                     tr.innerHTML = `
                         <td class="px-4 py-3 text-sm">${gameDateStr}</td>
                         <td class="px-4 py-3 text-sm">${gameTypeDisplay}</td>
@@ -1056,33 +1089,349 @@
         }
 
 
-        // --- Manage Tournaments List Population ---
+        // --- Manage Tournaments List Population (Placeholder/Future) ---
         async function populateManageTournamentsList() {
-            // This function might be repurposed or removed if full management isn't needed
-            // For now, it's not called by the main UI flow
+            // This function is currently not actively used but could be for a dedicated admin management page
+            console.warn("populateManageTournamentsList function called but not fully implemented.");
         }
 
 
         // --- Action Handlers for Edit/Delete Buttons ---
-        function handleEditGame(gameId) {
-             console.log(`Edit game clicked: ${gameId}`);
-             alert(`Edit functionality for game ${gameId} not implemented yet.`);
+
+        // --- RESULTS SECTION: Edit/Delete Game ---
+
+        // This function fetches the game data and calls the function to open the edit modal
+        async function handleEditGame(gameId) {
+            console.log(`[EDIT GAME] Requesting edit for game ID: ${gameId}`);
+            if (!db) {
+                alert("Database connection error.");
+                return;
+            }
+            try {
+                // Get a reference to the specific game document in Firestore
+                const gameRef = db.collection('games').doc(gameId);
+                // Fetch the document data
+                const docSnap = await gameRef.get();
+
+                // Check if the document exists
+                if (!docSnap.exists) {
+                    alert("Error: Game data not found.");
+                    console.error(`[EDIT GAME] Game document with ID ${gameId} not found.`);
+                    return;
+                }
+                // Combine the ID and data into an object
+                const gameData = { id: docSnap.id, ...docSnap.data() };
+                console.log("[EDIT GAME] Fetched game data:", gameData);
+
+                // Call the function to open the modal, passing the fetched data
+                openEditGameModal(gameData); // <-- This opens the new edit modal
+
+            } catch (error) {
+                console.error("[EDIT GAME] Error fetching game details for edit:", error);
+                alert(`Failed to load game details: ${error.message}`);
+            }
         }
 
+        // *** NEW FUNCTION: Opens the Edit Game Modal ***
+        async function openEditGameModal(gameData) {
+            // Use the same modal container as the Record Game modal
+            const editGameModalContainer = document.getElementById('record-game-modal');
+            if (!editGameModalContainer || !db) {
+                console.error("Edit game modal container or DB not ready.");
+                return;
+            }
+
+            // Determine winner/loser or player1/player2 based on outcome
+            const isDraw = gameData.outcome === 'Draw';
+            // Participants might be sorted differently depending on how they were saved.
+            // It's safer to rely on the order for win/loss, but allow for flexibility.
+            const player1Id = gameData.participants?.[0] || '';
+            const player2Id = gameData.participants?.[1] || '';
+
+            // Format the date for the input field (YYYY-MM-DD)
+            let gameDateStr = '';
+            if (gameData.date_played && typeof gameData.date_played.toDate === 'function') {
+                try {
+                    const dateObj = gameData.date_played.toDate();
+                    // Ensure month and day are two digits
+                    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+                    const day = dateObj.getDate().toString().padStart(2, '0');
+                    gameDateStr = `${dateObj.getFullYear()}-${month}-${day}`;
+                } catch (e) {
+                    console.warn("Error formatting date for input:", e, gameData.date_played);
+                }
+            }
+
+            // HTML content for the edit modal form
+            const modalContentHTML = `
+                <div class="modal-content">
+                    <button id="close-edit-game-modal-btn" class="modal-close-button">&times;</button>
+                    <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Edit Game Result (ID: ${gameData.id})</h2>
+                    <form id="edit-game-form" data-game-id="${gameData.id}">
+                        <div class="mb-4">
+                            <label for="edit-game-type-select-modal" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label>
+                            <select id="edit-game-type-select-modal" name="game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                                <option value="">Select Game Type</option>
+                                </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="edit-player1" class="block text-gray-700 text-sm font-bold mb-2">${isDraw ? 'Player 1:' : 'Winner:'}</label>
+                            <select id="edit-player1" name="player1" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                                <option value="">Select Player</option>
+                                </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="edit-player2" class="block text-gray-700 text-sm font-bold mb-2">${isDraw ? 'Player 2:' : 'Loser:'}</label>
+                            <select id="edit-player2" name="player2" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                                <option value="">Select Player</option>
+                                </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="edit-score" class="block text-gray-700 text-sm font-bold mb-2">Score (Optional):</label>
+                            <input type="text" id="edit-score" name="score" value="${gameData.score || ''}" placeholder="e.g. 8-3, 21-15" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700">
+                        </div>
+                         <div class="mb-4">
+                            <label for="edit-date_played" class="block text-gray-700 text-sm font-bold mb-2">Date Played:</label>
+                            <input type="date" id="edit-date_played" name="date_played" value="${gameDateStr}" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                        </div>
+                        <div class="mb-4">
+                             <label class="inline-flex items-center">
+                                <input type="checkbox" id="edit-is_draw" name="is_draw" class="form-checkbox h-5 w-5 text-blue-600" ${isDraw ? 'checked' : ''}>
+                                <span class="ml-2 text-gray-700">Is this a Draw?</span>
+                             </label>
+                         </div>
+                        <div class="mt-6 flex justify-end space-x-3">
+                            <button type="button" id="cancel-edit-game-modal-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-5 rounded-lg">Cancel</button>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-lg">Save Changes</button>
+                        </div>
+                    </form>
+                </div>`;
+
+            editGameModalContainer.innerHTML = modalContentHTML; // Inject HTML
+
+            // Get references to elements within the new HTML
+            const closeButton = editGameModalContainer.querySelector('#close-edit-game-modal-btn');
+            const cancelButton = editGameModalContainer.querySelector('#cancel-edit-game-modal-btn');
+            const modalForm = editGameModalContainer.querySelector('#edit-game-form');
+            const drawCheckbox = editGameModalContainer.querySelector('#edit-is_draw');
+            const player1Select = editGameModalContainer.querySelector('#edit-player1');
+            const player2Select = editGameModalContainer.querySelector('#edit-player2');
+            const player1Label = editGameModalContainer.querySelector('label[for="edit-player1"]');
+            const player2Label = editGameModalContainer.querySelector('label[for="edit-player2"]');
+            const gameTypeSelect = editGameModalContainer.querySelector('#edit-game-type-select-modal');
+            const dateInput = editGameModalContainer.querySelector('#edit-date_played');
+
+            // Attach event listeners for the new modal elements
+            if (closeButton) closeButton.addEventListener('click', closeEditGameModal); // Use specific close function
+            if (cancelButton) cancelButton.addEventListener('click', closeEditGameModal); // Use specific close function
+            if (modalForm) modalForm.addEventListener('submit', handleEditGameSubmit); // Use specific submit handler
+
+            // Draw checkbox logic to update labels
+            if (drawCheckbox && player1Label && player2Label) {
+                drawCheckbox.addEventListener('change', (e) => {
+                    const isChecked = e.target.checked;
+                    player1Label.textContent = isChecked ? 'Player 1:' : 'Winner:';
+                    player2Label.textContent = isChecked ? 'Player 2:' : 'Loser:';
+                });
+            }
+
+            // Populate dropdowns and set initial values
+            try {
+                // Populate Game Types and set current value
+                if (gameTypeSelect) {
+                    populateSelectWithOptions(gameTypeSelect, gameTypesConfig, 'Select Game Type');
+                    gameTypeSelect.value = gameData.game_type || '';
+                }
+                // Populate Players and set current values
+                if (player1Select && player2Select) {
+                    await populateEditGamePlayerDropdowns(player1Select, player2Select); // Use specific helper
+                    player1Select.value = player1Id;
+                    player2Select.value = player2Id;
+                }
+                // Ensure date is set correctly, default to today if missing/invalid
+                 if (!gameDateStr && dateInput) {
+                    dateInput.value = new Date().toISOString().split('T')[0];
+                    console.warn("[EDIT GAME] No valid date found in game data, defaulting to today.");
+                 }
+
+            } catch (error) {
+                console.error("[EDIT GAME] Error populating dropdowns:", error);
+                alert("Error populating form fields. Please try again.");
+                closeEditGameModal(); // Close if population fails
+                return;
+            }
+
+            // Show the modal
+            editGameModalContainer.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+        }
+
+        // *** NEW HELPER: Populates player dropdowns specifically for the edit modal ***
+        async function populateEditGamePlayerDropdowns(select1, select2) {
+            if (!select1 || !select2 || !db) {
+                console.error("Cannot populate edit game player dropdowns (elements or DB missing).");
+                return;
+            }
+            select1.innerHTML = '<option value="">Select Player</option>'; // Reset
+            select2.innerHTML = '<option value="">Select Player</option>'; // Reset
+            try {
+                const snapshot = await db.collection('players').orderBy('name').get();
+                if (snapshot.empty) return; // No players to add
+
+                snapshot.forEach(doc => {
+                    const player = { id: doc.id, ...doc.data() };
+                    const optionHTML = `<option value="${player.id}">${player.name || 'Unnamed Player'}</option>`;
+                    select1.insertAdjacentHTML('beforeend', optionHTML);
+                    select2.insertAdjacentHTML('beforeend', optionHTML);
+                });
+            } catch (error) {
+                console.error("Error fetching players for edit game dropdowns:", error);
+                throw error; // Re-throw error to be caught by the caller (openEditGameModal)
+            }
+        }
+
+        // *** NEW FUNCTION: Closes the Edit Game Modal (uses the same container) ***
+        function closeEditGameModal() {
+            const editGameModalContainer = document.getElementById('record-game-modal');
+            if (editGameModalContainer) {
+                editGameModalContainer.classList.remove('active');
+                editGameModalContainer.innerHTML = ''; // Clear the content
+                document.body.style.overflow = ''; // Restore scroll
+            }
+        }
+
+        // *** NEW FUNCTION: Handles the submission of the Edit Game form ***
+        async function handleEditGameSubmit(event) {
+            event.preventDefault(); // Prevent default page reload
+            const form = event.target;
+            const gameId = form.getAttribute('data-game-id'); // Get game ID stored on the form
+
+            if (!db || !gameId) {
+                alert("Error: Database connection or Game ID is missing.");
+                return;
+            }
+
+            // --- Form Validation ---
+            let isValid = true;
+            form.querySelectorAll('select[required], input[required]').forEach(field => {
+                field.classList.remove('border-red-500'); // Clear previous errors
+                if (!field.value) {
+                    isValid = false;
+                    field.classList.add('border-red-500'); // Mark empty required fields
+                }
+            });
+            const player1Select = form.querySelector('#edit-player1');
+            const player2Select = form.querySelector('#edit-player2');
+            const player1Id = player1Select.value;
+            const player2Id = player2Select.value;
+            const isDraw = form.querySelector('#edit-is_draw').checked;
+            const gameType = form.querySelector('#edit-game-type-select-modal').value;
+            const dateValue = form.querySelector('#edit-date_played').value; // Get date as YYYY-MM-DD string
+
+            // Specific validation checks
+            if (!gameType) {
+                alert("Please select a game type.");
+                form.querySelector('#edit-game-type-select-modal').classList.add('border-red-500');
+                isValid = false;
+            }
+            if (!dateValue) {
+                alert("Please select a date.");
+                 form.querySelector('#edit-date_played').classList.add('border-red-500');
+                isValid = false;
+            }
+            if (!isDraw && player1Id === player2Id) {
+                alert("Winner and Loser cannot be the same player unless it's a draw.");
+                player1Select.classList.add('border-red-500');
+                player2Select.classList.add('border-red-500');
+                isValid = false;
+            } else if (isDraw && (!player1Id || !player2Id)) {
+                // For draws, both players must be selected
+                alert("Please select both players for a draw.");
+                if (!player1Id) player1Select.classList.add('border-red-500');
+                if (!player2Id) player2Select.classList.add('border-red-500');
+                isValid = false;
+            }
+             if (!isValid) { alert("Please correct the errors in the form."); return; }
+             // --- End Validation ---
+
+             // Convert date string to Firebase Timestamp
+             let firestoreDate;
+             try {
+                 // Use a specific time (like midday UTC) to avoid potential timezone shifts near midnight
+                 const dateObj = new Date(dateValue + 'T12:00:00Z');
+                 if (isNaN(dateObj.getTime())) throw new Error("Invalid date object created"); // Check if date is valid
+                 firestoreDate = firebase.firestore.Timestamp.fromDate(dateObj);
+             } catch(e) {
+                 console.error("Error converting date string to Timestamp:", e);
+                 alert("Invalid date format. Please ensure the date is correct (YYYY-MM-DD).");
+                 form.querySelector('#edit-date_played').classList.add('border-red-500');
+                 return;
+             }
+
+            // Prepare the data object for Firestore update
+            const updatedGameData = {
+                game_type: gameType,
+                date_played: firestoreDate, // Use the converted timestamp
+                score: form.querySelector('#edit-score').value.trim() || null, // Store score or null
+                outcome: isDraw ? 'Draw' : 'Win/Loss',
+                // Ensure participants are stored consistently:
+                // - For Win/Loss: [winnerId, loserId]
+                // - For Draw: [player1Id, player2Id] sorted alphabetically to ensure consistency
+                participants: isDraw ? [player1Id, player2Id].sort() : [player1Id, player2Id],
+                last_updated: firebase.firestore.FieldValue.serverTimestamp() // Add a timestamp for the update
+            };
+
+            console.log(`[EDIT GAME] Submitting updates for Game ID ${gameId}:`, updatedGameData);
+
+            // **IMPORTANT**: Updating Elo scores based on edited results is complex.
+            // You would need to:
+            // 1. Get the *original* game data before the edit.
+            // 2. Potentially reverse the Elo changes from the original result.
+            // 3. Calculate and apply the Elo changes based on the *new* result.
+            // This is omitted here for simplicity but is crucial for maintaining correct rankings.
+            // Consider adding a warning or disabling Elo recalculation for edits initially.
+            // alert("Warning: Elo scores are NOT recalculated automatically on edit in this version.");
+
+            try {
+                // Get a reference to the specific game document and update it
+                const gameRef = db.collection('games').doc(gameId);
+                await gameRef.update(updatedGameData);
+
+                alert(`Game ${gameId} updated successfully! (Note: Elo rankings may need manual recalculation or a more complex update logic)`);
+                closeEditGameModal(); // Close the modal on success
+                await populateResultsTable(); // Refresh the results table to show changes
+                await populateDashboard(); // Refresh dashboard as stats might change (if implemented)
+
+            } catch (error) {
+                console.error(`Error updating game ${gameId}:`, error);
+                alert(`Failed to update game: ${error.message}`);
+            }
+        }
+
+
+        // This function deletes the game - ensure it handles potential side effects (like Elo) if needed.
         async function handleDeleteGame(gameId, tableRowElement) {
-             console.log(`Delete game clicked: ${gameId}`);
+             console.log(`[DELETE GAME] Requesting delete for game ID: ${gameId}`);
              if (!db) { console.error("Firestore not initialized."); return; }
-             if (confirm(`Are you sure you want to delete game result ${gameId}?\nThis may affect rankings and cannot be undone.`)) {
+
+             // **IMPORTANT**: Deleting games requires reversing any Elo changes associated with it.
+             // This logic is complex and not included here. A simpler approach might be to "soft delete"
+             // by adding an 'is_deleted' flag instead of actually removing the document.
+             // The current implementation performs a hard delete without Elo reversal.
+             if (confirm(`Are you sure you want to delete game result ${gameId}?\nWARNING: This action is basic and DOES NOT recalculate Elo rankings. Rankings might become inaccurate.`)) {
                  try {
-                     // TODO: Before deleting the game, consider reversing the Elo change.
+                     // Delete the game document from Firestore
                      await db.collection('games').doc(gameId).delete();
                      console.log(`[FIRESTORE] Firestore document deleted: games/${gameId}`);
+
+                     // Remove the row from the UI table
                      if (tableRowElement) tableRowElement.remove();
+
                      alert(`Game ${gameId} deleted.`);
-                     await populateDashboard(); // Refresh dashboard
-                     // Refresh rankings if the current view might be affected
+                     await populateDashboard(); // Refresh dashboard (recent games)
+                     // Refresh rankings if the rankings section is currently visible
                      if (document.getElementById('rankings-section') && !document.getElementById('rankings-section').classList.contains('hidden')) {
-                         await updateRankingsVisibility();
+                         await updateRankingsVisibility(); // Refresh rankings (though they might be inaccurate now)
                      }
                  } catch (error) {
                      console.error("Error deleting game:", error);
@@ -1090,9 +1439,12 @@
                  }
              }
         }
+
+        // --- Tournament Edit/Delete Placeholders ---
         function handleEditTournament(tournamentId) {
             console.log(`Edit tournament clicked: ${tournamentId}`);
             alert(`Edit functionality for tournament ${tournamentId} not implemented yet.`);
+            // TODO: Implement tournament editing modal and logic
         }
         async function handleDeleteTournament(tournamentId, listItemElement) {
             console.log(`Delete tournament clicked: ${tournamentId}`);
@@ -1119,9 +1471,10 @@
             if (!playerInfoModal) return;
             if (editMode) {
                  playerInfoModal.classList.add('modal-editing');
-                 playerInfoModal.querySelector('#modal-edit-player-name-input')?.focus();
+                 playerInfoModal.querySelector('#modal-edit-player-name-input')?.focus(); // Focus name input
             } else {
                  playerInfoModal.classList.remove('modal-editing');
+                 // Optionally reset input fields to original values if needed
             }
         }
         async function savePlayerChanges() {
@@ -1132,21 +1485,25 @@
             const nameInput = playerInfoModal.querySelector('#modal-edit-player-name-input');
             const iconInput = playerInfoModal.querySelector('#modal-edit-player-icon-input');
             const newName = nameInput?.value.trim();
-            const newIconUrl = iconInput?.value.trim() || null;
+            const newIconUrl = iconInput?.value.trim() || null; // Store null if empty
 
             if (!newName) { alert("Player name cannot be empty."); nameInput?.focus(); return; }
 
-            // Only update name and iconUrl here. Elo and stats are updated via game results.
+            // Prepare data for update (only name and iconUrl are editable here)
             const updatedData = { name: newName, iconUrl: newIconUrl };
 
             try {
                  await db.collection('players').doc(playerId).update(updatedData);
                  alert("Player details updated successfully!");
-                 togglePlayerModalEdit(false);
+                 togglePlayerModalEdit(false); // Switch back to view mode
+
+                 // Update the displayed name and icon in the modal immediately
                  playerInfoModal.querySelector('#modal-player-name').textContent = newName;
                  const iconSrc = newIconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(newName || '?')}&background=E0E7FF&color=4F46E5&size=80`;
                  playerInfoModal.querySelector('#modal-player-icon').src = iconSrc;
-                 if (playersGrid) await populatePlayersList(); // Refresh player grid
+
+                 if (playersGrid) await populatePlayersList(); // Refresh player grid on the Players page
+
             } catch (error) {
                 console.error(`Error updating player ${playerId}:`, error);
                 alert(`Failed to update player: ${error.message}`);
@@ -1158,16 +1515,21 @@
              const playerName = playerInfoModal.querySelector('#modal-player-name')?.textContent || 'this player';
              if (!playerId) { alert("Error: No player ID found."); return; }
 
-             // IMPORTANT: Need to handle deleting games/tournament participation associated with the player in a real app
-             if (confirm(`Are you sure you want to delete ${playerName} (${playerId})?\nThis cannot be undone and will remove them from all records.`)) {
+             // IMPORTANT: Deleting a player has significant implications.
+             // - Associated game results will reference a non-existent player.
+             // - Tournament participation records might break.
+             // - A "soft delete" (marking as inactive) is often safer in real applications.
+             // This implementation performs a hard delete.
+             if (confirm(`Are you sure you want to delete ${playerName} (${playerId})?\nWARNING: This cannot be undone and may affect historical game records.`)) {
                  try {
                      await db.collection('players').doc(playerId).delete();
                      alert(`${playerName} deleted successfully!`);
-                     closePlayerModal();
-                     // Refresh relevant lists
+                     closePlayerModal(); // Close the modal
+
+                     // Refresh relevant UI sections
                      if (playersGrid) await populatePlayersList();
-                     await populateDashboard();
-                     await populateResultsTable();
+                     await populateDashboard(); // Refresh dashboard (top players)
+                     await populateResultsTable(); // Refresh results (player names might show as 'Unknown')
                      await updateRankingsVisibility(); // Refresh rankings
 
                  } catch (error) {
@@ -1181,11 +1543,12 @@
         async function populateDashboard() {
             console.log("[DASHBOARD] Populating...");
             if (!db) { console.warn("[DASHBOARD] DB not ready, skipping population."); return; }
+            // Use Promise.all to load dashboard sections concurrently
             await Promise.all([
                 populateRecentGamesList('recent-games-list', 5),
                 populateTopPlayersList('top-players-list', 5), // Shows overall Elo
-                populateTopTeamsList('top-teams-list', 5), // Placeholder
-                populateTournamentsList('dashboard-tournaments-list', 3)
+                populateTopTeamsList('top-teams-list', 5), // Placeholder for team rankings
+                populateTournamentsList('dashboard-tournaments-list', 3) // Show recent tournaments
             ]);
             console.log("[DASHBOARD] Population complete.");
         }
@@ -1203,8 +1566,9 @@
                     listElement.innerHTML = `<li class="text-gray-500">No games recorded yet.</li>`;
                     return;
                 }
-                listElement.innerHTML = '';
+                listElement.innerHTML = ''; // Clear loading
 
+                 // Cache player names for efficiency
                  const nameCache = {};
                  const getName = async (id) => {
                      if (!id) return 'N/A';
@@ -1217,6 +1581,7 @@
                      } catch (err) { return 'Error'; }
                  };
 
+                // Process each recent game
                 for (const doc of snapshot.docs) {
                     const game = { id: doc.id, ...doc.data() };
                     const gameDate = game.date_played?.toDate ? game.date_played.toDate().toLocaleDateString() : 'N/A';
@@ -1228,15 +1593,16 @@
                         const p1Name = await getName(participants[0]);
                         const p2Name = await getName(participants[1]);
                         if (game.outcome === 'Win/Loss') {
+                             // Assumes winner is first in 'participants' for Win/Loss
                              description = `${gameType}: <b>${p1Name}</b> beat ${p2Name}`;
-                        } else {
+                        } else { // Draw
                              description = `${gameType}: ${p1Name} drew with ${p2Name}`;
                         }
-                    } else if (participants.length > 0) {
+                    } else if (participants.length > 0) { // Fallback description
                         const names = await Promise.all(participants.map(id => getName(id)));
                         description = `${gameType}: ${names.join(', ')}`;
                     }
-                    if (game.score) description += ` (${game.score})`;
+                    if (game.score) description += ` (${game.score})`; // Append score
 
                     const li = document.createElement('li');
                     li.className = 'border-b pb-2 mb-2 last:border-0 last:mb-0 last:pb-0 text-sm';
@@ -1269,7 +1635,7 @@
                  if (snapshot.empty) {
                      listElement.innerHTML = '<li class="text-gray-500">No players found.</li>'; return;
                  }
-                 listElement.innerHTML = '';
+                 listElement.innerHTML = ''; // Clear loading
                  let rank = 1;
                  snapshot.forEach(doc => {
                      const player = doc.data();
@@ -1292,6 +1658,7 @@
              }
         }
         async function populateTopTeamsList(elementId = 'top-teams-list', limit = 5) {
+             // Placeholder - Team functionality not implemented
              const listElement = document.getElementById(elementId);
              if (listElement) {
                  listElement.innerHTML = '<li class="text-gray-500 italic">Team rankings not yet implemented.</li>';
@@ -1311,10 +1678,11 @@
                      listElement.innerHTML = `<li class="text-gray-500">No tournaments created yet.</li>`;
                      return;
                  }
-                 listElement.innerHTML = '';
+                 listElement.innerHTML = ''; // Clear loading
                  snapshot.forEach(doc => {
                      const tournament = { id: doc.id, ...doc.data() };
                      const li = document.createElement('li');
+                     // Different styling for dashboard vs full list
                      li.className = listElementId === 'dashboard-tournaments-list'
                          ? 'border-b pb-2 mb-2 last:border-0 last:pb-0'
                          : 'border p-4 rounded-lg hover:bg-gray-50 transition duration-200';
@@ -1325,15 +1693,16 @@
                      const format = tournament.format || 'N/A';
                      const statusBg = status === 'Ongoing' ? 'bg-green-100' : (status === 'Completed' ? 'bg-gray-100' : 'bg-blue-100');
 
+                     // Add data-target attribute for navigation
                      li.innerHTML = `
                          <div class="flex justify-between items-center mb-1">
                             <span class="font-semibold text-lg">${tournament.name || 'Unnamed Tournament'}</span>
-                            <span class="${statusColor} font-medium text-xs py-0.5 px-2 rounded-full bg-opacity-20 ${statusBg}">${status}</span>
+                            <span class="${statusColor} font-medium text-xs py-0.5 px-2 rounded-full ${statusBg}">${status}</span>
                          </div>
                          <div class="text-sm text-gray-600 mb-2">
                              <span>Game: ${gameType}</span> | <span>Format: ${format}</span>
                          </div>
-                         <a href="#tournament-detail-${tournament.id}" class="text-blue-600 hover:underline text-sm font-medium nav-link" data-target="tournament-detail-section">View Details</a>
+                         <a href="#tournament-detail-section" data-tournament-id="${tournament.id}" class="text-blue-600 hover:underline text-sm font-medium view-tournament-details-link">View Details</a>
                      `;
                      listElement.appendChild(li);
                  });
@@ -1356,36 +1725,57 @@
             }
             const selectedGame = rankingsGameFilter.value;
             console.log(`[RANKING] Filter changed to: ${selectedGame}`);
-            rankingTablesContainer.querySelectorAll('.ranking-table').forEach(table => table.classList.remove('active', 'hidden')); // Reset state
-            rankingTablesContainer.querySelectorAll('.ranking-table').forEach(table => table.classList.add('hidden')); // Hide all
 
-            const targetTable = document.getElementById(`ranking-table-${selectedGame}`);
+            // Hide all ranking tables initially
+            rankingTablesContainer.querySelectorAll('.ranking-table').forEach(table => table.classList.add('hidden'));
+            rankingTablesContainer.querySelectorAll('.ranking-table').forEach(table => table.classList.remove('active')); // Ensure 'active' is removed too
+
+            const targetTableId = `ranking-table-${selectedGame}`;
+            let targetTable = document.getElementById(targetTableId);
+
+            // Dynamically create table container if it doesn't exist for a custom game
+            if (!targetTable && selectedGame !== 'overall' && gameTypesConfig[selectedGame]) {
+                 console.log(`[RANKING] Dynamically creating table container for ${selectedGame}`);
+                 targetTable = document.createElement('div');
+                 targetTable.id = targetTableId;
+                 targetTable.className = 'ranking-table hidden'; // Start hidden
+                 const gameName = gameTypesConfig[selectedGame];
+                 targetTable.innerHTML = `
+                     <div class="bg-white p-8 rounded-xl shadow-lg">
+                         <h2 class="text-2xl font-semibold mb-5 text-indigo-700">${gameName} Rankings (Elo)</h2>
+                         <table class="w-full text-left table-auto text-base">
+                             <thead>
+                                 <tr class="bg-gray-100">
+                                     <th class="px-4 py-3">Rank</th>
+                                     <th class="px-4 py-3">Player</th>
+                                     <th class="px-4 py-3">Rating</th>
+                                 </tr>
+                             </thead>
+                             <tbody id="${selectedGame}-rankings-body">
+                                 <tr><td colspan="3" class="text-center py-4 text-gray-500">Loading...</td></tr>
+                             </tbody>
+                         </table>
+                     </div>`;
+                 rankingTablesContainer.appendChild(targetTable);
+            }
+
+            // Show the selected table and populate it
             if (targetTable) {
-                 targetTable.classList.remove('hidden'); // Show selected table container
+                 targetTable.classList.remove('hidden');
                  targetTable.classList.add('active');
 
-                 // Call the appropriate population function
+                 // Call the appropriate population function based on selection
                  if (selectedGame === 'overall') {
                      await populateOverallRankings();
-                 // Add specific game handlers based on gameTypesConfig keys
                  } else if (gameTypesConfig[selectedGame]) {
-                     // Construct function name dynamically (e.g., populatePoolRankings)
-                     const functionName = `populate${selectedGame.charAt(0).toUpperCase() + selectedGame.slice(1)}Rankings`;
-                     if (typeof window[functionName] === 'function') {
-                         await window[functionName](); // Call the function if it exists
-                     } else {
-                         console.warn(`Ranking function ${functionName} not implemented.`);
-                         const tbody = targetTable.querySelector('tbody');
-                         if (tbody) tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500 italic">Rankings for ${gameTypesConfig[selectedGame]} not yet implemented.</td></tr>`;
-                     }
+                     await populateGameRankings(selectedGame); // Use generic function
                  } else {
-                     // Handle unknown game selection (shouldn't happen with dynamic dropdown)
-                      console.warn(`Unknown game type selected: ${selectedGame}`);
-                      const tbody = targetTable.querySelector('tbody');
-                      if (tbody) tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500 italic">Unknown game type selected.</td></tr>`;
+                     console.warn(`Unknown game type selected: ${selectedGame}`);
+                     const tbody = targetTable.querySelector('tbody');
+                     if (tbody) tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500 italic">Unknown game type selected.</td></tr>`;
                  }
             } else {
-                 console.warn(`Ranking table container for "${selectedGame}" (ID: ranking-table-${selectedGame}) not found.`);
+                 console.warn(`Ranking table container for "${selectedGame}" (ID: ${targetTableId}) not found and could not be created.`);
                  // Fallback to overall if specific table doesn't exist
                  const overallTable = document.getElementById('ranking-table-overall');
                  if (overallTable) {
@@ -1409,7 +1799,7 @@
                      if (snapshot.empty) {
                         elo1v1Body.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">No players found.</td></tr>';
                      } else {
-                         elo1v1Body.innerHTML = '';
+                         elo1v1Body.innerHTML = ''; // Clear loading
                          let rank = 1;
                          snapshot.forEach(doc => {
                              const player = doc.data();
@@ -1440,15 +1830,8 @@
                  elo2v2Body.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500 italic">2v2 Team rankings not implemented.</td></tr>';
              }
         }
-        // Populates Pool Rankings Table
-        async function populatePoolRankings() { await populateGameRankings('pool'); }
-        // Add other specific game ranking functions here, calling the generic one
-        async function populatePuttpongRankings() { await populateGameRankings('puttpong'); }
-        async function populateCornholeRankings() { await populateGameRankings('cornhole'); }
-        async function populatePickleballRankings() { await populateGameRankings('pickleball'); }
-        async function populateBasketball_horseRankings() { await populateGameRankings('basketball_horse'); }
 
-        // Generic function to populate game-specific rankings
+        // Generic function to populate game-specific rankings table
         async function populateGameRankings(gameKey) {
              const tableBodyId = `${gameKey}-rankings-body`;
              const tableBody = document.getElementById(tableBodyId);
@@ -1462,42 +1845,44 @@
 
              tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500">Loading ${gameName} rankings...</td></tr>`;
              try {
-                 // Requires index: players: elos.<gameKey> (desc)
+                 // Requires index: players: elos.<gameKey> (desc) for each game type
                  const fieldPath = `elos.${gameKey}`;
-                 const snapshot = await db.collection('players').orderBy(fieldPath, 'desc').limit(20).get();
+                 const snapshot = await db.collection('players')
+                                        .where(fieldPath, '>', 0) // Optimization: Only fetch players with a rating > 0 (or any rating)
+                                        .orderBy(fieldPath, 'desc')
+                                        .limit(20)
+                                        .get();
 
                  if (snapshot.empty) {
-                    tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500">No players with ${gameName} ratings found.</td></tr>`;
+                    // Check if *any* players exist at all, to differentiate messages
+                    const anyPlayerSnapshot = await db.collection('players').limit(1).get();
+                    if (anyPlayerSnapshot.empty) {
+                        tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500">No players found in the system.</td></tr>`;
+                    } else {
+                        tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500">No players have played ${gameName} yet.</td></tr>`;
+                    }
                  } else {
-                     tableBody.innerHTML = '';
+                     tableBody.innerHTML = ''; // Clear loading
                      let rank = 1;
-                     let playersFoundWithRating = false;
                      snapshot.forEach(doc => {
                          const player = doc.data();
-                         // Check if the player has an Elo rating for this specific game
-                         if (player.elos && typeof player.elos[gameKey] === 'number') {
-                             playersFoundWithRating = true;
-                             const tr = document.createElement('tr');
-                             tr.className = 'border-b';
-                             tr.innerHTML = `
-                                 <td class="px-4 py-2">${rank}</td>
-                                 <td class="px-4 py-2">${player.name || 'Unnamed'}</td>
-                                 <td class="px-4 py-2">${Math.round(player.elos[gameKey])}</td>
-                             `;
-                             tableBody.appendChild(tr);
-                             rank++;
-                         }
+                         // We already filtered by players having the rating in the query
+                         const tr = document.createElement('tr');
+                         tr.className = 'border-b';
+                         tr.innerHTML = `
+                             <td class="px-4 py-2">${rank}</td>
+                             <td class="px-4 py-2">${player.name || 'Unnamed'}</td>
+                             <td class="px-4 py-2">${Math.round(player.elos[gameKey])}</td>
+                         `;
+                         tableBody.appendChild(tr);
+                         rank++;
                      });
-                     // Handle case where players exist but none have a rating for this game
-                     if (!playersFoundWithRating) {
-                          tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500">No players with ${gameName} ratings found.</td></tr>`;
-                     }
                  }
              } catch (error) {
                   console.error(`Error loading ${gameName} rankings:`, error);
                   if (error.code === 'failed-precondition') {
                      tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-red-500">Error: Firestore index missing (players: elos.${gameKey} desc). Check console.</td></tr>`;
-                     console.error(`Firestore index needed: players collection, elos.${gameKey} (descending).`);
+                     console.error(`Firestore index needed: players collection, field 'elos.${gameKey}' (descending). You might also need a filter condition (e.g., elos.${gameKey} > 0).`);
                   } else {
                      tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-red-500">Error loading ${gameName} rankings.</td></tr>`;
                   }
@@ -1508,30 +1893,37 @@
         // --- Event Listeners Setup ---
         function setupEventListeners() {
              console.log("[LISTENERS] Setting up...");
+            // Navigation Links
             navLinks?.forEach(link => link.addEventListener('click', handleNavLinkClick));
+
+            // Login/Logout
             loginForm?.addEventListener('submit', handleLoginFormSubmit);
             logoutButton?.addEventListener('click', logout);
 
-            // Contextual Admin Buttons
+            // Contextual Admin Buttons (Modal Triggers)
             openRecordGameModalBtn?.addEventListener('click', openRecordGameModal);
             openAddPlayerModalBtn?.addEventListener('click', openAddPlayerModal);
             openCreateTournamentModalBtn?.addEventListener('click', openCreateTournamentModal);
-            openAddGameModalBtn?.addEventListener('click', openAddGameModal); // New listener
+            openAddGameModalBtn?.addEventListener('click', openAddGameModal);
 
-            // Modal Overlay Click-to-Close (for ALL modals)
-            [recordGameModal, playerInfoModal, addPlayerModal, createTournamentModal, addGameModal].forEach(modal => { // Added addGameModal
+            // Modal Overlay Click-to-Close (Generic for all modals)
+            [recordGameModal, playerInfoModal, addPlayerModal, createTournamentModal, addGameModal].forEach(modal => {
                  modal?.addEventListener('click', (event) => {
-                     if (event.target === modal) { // Only close if overlay itself is clicked
-                         if (modal.id === 'record-game-modal') closeRecordGameModal();
+                     // Only close if the overlay background itself is clicked, not content inside
+                     if (event.target === modal) {
+                         if (modal.id === 'record-game-modal') closeRecordGameModal(); // Handles both record/edit
                          if (modal.id === 'player-info-modal') closePlayerModal();
                          if (modal.id === 'add-player-modal') closeAddPlayerModal();
                          if (modal.id === 'create-tournament-modal') closeCreateTournamentModal();
-                         if (modal.id === 'add-game-modal') closeAddGameModal(); // New
+                         if (modal.id === 'add-game-modal') closeAddGameModal();
                      }
                  });
             });
 
+            // Rankings Filter Dropdown
             rankingsGameFilter?.addEventListener('change', updateRankingsVisibility);
+
+            // Player Info Modal Buttons (Event Delegation)
             playerInfoModal?.querySelector('.modal-content')?.addEventListener('click', (event) => {
                 if (event.target.matches('#close-player-modal-btn')) closePlayerModal();
                 else if (event.target.matches('#edit-player-modal-btn')) togglePlayerModalEdit(true);
@@ -1540,8 +1932,7 @@
                 else if (event.target.matches('#delete-player-btn')) deletePlayer();
             });
 
-            // Form submissions are now handled inside the modal open functions or specific handlers
-
+            // Players Grid Click (Event Delegation)
             playersGrid?.addEventListener('click', (event) => {
                 const playerEntry = event.target.closest('.player-entry');
                 if (playerEntry) {
@@ -1549,77 +1940,96 @@
                     if (playerId) openPlayerModal(playerId);
                 }
             });
+
+            // Results Table Buttons (Event Delegation for Edit/Delete)
             resultsTableBody?.addEventListener('click', (event) => {
                 const targetButton = event.target;
                 const gameRow = targetButton.closest('tr[data-game-id]');
-                if (!gameRow) return;
+                if (!gameRow) return; // Clicked outside a row or button
                 const gameId = gameRow.getAttribute('data-game-id');
-                if (!gameId) return;
-                if (targetButton.classList.contains('edit-game-btn')) handleEditGame(gameId);
-                else if (targetButton.classList.contains('delete-game-btn')) handleDeleteGame(gameId, gameRow);
+                if (!gameId) return; // Row doesn't have game ID
+
+                if (targetButton.classList.contains('edit-game-btn')) {
+                    handleEditGame(gameId); // Use the updated edit handler
+                } else if (targetButton.classList.contains('delete-game-btn')) {
+                    handleDeleteGame(gameId, gameRow); // Use the updated delete handler
+                }
             });
-             manageTournamentsListContainer?.addEventListener('click', (event) => {
-                 const targetButton = event.target;
-                 const tournamentItem = targetButton.closest('li[data-tournament-id]');
-                 if (!tournamentItem) return;
-                 const tournamentId = tournamentItem.getAttribute('data-tournament-id');
-                 if (!tournamentId) return;
-                 if (targetButton.classList.contains('edit-tournament-btn')) handleEditTournament(tournamentId);
-                 else if (targetButton.classList.contains('delete-tournament-btn')) handleDeleteTournament(tournamentId, tournamentItem);
+
+             // Tournament List Links/Buttons (Event Delegation) - Example for details link
+             document.body.addEventListener('click', (event) => { // Listen on body for dynamically added links
+                 if (event.target.matches('.view-tournament-details-link')) {
+                     event.preventDefault();
+                     const tournamentId = event.target.getAttribute('data-tournament-id');
+                     if (tournamentId) {
+                         // TODO: Implement openTournamentDetails(tournamentId);
+                         alert(`Navigate to details for tournament: ${tournamentId} (not implemented)`);
+                         // showSection('tournament-detail-section'); // Navigate to the detail section
+                         // populateTournamentDetails(tournamentId); // Fetch and display details
+                     }
+                 }
+                 // Add listeners for tournament edit/delete buttons if they exist in a manage view
+                 // else if (event.target.matches('.edit-tournament-btn')) { ... }
+                 // else if (event.target.matches('.delete-tournament-btn')) { ... }
              });
+
              console.log("[LISTENERS] Setup complete.");
         }
 
         // --- Specific Event Handlers ---
         function handleNavLinkClick(event) {
+            // Handles clicks on main navigation links
             const targetId = event.currentTarget.getAttribute('data-target');
             if (targetId) {
-                event.preventDefault();
-                showSection(targetId);
+                event.preventDefault(); // Prevent default anchor jump
+                showSection(targetId); // Show the target section
             }
         }
         function handleLoginFormSubmit(event) {
-            event.preventDefault();
+            event.preventDefault(); // Prevent form submission reload
             const passwordInput = document.getElementById('password');
-            if (passwordInput) login(passwordInput.value);
+            if (passwordInput) login(passwordInput.value); // Attempt login
         }
 
         // --- Admin Login/Logout Logic ---
         function checkLoginState() {
+             // Checks sessionStorage to see if admin is logged in
              const isLoggedIn = sessionStorage.getItem('isAdminLoggedIn') === 'true';
              if (isLoggedIn) {
-                 document.body.classList.add('admin-logged-in');
+                 document.body.classList.add('admin-logged-in'); // Add class to show admin elements
              } else {
-                 document.body.classList.remove('admin-logged-in');
+                 document.body.classList.remove('admin-logged-in'); // Remove class to hide admin elements
              }
              return isLoggedIn;
         }
         function login(password) {
+            // Simple password check (replace with secure auth in production)
             if (password === ADMIN_PASSWORD) {
-                sessionStorage.setItem('isAdminLoggedIn', 'true');
-                checkLoginState();
-                showSection('home'); // Navigate to home after login
-                loginError?.classList.add('hidden');
+                sessionStorage.setItem('isAdminLoggedIn', 'true'); // Store login state
+                checkLoginState(); // Update UI immediately
+                showSection('home-section'); // Navigate to home after login
+                loginError?.classList.add('hidden'); // Hide error message
                 const passwordInput = document.getElementById('password');
-                if(passwordInput) passwordInput.value = '';
+                if(passwordInput) passwordInput.value = ''; // Clear password field
             } else {
-                loginError?.classList.remove('hidden');
+                loginError?.classList.remove('hidden'); // Show error message
             }
         }
         function logout() {
-            sessionStorage.removeItem('isAdminLoggedIn');
+            sessionStorage.removeItem('isAdminLoggedIn'); // Clear login state
             checkLoginState(); // Update UI
-            showSection('home'); // Navigate to home on logout
+            showSection('home-section'); // Navigate to home on logout
         }
 
-        // --- Form Submission Handlers (Now triggered from modals) ---
+        // --- Form Submission Handlers (Triggered from Modals) ---
 
-        // Specific handler for the Add Player modal form
+        // Handles submission of the Add Player modal form
         async function handleAddPlayerSubmit(event) {
             event.preventDefault();
             const form = event.target;
             if (!db) { alert("Database connection error."); return; }
 
+            // Basic validation
             let isValid = true;
             form.querySelectorAll('input[required]').forEach(field => {
                 field.classList.remove('border-red-500');
@@ -1631,7 +2041,7 @@
             const playerName = formData.get('player-name')?.trim();
             const playerIconUrl = formData.get('player-icon-url')?.trim() || null;
 
-            if (!playerName) return;
+            if (!playerName) return; // Should be caught by validation, but double-check
 
             try {
                  // Initialize elos map with default ratings for all known games + overall
@@ -1641,25 +2051,27 @@
                      initialElos[gameKey] = DEFAULT_ELO;
                  });
 
+                 // Data for the new player document
                  const playerData = {
                      name: playerName,
-                     elo_overall: DEFAULT_ELO, // Keep overall separate for now
+                     elo_overall: DEFAULT_ELO, // Separate overall Elo field
                      elos: initialElos, // Nested map for game-specific Elos
-                     // Initialize overall stats
+                     // Initialize stats
                      wins: 0,
                      losses: 0,
                      draws: 0,
                      games_played: 0,
-                     date_created: firebase.firestore.FieldValue.serverTimestamp()
+                     date_created: firebase.firestore.FieldValue.serverTimestamp() // Record creation time
                  };
                  if (playerIconUrl) {
-                     playerData.iconUrl = playerIconUrl;
+                     playerData.iconUrl = playerIconUrl; // Add icon URL if provided
                  }
 
+                 // Add the new player document to Firestore
                  await db.collection('players').add(playerData);
                  alert(`Player "${playerName}" added successfully!`);
-                 closeAddPlayerModal();
-                 if (playersGrid) await populatePlayersList();
+                 closeAddPlayerModal(); // Close the modal
+                 if (playersGrid) await populatePlayersList(); // Refresh the player list on the Players page
 
             } catch (error) {
                  console.error("Error adding player:", error);
@@ -1667,12 +2079,13 @@
             }
         }
 
-        // Specific handler for the Create Tournament modal form
+        // Handles submission of the Create Tournament modal form
         async function handleCreateTournamentSubmit(event) {
             event.preventDefault();
             const form = event.target;
             if (!db) { alert("Database connection error."); return; }
 
+            // Basic validation
             let isValid = true;
             form.querySelectorAll('input[required], select[required]').forEach(field => {
                 field.classList.remove('border-red-500');
@@ -1681,33 +2094,39 @@
             if (!isValid) { alert("Please fill out all required fields."); return; }
 
             const formData = new FormData(form);
-            const selectedParticipants = [];
+            const selectedParticipants = []; // Get selected participant IDs
             form.querySelectorAll('input[name="participants"]:checked').forEach(checkbox => {
                 selectedParticipants.push(checkbox.value);
             });
 
             const format = formData.get('tournament-format');
+            // Validate participant count based on format (example)
             if (format !== 'ffa' && selectedParticipants.length < 2) {
                  alert("Please select at least two participants for this format.");
                  return;
             }
+             // More validation could be added (e.g., power of 2 for single/double elim)
 
+             // Data for the new tournament document
              const tournamentData = {
                  name: formData.get('tournament-name')?.trim(),
                  game_type: formData.get('tournament-game-type'),
                  format: format,
-                 start_date: formData.get('tournament-start-date') || null,
-                 participants: selectedParticipants,
-                 status: 'Upcoming',
+                 start_date: formData.get('tournament-start-date') || null, // Store date or null
+                 participants: selectedParticipants, // Array of player IDs
+                 status: 'Upcoming', // Initial status
                  date_created: firebase.firestore.FieldValue.serverTimestamp(),
+                 // Could add structure for bracket/matches later
              };
 
-             if (!tournamentData.name || !tournamentData.game_type || !tournamentData.format) return;
+             if (!tournamentData.name || !tournamentData.game_type || !tournamentData.format) return; // Should be caught by validation
 
              try {
+                 // Add the new tournament document to Firestore
                  await db.collection('tournaments').add(tournamentData);
                  alert(`Tournament "${tournamentData.name}" created successfully!`);
-                 closeCreateTournamentModal();
+                 closeCreateTournamentModal(); // Close the modal
+                 // Refresh tournament lists
                  await populateTournamentsList('dashboard-tournaments-list', 3);
                  await populateTournamentsList('tournaments-list-full');
              } catch (error) {
@@ -1717,12 +2136,13 @@
         }
 
 
-        // Specific handler for the Record Game modal form submission
+        // Handles submission of the Record Game modal form
         async function handleRecordGameSubmit(event) {
              event.preventDefault();
              const form = event.target;
              if (!db) { alert("Database connection error."); return; }
 
+             // --- Validation ---
              let isValid = true;
              form.querySelectorAll('select[required]').forEach(field => {
                  field.classList.remove('border-red-500');
@@ -1749,12 +2169,15 @@
                  if (!loserId) loserSelect.classList.add('border-red-500'); isValid = false;
              }
              if (!isValid) { alert("Please correct the errors in the form."); return; }
+             // --- End Validation ---
 
+             // Prepare game data for Firestore
              const gameData = {
                  game_type: gameType,
-                 date_played: firebase.firestore.FieldValue.serverTimestamp(),
+                 date_played: firebase.firestore.FieldValue.serverTimestamp(), // Record time of submission
                  score: form.querySelector('#score').value.trim() || null,
                  outcome: isDraw ? 'Draw' : 'Win/Loss',
+                 // Store participants consistently: [winner, loser] for Win/Loss, sorted [p1, p2] for Draw
                  participants: isDraw ? [winnerId, loserId].sort() : [winnerId, loserId],
              };
 
@@ -1763,41 +2186,45 @@
              try {
                  // --- ELO Calculation & Stat Updates ---
                  let eloUpdates = {};
-                 const FieldValue = firebase.firestore.FieldValue; // For increment
-                 const winnerStatUpdates = { games_played: FieldValue.increment(1) };
-                 const loserStatUpdates = { games_played: FieldValue.increment(1) };
+                 const FieldValue = firebase.firestore.FieldValue; // For atomic increments
+                 const player1StatUpdates = { games_played: FieldValue.increment(1) }; // Player 1 (Winner or P1 in Draw)
+                 const player2StatUpdates = { games_played: FieldValue.increment(1) }; // Player 2 (Loser or P2 in Draw)
 
-                 // Only calculate Elo if the game type is in our list
+                 // Calculate Elo only if the game type is configured for Elo tracking
                  if (ELO_GAME_KEYS.includes(gameType)) {
-                     if (!isDraw) {
+                     if (!isDraw) { // Win/Loss
                         eloUpdates = await calculateEloUpdate(winnerId, loserId, gameType);
-                        winnerStatUpdates.wins = FieldValue.increment(1);
-                        loserStatUpdates.losses = FieldValue.increment(1);
-                     } else {
+                        player1StatUpdates.wins = FieldValue.increment(1); // Winner's stats
+                        player2StatUpdates.losses = FieldValue.increment(1); // Loser's stats
+                     } else { // Draw
+                        // Use the actual selected player IDs for draw calculation
                         eloUpdates = await calculateEloUpdateDraw(winnerId, loserId, gameType);
-                        winnerStatUpdates.draws = FieldValue.increment(1);
-                        loserStatUpdates.draws = FieldValue.increment(1);
+                        player1StatUpdates.draws = FieldValue.increment(1); // Player 1's stats
+                        player2StatUpdates.draws = FieldValue.increment(1); // Player 2's stats
                      }
                      console.log("[ELO] Calculated Elo Updates:", eloUpdates);
                  } else {
                      console.log(`[ELO] Skipping Elo calculation for non-Elo game type: ${gameType}`);
-                     // Still update basic stats for non-Elo games if desired
+                     // Still update basic win/loss/draw stats even for non-Elo games
                      if (!isDraw) {
-                         winnerStatUpdates.wins = FieldValue.increment(1);
-                         loserStatUpdates.losses = FieldValue.increment(1);
+                         player1StatUpdates.wins = FieldValue.increment(1);
+                         player2StatUpdates.losses = FieldValue.increment(1);
                      } else {
-                         winnerStatUpdates.draws = FieldValue.increment(1);
-                         loserStatUpdates.draws = FieldValue.increment(1);
+                         player1StatUpdates.draws = FieldValue.increment(1);
+                         player2StatUpdates.draws = FieldValue.increment(1);
                      }
                  }
 
-                 // Combine Elo and Stat updates
+                 // Combine Elo and Stat updates into a single object for batch write
                  const finalUpdates = {};
-                 if (eloUpdates[winnerId] || Object.keys(winnerStatUpdates).length > 0) {
-                     finalUpdates[winnerId] = { ...(eloUpdates[winnerId] || {}), ...winnerStatUpdates };
+                 const p1Id = winnerId; // ID of the first player selected (Winner or Player 1)
+                 const p2Id = loserId;  // ID of the second player selected (Loser or Player 2)
+
+                 if (eloUpdates[p1Id] || Object.keys(player1StatUpdates).length > 0) {
+                     finalUpdates[p1Id] = { ...(eloUpdates[p1Id] || {}), ...player1StatUpdates };
                  }
-                 if (eloUpdates[loserId] || Object.keys(loserStatUpdates).length > 0) {
-                      finalUpdates[loserId] = { ...(eloUpdates[loserId] || {}), ...loserStatUpdates };
+                 if (eloUpdates[p2Id] || Object.keys(player2StatUpdates).length > 0) {
+                      finalUpdates[p2Id] = { ...(eloUpdates[p2Id] || {}), ...player2StatUpdates };
                  }
                  console.log("[STATS & ELO] Combined Updates:", finalUpdates);
                  // --- End ELO & Stat Updates ---
@@ -1808,17 +2235,19 @@
 
                  // --- Update Player Elo & Stats using Batch Write ---
                  if (Object.keys(finalUpdates).length > 0) {
-                    await updatePlayerElos(finalUpdates);
+                    await updatePlayerElosAndStats(finalUpdates); // Use the combined update function
                  } else {
                     console.warn("[ELO/STATS] No Elo or Stat updates to apply.");
                  }
                  // --- End Elo & Stat Update ---
 
                  alert("Game result recorded successfully!");
-                 closeRecordGameModal();
+                 closeRecordGameModal(); // Close the modal
+                 // Refresh relevant UI sections
                  if (db) {
-                    await populateResultsTable();
-                    await populateDashboard();
+                    await populateResultsTable(); // Update results list
+                    await populateDashboard(); // Update dashboard widgets
+                    // Update rankings if the ranking section is currently visible
                     if (document.getElementById('rankings-section') && !document.getElementById('rankings-section').classList.contains('hidden')) {
                          await updateRankingsVisibility();
                     }
@@ -1829,7 +2258,7 @@
              }
         }
 
-        // --- Add New Game Handler (NEW) ---
+        // Handles submission of the Add New Game Type modal form
         async function handleAddGameSubmit(event) {
             event.preventDefault();
             const form = event.target;
@@ -1839,7 +2268,7 @@
             const gameKey = formData.get('new-game-key')?.trim().toLowerCase();
             const gameName = formData.get('new-game-name')?.trim();
 
-            // Validation
+            // --- Validation ---
             if (!gameKey || !gameName) {
                 alert("Please enter both a Game Key and a Display Name.");
                 return;
@@ -1850,30 +2279,32 @@
                 form.querySelector('#new-game-key').classList.add('border-red-500');
                 return;
             }
+            // Check if game key already exists in local config
             if (gameTypesConfig[gameKey]) {
                 alert(`Game Key "${gameKey}" already exists.`);
                 form.querySelector('#new-game-key').classList.add('border-red-500');
                 return;
             }
+            // --- End Validation ---
 
             console.log(`[ADD GAME] Attempting to add: Key=${gameKey}, Name=${gameName}`);
 
-            // 1. Update local config (this won't persist across page loads unless saved)
+            // 1. Update local config immediately (for UI responsiveness)
             gameTypesConfig[gameKey] = gameName;
-            ELO_GAME_KEYS = Object.keys(gameTypesConfig); // Update the keys list
+            ELO_GAME_KEYS = Object.keys(gameTypesConfig); // Update the keys list used for Elo checks
             console.log("[ADD GAME] Updated local gameTypesConfig:", gameTypesConfig);
 
-            // 2. Update UI Elements (Dropdowns, potentially add ranking table dynamically)
+            // 2. Update UI Elements (Dropdowns, Ranking Filter)
             updateGameTypeDropdowns();
-            // TODO: Dynamically add a new ranking table structure to the HTML if it doesn't exist
-            // For simplicity now, assume tables for common games are pre-defined in HTML
+            // Note: Dynamically adding the ranking table itself is handled in updateRankingsVisibility
 
-            // 3. Update existing players (potentially slow/costly!)
+            // 3. Update existing players in Firestore to include the new game type with default Elo
+            // This can be slow/costly on large datasets. Consider alternatives for production.
             alert("Updating existing players with new game rating... This might take a moment.");
             try {
                 const playersRef = db.collection('players');
                 const snapshot = await playersRef.get();
-                const batch = db.batch();
+                const batch = db.batch(); // Use a batch write for efficiency
                 let operationCount = 0;
 
                 if (snapshot.empty) {
@@ -1883,12 +2314,14 @@
                     snapshot.forEach(doc => {
                         const playerRef = playersRef.doc(doc.id);
                         const updateData = {};
-                        updateData[`elos.${gameKey}`] = DEFAULT_ELO; // Add new game with default Elo
+                        // Use dot notation to update the nested 'elos' map
+                        updateData[`elos.${gameKey}`] = DEFAULT_ELO;
                         batch.update(playerRef, updateData);
                         operationCount++;
 
                         // Firestore batch limit is 500 operations. Commit and start new batch if needed.
-                        // Note: This simple batching might still timeout on very large datasets.
+                        // This simple batching might still timeout on very large datasets.
+                        // Consider Cloud Functions for large-scale updates.
                         if (operationCount >= 499) { // Leave a little buffer
                              console.warn("[ADD GAME] Batch limit reached, committing partial batch...");
                              batch.commit().then(() => console.log("[ADD GAME] Partial batch committed.")); // Commit current batch
@@ -1905,80 +2338,150 @@
                 }
 
                 alert(`Game "${gameName}" added successfully! Existing players updated.`);
-                closeAddGameModal();
-                // Refresh rankings view if currently visible
+                closeAddGameModal(); // Close the modal
+                // Refresh rankings view if currently visible to show the new option/table
                 if (rankingsGameFilter) updateRankingsVisibility();
 
             } catch (error) {
                 console.error("Error updating existing players with new game:", error);
                 alert(`Failed to update existing players: ${error.message}. The game type was added locally but may not be reflected for existing players.`);
-                // Optionally revert local config change: delete gameTypesConfig[gameKey]; updateGameTypeDropdowns();
+                // Optionally revert local config change if Firestore update fails:
+                // delete gameTypesConfig[gameKey];
+                // ELO_GAME_KEYS = Object.keys(gameTypesConfig);
+                // updateGameTypeDropdowns();
             }
         }
 
 
         // --- Elo Calculation & Update Functions ---
+
+        // Calculates Elo change for a Win/Loss result
         async function calculateEloUpdate(winnerId, loserId, gameType) {
             if (!db || !winnerId || !loserId || !gameType) { console.error("[ELO Calc] Missing required parameters or DB connection."); return {}; }
             console.log(`[ELO Calc] Calculating update for ${gameType}: Winner=${winnerId}, Loser=${loserId}`);
             try {
+                // Fetch both players' data concurrently
                 const winnerRef = db.collection('players').doc(winnerId);
                 const loserRef = db.collection('players').doc(loserId);
                 const [winnerDoc, loserDoc] = await Promise.all([winnerRef.get(), loserRef.get()]);
-                if (!winnerDoc.exists || !loserDoc.exists) { console.error("[ELO Calc] Winner or loser document not found."); alert("Error: Could not find player data for Elo calculation."); return {}; }
-                const winnerData = winnerDoc.data(); const loserData = loserDoc.data();
+
+                if (!winnerDoc.exists || !loserDoc.exists) {
+                    console.error("[ELO Calc] Winner or loser document not found.");
+                    alert("Error: Could not find player data for Elo calculation.");
+                    return {}; // Return empty object on error
+                }
+
+                const winnerData = winnerDoc.data();
+                const loserData = loserDoc.data();
+
+                // Get current Elo for the specific game type, defaulting to DEFAULT_ELO if not present
                 const winnerElo = winnerData.elos?.[gameType] || DEFAULT_ELO;
                 const loserElo = loserData.elos?.[gameType] || DEFAULT_ELO;
                 console.log(`[ELO Calc] Current ${gameType} Elo: Winner=${winnerElo}, Loser=${loserElo}`);
+
+                // Standard Elo calculation formulas
                 const exponent = (loserElo - winnerElo) / 400;
                 const expectedScoreWinner = 1 / (1 + Math.pow(10, exponent));
-                const expectedScoreLoser = 1 - expectedScoreWinner;
-                const newWinnerElo = Math.round(winnerElo + K_FACTOR * (1 - expectedScoreWinner));
-                const newLoserElo = Math.round(loserElo + K_FACTOR * (0 - expectedScoreLoser));
+                // const expectedScoreLoser = 1 - expectedScoreWinner; // Not strictly needed for update calculation
+
+                // Calculate new Elo ratings, rounding to nearest integer
+                const newWinnerElo = Math.round(winnerElo + K_FACTOR * (1 - expectedScoreWinner)); // Winner's actual score is 1
+                const newLoserElo = Math.round(loserElo + K_FACTOR * (0 - (1 - expectedScoreWinner))); // Loser's actual score is 0
+
                 console.log(`[ELO Calc] New ${gameType} Elo: Winner=${newWinnerElo}, Loser=${newLoserElo}`);
+
+                // Prepare update objects using dot notation for nested fields
                 const winnerUpdates = {}; winnerUpdates[`elos.${gameType}`] = newWinnerElo;
                 const loserUpdates = {}; loserUpdates[`elos.${gameType}`] = newLoserElo;
+
+                // Return updates keyed by player ID
                 return { [winnerId]: winnerUpdates, [loserId]: loserUpdates };
-            } catch (error) { console.error("[ELO Calc] Error calculating Elo update:", error); alert(`Error calculating Elo: ${error.message}`); return {}; }
+
+            } catch (error) {
+                console.error("[ELO Calc] Error calculating Elo update:", error);
+                alert(`Error calculating Elo: ${error.message}`);
+                return {}; // Return empty object on error
+            }
         }
+
+        // Calculates Elo change for a Draw result
         async function calculateEloUpdateDraw(player1Id, player2Id, gameType) {
              if (!db || !player1Id || !player2Id || !gameType) { console.error("[ELO Calc Draw] Missing required parameters or DB connection."); return {}; }
              console.log(`[ELO Calc Draw] Calculating update for ${gameType} Draw: P1=${player1Id}, P2=${player2Id}`);
              try {
-                const p1Ref = db.collection('players').doc(player1Id); const p2Ref = db.collection('players').doc(player2Id);
+                // Fetch both players' data concurrently
+                const p1Ref = db.collection('players').doc(player1Id);
+                const p2Ref = db.collection('players').doc(player2Id);
                 const [p1Doc, p2Doc] = await Promise.all([p1Ref.get(), p2Ref.get()]);
-                if (!p1Doc.exists || !p2Doc.exists) { console.error("[ELO Calc Draw] Player document not found."); alert("Error: Could not find player data for Elo calculation."); return {}; }
-                const p1Data = p1Doc.data(); const p2Data = p2Doc.data();
-                const p1Elo = p1Data.elos?.[gameType] || DEFAULT_ELO; const p2Elo = p2Data.elos?.[gameType] || DEFAULT_ELO;
+
+                if (!p1Doc.exists || !p2Doc.exists) {
+                    console.error("[ELO Calc Draw] Player document not found.");
+                    alert("Error: Could not find player data for Elo calculation.");
+                    return {};
+                }
+
+                const p1Data = p1Doc.data();
+                const p2Data = p2Doc.data();
+
+                // Get current Elo for the specific game type
+                const p1Elo = p1Data.elos?.[gameType] || DEFAULT_ELO;
+                const p2Elo = p2Data.elos?.[gameType] || DEFAULT_ELO;
                 console.log(`[ELO Calc Draw] Current ${gameType} Elo: P1=${p1Elo}, P2=${p2Elo}`);
-                const exponent1 = (p2Elo - p1Elo) / 400; const expectedScoreP1 = 1 / (1 + Math.pow(10, exponent1)); const expectedScoreP2 = 1 - expectedScoreP1;
-                const newP1Elo = Math.round(p1Elo + K_FACTOR * (0.5 - expectedScoreP1)); const newP2Elo = Math.round(p2Elo + K_FACTOR * (0.5 - expectedScoreP2));
+
+                // Elo calculation for draw (actual score is 0.5 for both)
+                const exponent1 = (p2Elo - p1Elo) / 400;
+                const expectedScoreP1 = 1 / (1 + Math.pow(10, exponent1));
+                const expectedScoreP2 = 1 - expectedScoreP1; // Or calculate symmetrically
+
+                const newP1Elo = Math.round(p1Elo + K_FACTOR * (0.5 - expectedScoreP1));
+                const newP2Elo = Math.round(p2Elo + K_FACTOR * (0.5 - expectedScoreP2));
+
                 console.log(`[ELO Calc Draw] New ${gameType} Elo: P1=${newP1Elo}, P2=${newP2Elo}`);
+
+                // Prepare update objects
                 const p1Updates = {}; p1Updates[`elos.${gameType}`] = newP1Elo;
                 const p2Updates = {}; p2Updates[`elos.${gameType}`] = newP2Elo;
+
+                // Return updates keyed by player ID
                 return { [player1Id]: p1Updates, [player2Id]: p2Updates };
-             } catch (error) { console.error("[ELO Calc Draw] Error calculating Elo update:", error); alert(`Error calculating Elo for draw: ${error.message}`); return {}; }
+
+             } catch (error) {
+                 console.error("[ELO Calc Draw] Error calculating Elo update:", error);
+                 alert(`Error calculating Elo for draw: ${error.message}`);
+                 return {};
+             }
         }
-        async function updatePlayerElos(combinedUpdates) {
-             if (!db || Object.keys(combinedUpdates).length === 0) { console.warn("[ELO/STATS Update] No updates to apply or DB not connected."); return; }
+
+        // Updates player documents with Elo and Stats using a batch write
+        async function updatePlayerElosAndStats(combinedUpdates) {
+             if (!db || Object.keys(combinedUpdates).length === 0) {
+                 console.warn("[ELO/STATS Update] No updates to apply or DB not connected.");
+                 return;
+             }
              console.log("[ELO/STATS Update] Starting batch update:", combinedUpdates);
-             const batch = db.batch();
+             const batch = db.batch(); // Create a new batch
+
+             // Iterate through the updates object (keyed by player ID)
              Object.entries(combinedUpdates).forEach(([playerId, updates]) => {
-                 if (playerId && typeof updates === 'object' && updates !== null) {
+                 if (playerId && typeof updates === 'object' && updates !== null && Object.keys(updates).length > 0) {
                      const playerRef = db.collection('players').doc(playerId);
+                     // Add an update operation to the batch for this player
                      batch.update(playerRef, updates);
                      console.log(`[ELO/STATS Update] Adding update for ${playerId}:`, updates);
                  } else {
                      console.warn(`[ELO/STATS Update] Skipping invalid update entry for player ID: ${playerId}`, updates);
                  }
              });
+
              try {
+                 // Commit the batch write to Firestore
                  await batch.commit();
                  console.log("[FIRESTORE] Batch Elo/Stat update committed successfully.");
              } catch (error) {
                  console.error("[FIRESTORE] Batch Elo/Stat update failed:", error);
                  alert(`Failed to update player ratings/stats: ${error.message}`);
-                 throw error;
+                 // Optionally re-throw the error if higher-level handling is needed
+                 // throw error;
              }
         }
         // --- End Elo Functions ---
@@ -1987,23 +2490,30 @@
         function initializeApp() {
              try {
                 console.log("[INIT] Initializing App...");
-                assignElements();
-                if (!db) { console.error("[INIT] Firebase DB connection failed. App functionality will be limited."); }
+                assignElements(); // Get references to DOM elements
+                if (!db) {
+                    console.error("[INIT] Firebase DB connection failed. App functionality will be limited.");
+                    // Optionally display a more prominent error to the user
+                }
 
-                updateGameTypeDropdowns(); // Initial population of dropdowns
-                const isLoggedIn = checkLoginState();
-                setupEventListeners();
+                updateGameTypeDropdowns(); // Initial population of game type dropdowns
+                const isLoggedIn = checkLoginState(); // Check if admin is logged in and update UI
+                setupEventListeners(); // Set up all event listeners
 
+                // Handle initial page load based on URL hash or default to home
                 const initialHash = window.location.hash;
-                let initialSectionId = 'home-section';
+                let initialSectionId = 'home-section'; // Default section
                 if (initialHash && initialHash !== '#') {
                      const targetIdFromHash = initialHash.substring(1);
                      const targetSection = document.getElementById(targetIdFromHash);
+                     // Validate that the hash corresponds to a valid section ID
                      if (targetSection?.classList.contains('page-section')) {
                           initialSectionId = targetIdFromHash;
+                     } else {
+                         console.warn(`[INIT] Hash '#${targetIdFromHash}' does not correspond to a valid section. Defaulting to home.`);
                      }
                 }
-                // Initial section display and population is handled here
+                // Show the initial section (this also triggers data population)
                 showSection(initialSectionId);
 
                 console.log("[INIT] App Initialized Successfully (DB connection attempted).");

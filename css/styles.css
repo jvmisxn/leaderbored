@@ -1,28 +1,105 @@
 html {
     height: 100%; /* Ensure the root element takes full height */
+    scroll-behavior: smooth; /* Add smooth scrolling */
 }
 
 /* --- Theme Color Variables --- */
 :root {
   /* --- Light Mode: Blue & White --- */
-  --bg-color-light: #f3f4f6;           /* White background */
-  --text-color-light: #1e40af;         /* Dark Blue text (like Tailwind blue-800) */
-  --accent-bg-light: #2563eb;        /* Medium Blue accent background (like blue-600) */
+  --bg-color-light: #f3f4f6;           /* Light Gray background */
+  --text-color-light: #1f2937;         /* Dark Gray text */
+  --text-muted-light: #6b7280;       /* Medium Gray for muted text */
+  --accent-bg-light: #3b82f6;        /* Medium Blue accent background (blue-500) */
   --accent-text-light: #ffffff;       /* White text on blue accents */
   --card-bg-light: #ffffff;           /* White card background */
-  --text-muted-light: #6b7280;       /* Gray for muted text */
-  --link-color-light: #1d4ed8;         /* Medium-Dark Blue links (like blue-700) */
-  --border-color-light: #dbeafe;       /* Light Blue border (like blue-200) */
+  --link-color-light: #2563eb;         /* Medium-Dark Blue links (blue-600) */
+  --link-hover-light: #1d4ed8;       /* Darker Blue link hover (blue-700) */
+  --border-color-light: #e5e7eb;       /* Light Gray border (gray-200) */
+  --border-accent-light: #bfdbfe;     /* Lighter Blue border (blue-200) */
+  --input-bg-light: #ffffff;
+  --input-text-light: #1f2937;
+  --input-border-light: #d1d5db;
+  --button-primary-bg-light: #2563eb; /* blue-600 */
+  --button-primary-text-light: #ffffff;
+  --button-primary-hover-bg-light: #1d4ed8; /* blue-700 */
+  --button-secondary-bg-light: #e5e7eb; /* gray-200 */
+  --button-secondary-text-light: #374151; /* gray-700 */
+  --button-secondary-hover-bg-light: #d1d5db; /* gray-300 */
+  --button-success-bg-light: #16a34a; /* green-600 */
+  --button-success-text-light: #ffffff;
+  --button-success-hover-bg-light: #15803d; /* green-700 */
+  --button-danger-bg-light: #dc2626; /* red-600 */
+  --button-danger-text-light: #ffffff;
+  --button-danger-hover-bg-light: #b91c1c; /* red-700 */
+  --button-warning-bg-light: #f59e0b; /* amber-500 */
+  --button-warning-text-light: #ffffff;
+  --button-warning-hover-bg-light: #d97706; /* amber-600 */
+  --button-special-bg-light: #9333ea; /* purple-600 */
+  --button-special-text-light: #ffffff;
+  --button-special-hover-bg-light: #7e22ce; /* purple-700 */
+  --button-google-bg-light: #db4437; /* Google Red */
+  --button-google-text-light: #ffffff;
+  --button-google-hover-bg-light: #c33d2e;
+  --error-text-light: #b91c1c; /* red-700 */
+  --error-bg-light: #fee2e2; /* red-100 */
+  --status-upcoming-bg-light: #eff6ff; /* blue-50 */
+  --status-upcoming-text-light: #3b82f6; /* blue-500 */
+  --status-ongoing-bg-light: #fef3c7; /* amber-100 */
+  --status-ongoing-text-light: #d97706; /* amber-600 */
+  --status-completed-bg-light: #dcfce7; /* green-100 */
+  --status-completed-text-light: #16a34a; /* green-600 */
+  --accent-text-color-light: #1e40af; /* Dark Blue for Elo etc. */
+  --table-header-bg-light: #f9fafb; /* gray-50 */
+  --table-header-text-light: #374151; /* gray-700 */
+  --table-row-border-light: #e5e7eb; /* gray-200 */
 
   /* --- Dark Mode: Red & Black --- */
-  --bg-color-dark: #111827;           /* Black background */
-  --text-color-dark: #ef4444;         /* Medium Red text (like red-500) */
-  --accent-bg-dark: #dc2626;        /* Medium-Dark Red accent background (like red-600) */
-  --accent-text-dark: #ffffff;       /* White text on red accents (Adjust if contrast needed) */
-  --card-bg-dark: #1f2937;           /* Very Dark Gray/Off-black card background */
-  --text-muted-dark: #9ca3af;       /* Light gray for muted text */
-  --link-color-dark: #f87171;         /* Lighter Red links (like red-400) */
-  --border-color-dark: #7f1d1d;       /* Dark Red border (like red-900) */
+  --bg-color-dark: #111827;           /* Very Dark Gray/Almost Black background */
+  --text-color-dark: #f3f4f6;         /* Light Gray text */
+  --text-muted-dark: #9ca3af;       /* Medium Gray for muted text */
+  --accent-bg-dark: #b91c1c;        /* Dark Red accent background (red-700) */
+  --accent-text-dark: #ffffff;       /* White text on red accents */
+  --card-bg-dark: #1f2937;           /* Dark Gray card background */
+  --link-color-dark: #f87171;         /* Lighter Red links (red-400) */
+  --link-hover-dark: #ef4444;       /* Medium Red link hover (red-500) */
+  --border-color-dark: #374151;       /* Medium Gray border (gray-700) */
+  --border-accent-dark: #7f1d1d;       /* Darker Red border (red-900) */
+  --input-bg-dark: #374151; /* gray-700 */
+  --input-text-dark: #f3f4f6;
+  --input-border-dark: #4b5563; /* gray-600 */
+  --button-primary-bg-dark: #ef4444; /* red-500 */
+  --button-primary-text-dark: #ffffff;
+  --button-primary-hover-bg-dark: #dc2626; /* red-600 */
+  --button-secondary-bg-dark: #4b5563; /* gray-600 */
+  --button-secondary-text-dark: #f3f4f6; /* gray-100 */
+  --button-secondary-hover-bg-dark: #52525b; /* gray-500 */
+  --button-success-bg-dark: #22c55e; /* green-500 */
+  --button-success-text-dark: #1f2937; /* gray-800 */
+  --button-success-hover-bg-dark: #16a34a; /* green-600 */
+  --button-danger-bg-dark: #f87171; /* red-400 */
+  --button-danger-text-dark: #1f2937; /* gray-800 */
+  --button-danger-hover-bg-dark: #ef4444; /* red-500 */
+  --button-warning-bg-dark: #facc15; /* yellow-400 */
+  --button-warning-text-dark: #1f2937; /* gray-800 */
+  --button-warning-hover-bg-dark: #eab308; /* yellow-500 */
+  --button-special-bg-dark: #a855f7; /* purple-500 */
+  --button-special-text-dark: #ffffff;
+  --button-special-hover-bg-dark: #9333ea; /* purple-600 */
+  --button-google-bg-dark: #db4437; /* Keep Google Red */
+  --button-google-text-dark: #ffffff;
+  --button-google-hover-bg-dark: #c33d2e;
+  --error-text-dark: #f87171; /* red-400 */
+  --error-bg-dark: #450a0a; /* dark red-950 */
+  --status-upcoming-bg-dark: #1e293b; /* slate-800 */
+  --status-upcoming-text-dark: #60a5fa; /* blue-400 */
+  --status-ongoing-bg-dark: #422006; /* amber-950 */
+  --status-ongoing-text-dark: #fcd34d; /* amber-300 */
+  --status-completed-bg-dark: #14532d; /* green-900 */
+  --status-completed-text-dark: #86efac; /* green-300 */
+  --accent-text-color-dark: #f87171; /* Lighter Red for Elo etc. */
+  --table-header-bg-dark: #374151; /* gray-700 */
+  --table-header-text-dark: #d1d5db; /* gray-300 */
+  --table-row-border-dark: #4b5563; /* gray-600 */
 }
 
 /* --- Base Body Styles --- */
@@ -31,37 +108,167 @@ body {
     min-height: 100vh; /* Full viewport height */
     background-color: var(--bg-color-light);
     color: var(--text-color-light);
-    /* Removed gradient, using solid color */
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-    background-size: cover;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth theme transition */
 }
 a, button, .player-entry { transition: all 0.2s ease-in-out; }
-.timer-display { font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem; }
-        .dice-result { font-size: 3rem; margin: 1rem 0; font-weight: bold; }
-        .score-input { width: 60px; text-align: center; }
 
-        /* --- NEW: Styles for Play Dropdown Dark Mode --- */
-         body.dark #play-dropdown {
-             background-color: var(--card-bg-dark); /* Use dark card background */
-             --tw-ring-opacity: 1;
-             --tw-ring-color: rgba(75, 85, 99, var(--tw-ring-opacity)); /* Example: gray-500 */
-         }
-          /* Style links within the PLAY dropdown */
-          body.dark #play-dropdown a {
-              color: var(--text-muted-dark); /* Use muted text color */
-          }
-          body.dark #play-dropdown a:hover {
-              background-color: #374151; /* Example: Darker gray hover */
-              color: var(--accent-text-dark); /* Use accent text color (white) */
-          }
-        /* --- Make sure Play dropdown has base transition styles --- */
-        #play-dropdown {
-             transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-        }
-        #play-dropdown.hidden {
-             opacity: 0; transform: translateY(-10px); pointer-events: none;
-        }
+/* --- Utility Classes --- */
+.card {
+    background-color: var(--card-bg-light);
+    border: 1px solid var(--border-color-light);
+    /* Tailwind shadow-lg equivalent */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+.loading-text { color: var(--text-muted-light); font-style: italic; }
+.muted-text { color: var(--text-muted-light); }
+.error-text { color: var(--error-text-light); }
+.accent-text { color: var(--accent-text-color-light); }
+.player-link { color: var(--link-color-light); cursor: pointer; }
+.player-link:hover { text-decoration: underline; color: var(--link-hover-light); }
+.app-error-container { background-color: var(--error-bg-light); border-color: var(--error-text-light); }
+.error-title { color: var(--error-text-light); }
+
+/* --- Buttons --- */
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem; /* py-2 px-4 */
+    border-radius: 0.5rem; /* rounded-lg */
+    font-weight: 600; /* font-semibold or font-bold */
+    text-align: center;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); /* shadow */
+}
+.button:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* shadow-md */
+}
+.button:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    /* Add ring styles if needed, e.g., using box-shadow */
+    /* box-shadow: 0 0 0 3px var(--ring-color, rgba(59, 130, 246, 0.5)); */
+}
+.button-primary {
+    background-color: var(--button-primary-bg-light);
+    color: var(--button-primary-text-light);
+}
+.button-primary:hover { background-color: var(--button-primary-hover-bg-light); }
+.button-secondary {
+    background-color: var(--button-secondary-bg-light);
+    color: var(--button-secondary-text-light);
+    border-color: var(--border-color-light); /* Add border for secondary */
+}
+.button-secondary:hover { background-color: var(--button-secondary-hover-bg-light); }
+.button-success {
+    background-color: var(--button-success-bg-light);
+    color: var(--button-success-text-light);
+}
+.button-success:hover { background-color: var(--button-success-hover-bg-light); }
+.button-danger {
+    background-color: var(--button-danger-bg-light);
+    color: var(--button-danger-text-light);
+}
+.button-danger:hover { background-color: var(--button-danger-hover-bg-light); }
+.button-warning {
+    background-color: var(--button-warning-bg-light);
+    color: var(--button-warning-text-light);
+}
+.button-warning:hover { background-color: var(--button-warning-hover-bg-light); }
+.button-special {
+    background-color: var(--button-special-bg-light);
+    color: var(--button-special-text-light);
+}
+.button-special:hover { background-color: var(--button-special-hover-bg-light); }
+.button-google {
+    background-color: var(--button-google-bg-light);
+    color: var(--button-google-text-light);
+}
+.button-google:hover { background-color: var(--button-google-hover-bg-light); }
+
+.link-button {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--link-color-light);
+    cursor: pointer;
+    text-decoration: none;
+}
+.link-button:hover {
+    color: var(--link-hover-light);
+    text-decoration: underline;
+}
+
+/* --- Forms --- */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="url"],
+input[type="date"],
+input[type="number"],
+select,
+textarea {
+    background-color: var(--input-bg-light);
+    color: var(--input-text-light);
+    border: 1px solid var(--input-border-light);
+    border-radius: 0.5rem; /* rounded-lg */
+    padding: 0.75rem 1rem; /* py-3 px-4 */
+    width: 100%;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+input:focus, select:focus, textarea:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    border-color: var(--link-color-light); /* Use link color for focus border */
+    box-shadow: 0 0 0 1px var(--link-color-light); /* Ring effect */
+}
+label {
+    color: var(--text-color-light);
+}
+.form-checkbox, .form-radio {
+    color: var(--link-color-light); /* Checkbox/radio color */
+    border-color: var(--input-border-light);
+}
+.form-checkbox:focus, .form-radio:focus {
+    --tw-ring-color: var(--link-color-light); /* Ring color */
+}
+
+/* --- Tables --- */
+.table-header {
+    background-color: var(--table-header-bg-light);
+    color: var(--table-header-text-light);
+    font-weight: 600; /* semibold */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem; /* text-xs */
+}
+tbody tr {
+    border-bottom: 1px solid var(--table-row-border-light);
+}
+tbody tr:last-child {
+    border-bottom: none;
+}
+td, th {
+    padding: 0.75rem 1rem; /* py-3 px-4 */
+    vertical-align: middle;
+    white-space: normal; /* Allow wrapping */
+}
+th {
+    white-space: nowrap;
+}
+
+/* --- Status Indicators --- */
+.status-upcoming { background-color: var(--status-upcoming-bg-light); color: var(--status-upcoming-text-light); }
+.status-ongoing { background-color: var(--status-ongoing-bg-light); color: var(--status-ongoing-text-light); }
+.status-completed { background-color: var(--status-completed-bg-light); color: var(--status-completed-text-light); }
+
+/* --- Specific Component Styles --- */
+.timer-display { font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem; }
+.dice-result { font-size: 3rem; margin: 1rem 0; font-weight: bold; }
+.score-input { width: 60px; text-align: center; }
+
 /* --- Visibility Control --- */
 /* Admin */
 .admin-only { display: none; }
@@ -81,25 +288,35 @@ body.admin-logged-in .player-public-only { display: none; }
 
 /* --- Layout & Components --- */
 /* Dropdown */
-#profile-dropdown { transition: opacity 0.2s ease-out, transform 0.2s ease-out; }
-#profile-dropdown.hidden { opacity: 0; transform: translateY(-10px); pointer-events: none; }
+#profile-dropdown, #play-dropdown {
+    background-color: var(--card-bg-light);
+    border: 1px solid var(--border-color-light);
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+#profile-dropdown a, #play-dropdown a {
+    color: var(--text-color-light);
+}
+#profile-dropdown a:hover, #play-dropdown a:hover {
+    background-color: var(--bg-color-light); /* Light gray hover */
+    color: var(--link-hover-light);
+}
+#profile-dropdown.hidden, #play-dropdown.hidden { opacity: 0; transform: translateY(-10px); pointer-events: none; }
+
 /* Modals */
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
 .modal-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
-.modal-content { background-color: var(--card-bg-light); padding: 1.5rem 2rem 2rem 2rem; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); max-width: 95%; width: 550px; max-height: 90vh; overflow-y: auto; position: relative; transform: translateY(-20px) scale(0.98); transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; }
+.modal-content { background-color: var(--card-bg-light); padding: 1.5rem 2rem 2rem 2rem; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); max-width: 95%; width: 550px; max-height: 90vh; overflow-y: auto; position: relative; transform: translateY(-20px) scale(0.98); transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease; opacity: 0; border: 1px solid var(--border-color-light); }
 .modal-overlay.active .modal-content { transform: translateY(0) scale(1); opacity: 1; }
 .modal-close-button { position: absolute; top: 0.5rem; right: 0.75rem; background: none; border: none; font-size: 1.75rem; font-weight: bold; color: var(--text-muted-light); cursor: pointer; padding: 0.25rem; line-height: 1; }
 .modal-close-button:hover { color: var(--text-color-light); }
+
 /* Ranking Table */
 .ranking-table { display: none; }
-.ranking-table.active { display: block; }
-/* Multi-select (if used) */
-.multi-select-list { max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color-light); border-radius: 0.375rem; padding: 0.5rem; background-color: #f9fafb; } /* Consider a light variable for bg */
-/* Table Cells */
-td, th { white-space: nowrap; padding-left: 1rem; padding-right: 1rem; padding-top: 0.75rem; padding-bottom: 0.75rem; vertical-align: middle; }
-td { white-space: normal; }
+.ranking-table.active { display: grid; } /* Use grid as per HTML */
+
 /* Validation */
-.border-red-500 { border-color: #ef4444; }
+.border-red-500 { border-color: var(--error-text-light); }
+
 /* Player Modal Edit Mode */
 .modal-editing .editable-field { display: none; }
 .modal-editing .editing-field { display: block; }
@@ -107,6 +324,7 @@ td { white-space: normal; }
 .modal-editing .edit-mode-controls { display: inline-flex; }
 .edit-mode-controls { display: none; }
 .modal-editing .view-mode-controls { display: none; }
+
 /* Tournament Detail Section */
 #tournament-detail-section.loading #tournament-detail-content { display: none; }
 #tournament-detail-section.loading #tournament-detail-loading { display: block; }
@@ -117,122 +335,169 @@ td { white-space: normal; }
 #tournament-detail-loading, #tournament-detail-error { display: none; }
 
 /* --- Base Element Light Mode Styles (Using Variables) --- */
-nav { /* Default nav style */
-    background-image: none;
-    background-color: var(--accent-bg-light); /* Blue */
-    color: var(--accent-text-light); /* White */
-    /* Add padding, shadow, sticky etc. back if needed, or handle with Tailwind classes */
-    padding: 1.25rem; /* p-5 */
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* shadow-lg */
+nav {
+    background-color: var(--card-bg-light); /* Use card background for nav */
+    color: var(--text-color-light);
+    border-bottom: 1px solid var(--border-color-light);
+    padding: 0.75rem 1.25rem; /* Adjusted padding */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* shadow-md */
     position: sticky; top: 0; z-index: 50;
 }
-.bg-white { background-color: var(--card-bg-light); } /* Handles cards etc. */
-h1, h2, h3, .text-gray-900, .text-gray-800 { color: var(--text-color-light); } /* Headings & primary text */
-.text-gray-700, .text-gray-600, .text-gray-500 { color: var(--text-muted-light); } /* Muted text */
-a, .text-blue-600 { color: var(--link-color-light); } /* Links */
-a:hover, .text-blue-600:hover { text-decoration: underline; color: #1e40af; /* Darker blue hover */ }
-.border-blue-200 { border-color: var(--border-color-light); } /* Borders */
-.bg-gray-100 { background-color: #f3f4f6; } /* Light gray background (e.g., table header) - consider removing if theme is pure blue/white */
-.text-indigo-700 { color: var(--link-color-light); } /* Use link color for indigo text */
+nav a { color: var(--link-color-light); font-weight: 500; }
+nav a:hover { color: var(--link-hover-light); text-decoration: none; }
+nav button { color: var(--text-color-light); font-weight: 500; }
+nav button svg { fill: currentColor; }
+
+h1, h2, h3 { color: var(--text-color-light); }
+p { color: var(--text-color-light); }
 footer { color: var(--text-muted-light); }
+.border-b-2 { border-bottom-width: 2px; border-color: var(--border-accent-light); } /* Use accent border */
+.border, .border-t, .border-b { border-color: var(--border-color-light); }
 
 /* --- Dark Mode Overrides --- */
 body.dark {
   background-color: var(--bg-color-dark);
   color: var(--text-color-dark);
-  /* background-image: none; /* Solid background for dark mode */ */
 }
 
 /* Dark Nav */
 body.dark nav {
-    background-image: none;
-    background-color: var(--accent-bg-dark); /* Red */
-    color: var(--accent-text-dark); /* White or Black */
+    background-color: var(--card-bg-dark);
+    color: var(--text-color-dark);
+    border-bottom-color: var(--border-color-dark);
 }
-/* Ensure nav links are readable */
-body.dark nav a {
-     color: var(--accent-text-dark);
-}
-/* Optional: Dark nav link hover */
-body.dark nav a:hover {
-    color: #f3f4f6; /* Example: Light gray hover */
-    text-decoration: none;
-}
-body.dark nav .group .bg-white {
-     background-color: var(--card-bg-dark); /* Use dark card background */
-     /* Optional: Adjust ring/border for better visibility */
-     --tw-ring-opacity: 1;
-     --tw-ring-color: rgba(75, 85, 99, var(--tw-ring-opacity)); /* Example: gray-500 */
- }
- /* Style links within the general nav dropdowns */
- body.dark nav .group .bg-white a {
-     color: var(--text-muted-dark); /* Use muted text color for dark mode */
- }
- body.dark nav .group .bg-white a:hover {
-     background-color: #374151; /* Example: Darker gray hover */
-     color: var(--accent-text-dark); /* Use accent text color (white) on hover */
- }
+body.dark nav a { color: var(--link-color-dark); }
+body.dark nav a:hover { color: var(--link-hover-dark); }
+body.dark nav button { color: var(--text-color-dark); }
 
- /* Target the profile dropdown menu specifically */
- body.dark #profile-dropdown {
-     background-color: var(--card-bg-dark); /* Use dark card background */
-     /* Optional: Adjust ring/border */
-      --tw-ring-opacity: 1;
-     --tw-ring-color: rgba(75, 85, 99, var(--tw-ring-opacity)); /* Example: gray-500 */
- }
-  /* Style links within the profile dropdown */
-  body.dark #profile-dropdown a {
-      color: var(--text-muted-dark); /* Use muted text color */
-  }
-  body.dark #profile-dropdown a:hover {
-      background-color: #374151; /* Example: Darker gray hover */
-      color: var(--accent-text-dark); /* Use accent text color (white) */
-  }
+/* Dark Dropdowns */
+body.dark #profile-dropdown, body.dark #play-dropdown {
+    background-color: var(--card-bg-dark);
+    border-color: var(--border-color-dark);
+}
+body.dark #profile-dropdown a, body.dark #play-dropdown a {
+    color: var(--text-color-dark);
+}
+body.dark #profile-dropdown a:hover, body.dark #play-dropdown a:hover {
+    background-color: var(--bg-color-dark); /* Darker hover */
+    color: var(--link-hover-dark);
+}
 
-body.dark .bg-white { background-color: var(--card-bg-dark); }
-/* Dark Cards / White Backgrounds */
-body.dark .bg-white { background-color: var(--card-bg-dark); }
-/* Dark Headings & Primary Text */
-body.dark h1, body.dark h2, body.dark h3,
-body.dark .text-gray-900, body.dark .text-gray-800 { color: var(--text-color-dark); }
-/* Dark Muted Text */
-body.dark .text-gray-700, body.dark .text-gray-600, body.dark .text-gray-500 { color: var(--text-muted-dark); }
-/* Dark Links */
-body.dark a, body.dark .text-blue-600 { color: var(--link-color-dark); }
-body.dark a:hover, body.dark .text-blue-600:hover { color: #ef4444; /* Medium Red hover */ }
-/* Dark Borders */
-body.dark .border-blue-200 { border-color: var(--border-color-dark); }
-/* Dark Light Gray Background */
-body.dark .bg-gray-100 { background-color: #1f2937; } /* Very Dark Gray */
-/* Dark Indigo Text */
-body.dark .text-indigo-700 { color: var(--link-color-dark); }
+/* Dark Cards */
+body.dark .card {
+    background-color: var(--card-bg-dark);
+    border-color: var(--border-color-dark);
+}
+
+/* Dark Text */
+body.dark h1, body.dark h2, body.dark h3, body.dark p { color: var(--text-color-dark); }
+body.dark .loading-text { color: var(--text-muted-dark); }
+body.dark .muted-text { color: var(--text-muted-dark); }
+body.dark .error-text { color: var(--error-text-dark); }
+body.dark .accent-text { color: var(--accent-text-color-dark); }
+body.dark .player-link { color: var(--link-color-dark); }
+body.dark .player-link:hover { color: var(--link-hover-dark); }
+body.dark .app-error-container { background-color: var(--error-bg-dark); border-color: var(--error-text-dark); }
+body.dark .error-title { color: var(--error-text-dark); }
+
+/* Dark Links & Buttons */
+body.dark .link-button { color: var(--link-color-dark); }
+body.dark .link-button:hover { color: var(--link-hover-dark); }
+body.dark .button-primary { background-color: var(--button-primary-bg-dark); color: var(--button-primary-text-dark); }
+body.dark .button-primary:hover { background-color: var(--button-primary-hover-bg-dark); }
+body.dark .button-secondary { background-color: var(--button-secondary-bg-dark); color: var(--button-secondary-text-dark); border-color: var(--border-color-dark); }
+body.dark .button-secondary:hover { background-color: var(--button-secondary-hover-bg-dark); }
+body.dark .button-success { background-color: var(--button-success-bg-dark); color: var(--button-success-text-dark); }
+body.dark .button-success:hover { background-color: var(--button-success-hover-bg-dark); }
+body.dark .button-danger { background-color: var(--button-danger-bg-dark); color: var(--button-danger-text-dark); }
+body.dark .button-danger:hover { background-color: var(--button-danger-hover-bg-dark); }
+body.dark .button-warning { background-color: var(--button-warning-bg-dark); color: var(--button-warning-text-dark); }
+body.dark .button-warning:hover { background-color: var(--button-warning-hover-bg-dark); }
+body.dark .button-special { background-color: var(--button-special-bg-dark); color: var(--button-special-text-dark); }
+body.dark .button-special:hover { background-color: var(--button-special-hover-bg-dark); }
+body.dark .button-google { background-color: var(--button-google-bg-dark); color: var(--button-google-text-dark); }
+body.dark .button-google:hover { background-color: var(--button-google-hover-bg-dark); }
+
+/* Dark Forms */
+body.dark input[type="text"],
+body.dark input[type="email"],
+body.dark input[type="password"],
+body.dark input[type="url"],
+body.dark input[type="date"],
+body.dark input[type="number"],
+body.dark select,
+body.dark textarea {
+    background-color: var(--input-bg-dark);
+    color: var(--input-text-dark);
+    border-color: var(--input-border-dark);
+}
+body.dark input:focus, body.dark select:focus, body.dark textarea:focus {
+    border-color: var(--link-color-dark);
+    box-shadow: 0 0 0 1px var(--link-color-dark);
+}
+body.dark label { color: var(--text-color-dark); }
+body.dark .form-checkbox, body.dark .form-radio {
+    color: var(--link-color-dark);
+    border-color: var(--input-border-dark);
+    background-color: var(--input-bg-dark); /* Ensure bg matches */
+}
+body.dark .form-checkbox:checked, body.dark .form-radio:checked {
+    background-color: var(--link-color-dark); /* Color when checked */
+    border-color: var(--link-color-dark);
+}
+body.dark .form-checkbox:focus, body.dark .form-radio:focus {
+    --tw-ring-color: var(--link-color-dark);
+}
+
+/* Dark Tables */
+body.dark .table-header {
+    background-color: var(--table-header-bg-dark);
+    color: var(--table-header-text-dark);
+}
+body.dark tbody tr { border-color: var(--table-row-border-dark); }
+
+/* Dark Status Indicators */
+body.dark .status-upcoming { background-color: var(--status-upcoming-bg-dark); color: var(--status-upcoming-text-dark); }
+body.dark .status-ongoing { background-color: var(--status-ongoing-bg-dark); color: var(--status-ongoing-text-dark); }
+body.dark .status-completed { background-color: var(--status-completed-bg-dark); color: var(--status-completed-text-dark); }
+
 /* Dark Modals */
-body.dark .modal-content { background-color: var(--card-bg-dark); }
+body.dark .modal-content {
+    background-color: var(--card-bg-dark);
+    border-color: var(--border-color-dark);
+}
 body.dark .modal-close-button { color: var(--text-muted-dark); }
 body.dark .modal-close-button:hover { color: var(--text-color-dark); }
+
+/* Dark Borders */
+body.dark .border-b-2 { border-color: var(--border-accent-dark); }
+body.dark .border, body.dark .border-t, body.dark .border-b { border-color: var(--border-color-dark); }
+body.dark .border-dashed { border-color: var(--border-color-dark); }
+
 /* Dark Footer */
 body.dark footer { color: var(--text-muted-dark); }
 
-/* Dark Form Select */
-body.dark select,
-body.dark #rankings-game-filter {
-    background-color: #1f2937; /* Match dark card background */
-    color: #f3f4f6;           /* Light text */
-    border-color: #4b5563;    /* Darker border */
-}
-/* Dark Multi-select list */
-body.dark .multi-select-list {
-    background-color: #111827; /* Even darker background */
-    border-color: #4b5563;
-}
-
-/* Dark Mode Specific Text Colors (from previous overrides) */
-body.dark .text-green-600 { color: #34d399; } /* Keep green for wins? */
-body.dark .text-red-600 { color: #f87171; }   /* Use theme link color? */
-body.dark .text-indigo-600 { color: var(--link-color-dark); } /* Use theme link color */
-
 /* --- Dark Mode Toggle Switch --- */
-input:checked ~ .dot { transform: translateX(100%); background-color: var(--link-color-dark); /* Use Red for "on" in dark mode? */ }
-input:checked ~ .block { background-color: #4b5563; /* Darker track */ }
-/* Label text (already handled by footer rule) */
-/* .dark .dark\:text-gray-300 { color: var(--text-muted-dark); } */
+/* Use Tailwind classes from HTML for the toggle structure */
+/* Style the peer-checked state for the background */
+#dark-mode-toggle:checked + div {
+    background-color: var(--accent-bg-light); /* Blue when checked (Light mode "on") */
+}
+body.dark #dark-mode-toggle:checked + div {
+    background-color: var(--accent-bg-dark); /* Red when checked (Dark mode "on") */
+}
+/* Style the circle */
+#dark-mode-toggle + div::after {
+    background-color: #ffffff; /* White circle */
+    border-color: #e5e7eb; /* Light gray border */
+}
+body.dark #dark-mode-toggle + div::after {
+    border-color: #4b5563; /* Darker border for dark mode */
+}
+/* Style the track */
+#dark-mode-toggle + div {
+    background-color: #e5e7eb; /* Light gray track */
+}
+body.dark #dark-mode-toggle + div {
+    background-color: #374151; /* Dark gray track */
+}

@@ -11,53 +11,54 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <nav class="bg-gradient-to-r from-cyan-600 to-blue-700 text-white p-5 shadow-lg sticky top-0 z-50 flex items-center justify-between">
+    <nav class="p-5 shadow-lg sticky top-0 z-50 flex items-center justify-between">
 
-        <a href="#home-section" class="text-xl font-bold nav-link flex-shrink-0" data-target="home-section">🏆 LeaderBored</a>
+        <a href="#home-section" class="nav-link flex-shrink-0" data-target="home-section">🏆 LeaderBored</a>
 
         <div class="flex items-center space-x-4">
             <div class="relative group">
-                <button class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium focus:outline-none flex items-center">
-                    PLAY <svg class="w-4 h-4 ml-1 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                <button class="px-3 py-2 rounded-md focus:outline-none flex items-center">
+                    PLAY <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
                 </button>
-                <div id="play-dropdown" class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <a href="#live-game-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="live-game-section" role="menuitem">PLAY LIVE GAME</a>
-                    <a href="#submit-past-game-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="submit-past-game-section" role="menuitem">SUBMIT PAST GAME</a>
+                <div id="play-dropdown" class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <a href="#live-game-section" class="block px-4 py-2 text-sm nav-link" data-target="live-game-section" role="menuitem">PLAY LIVE GAME</a>
+                    <a href="#submit-past-game-section" class="block px-4 py-2 text-sm nav-link" data-target="submit-past-game-section" role="menuitem">SUBMIT PAST GAME</a>
                 </div>
             </div>
             <div class="relative group">
-                <button class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium focus:outline-none flex items-center">
-                    INFO <svg class="w-4 h-4 ml-1 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                <button class="px-3 py-2 rounded-md focus:outline-none flex items-center">
+                    INFO <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
                 </button>
-                <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <a href="#players-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="players-section" role="menuitem">PLAYERS</a>
-                    <a href="#rankings-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="rankings-section" role="menuitem">RANKINGS</a>
-                    <a href="#results-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="results-section" role="menuitem">GAMES</a>
-                    <a href="#sports-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="sports-section" role="menuitem">SPORTS</a>
+                <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <a href="#players-section" class="block px-4 py-2 text-sm nav-link" data-target="players-section" role="menuitem">PLAYERS</a>
+                    <a href="#rankings-section" class="block px-4 py-2 text-sm nav-link" data-target="rankings-section" role="menuitem">RANKINGS</a>
+                    <a href="#results-section" class="block px-4 py-2 text-sm nav-link" data-target="results-section" role="menuitem">GAMES</a>
+                    <a href="#sports-section" class="block px-4 py-2 text-sm nav-link" data-target="sports-section" role="menuitem">SPORTS</a>
                 </div>
             </div>
 
             <div class="relative group">
-                <button class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium focus:outline-none flex items-center">
-                    TOURNAMENTS <svg class="w-4 h-4 ml-1 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                <button class="px-3 py-2 rounded-md focus:outline-none flex items-center">
+                    TOURNAMENTS <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
                 </button>
-                <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <a href="#tournaments-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="tournaments-section" role="menuitem">HISTORY</a>
-                    <a href="#tournaments-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="tournaments-section" role="menuitem">UPCOMING</a>
+                <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <a href="#tournaments-section" class="block px-4 py-2 text-sm nav-link" data-target="tournaments-section" role="menuitem">HISTORY</a>
+                    <a href="#tournaments-section" class="block px-4 py-2 text-sm nav-link" data-target="tournaments-section" role="menuitem">UPCOMING</a>
                 </div>
             </div>
         </div>
 
-        <div class="flex items-center space-x-4 flex-shrink-0"> <a href="#player-login-section" id="player-login-link" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow hover:shadow-md public-only player-public-only nav-link" data-target="player-login-section">Login</a>
+        <div class="flex items-center space-x-4 flex-shrink-0">
+            <a href="#player-login-section" id="player-login-link" class="button button-primary px-4 py-2 rounded-lg text-sm font-medium shadow hover:shadow-md public-only player-public-only nav-link" data-target="player-login-section">Login</a>
 
             <div id="profile-section" class="relative player-only">
-                <button id="profile-photo-button" class="block h-10 w-10 rounded-full overflow-hidden border-2 border-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-700 focus:ring-white">
+                <button id="profile-photo-button" class="block h-10 w-10 rounded-full overflow-hidden border-2 focus:outline-none">
                     <img id="profile-photo-img" src="https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40" alt="My Profile" class="h-full w-full object-cover">
                 </button>
-                <div id="profile-dropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden" role="menu" aria-orientation="vertical" aria-labelledby="profile-photo-button">
-                    <a href="#" id="dropdown-edit-profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Edit Profile</a>
-                    <a href="#" id="dropdown-settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Settings</a>
-                    <a href="#" id="dropdown-logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Logout</a>
+                <div id="profile-dropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 focus:outline-none hidden" role="menu" aria-orientation="vertical" aria-labelledby="profile-photo-button">
+                    <a href="#" id="dropdown-edit-profile" class="block px-4 py-2 text-sm" role="menuitem">Edit Profile</a>
+                    <a href="#" id="dropdown-settings" class="block px-4 py-2 text-sm" role="menuitem">Settings</a>
+                    <a href="#" id="dropdown-logout" class="block px-4 py-2 text-sm" role="menuitem">Logout</a>
                 </div>
             </div>
         </div>
@@ -66,46 +67,46 @@
 
     <div class="container mx-auto mt-8 p-6">
         <section id="home-section" class="page-section space-y-8">
-             <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Dashboard</h1>
+             <h1 class="text-4xl font-bold border-b-2 pb-3 mb-6">Dashboard</h1>
              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                 <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                     <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Recent Games</h2>
+                 <div class="card p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                     <h2 class="text-2xl font-semibold mb-5">Recent Games</h2>
                      <ul id="recent-games-list" class="space-y-4 text-base">
-                         <li class="text-gray-500">Loading recent games...</li>
+                         <li>Loading recent games...</li>
                      </ul>
-                     <a href="#results" class="text-blue-600 hover:underline mt-5 inline-block font-medium nav-link" data-target="results-section">View all results...</a>
+                     <a href="#results" class="mt-5 inline-block font-medium nav-link" data-target="results-section">View all results...</a>
                  </div>
-                 <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                     <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Top Players (Overall)</h2>
+                 <div class="card p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                     <h2 class="text-2xl font-semibold mb-5">Top Players (Overall)</h2>
                      <ol id="top-players-list" class="list-decimal list-inside space-y-3 text-base">
-                         <li class="text-gray-500">Loading rankings...</li>
+                         <li>Loading rankings...</li>
                      </ol>
-                     <a href="#rankings" class="text-blue-600 hover:underline mt-5 inline-block font-medium nav-link" data-target="rankings-section">View full rankings...</a>
+                     <a href="#rankings" class="mt-5 inline-block font-medium nav-link" data-target="rankings-section">View full rankings...</a>
                  </div>
-                 <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                     <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Top Teams (Overall)</h2>
+                 <div class="card p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                     <h2 class="text-2xl font-semibold mb-5">Top Teams (Overall)</h2>
                      <ol id="top-teams-list" class="list-decimal list-inside space-y-3 text-base">
-                         <li class="text-gray-500">Loading rankings...</li>
+                         <li>Loading rankings...</li>
                      </ol>
-                     <a href="#rankings" class="text-blue-600 hover:underline mt-5 inline-block font-medium nav-link" data-target="rankings-section">View full rankings...</a>
+                     <a href="#rankings" class="mt-5 inline-block font-medium nav-link" data-target="rankings-section">View full rankings...</a>
                  </div>
-                 <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-2 lg:col-span-1">
-                     <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Tournaments</h2>
+                 <div class="card p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-2 lg:col-span-1">
+                     <h2 class="text-2xl font-semibold mb-5">Tournaments</h2>
                      <ul id="dashboard-tournaments-list" class="space-y-4">
-                         <li class="text-gray-500">Loading tournaments...</li>
+                         <li>Loading tournaments...</li>
                      </ul>
-                     <a href="#tournaments" class="text-blue-600 hover:underline mt-5 inline-block font-medium nav-link" data-target="tournaments-section">View all tournaments...</a>
+                     <a href="#tournaments" class="mt-5 inline-block font-medium nav-link" data-target="tournaments-section">View all tournaments...</a>
                  </div>
              </div>
              
         </section>
         <section id="live-game-section" class="page-section hidden space-y-8">
-            <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Play Live Game</h1>
+            <h1 class="text-4xl font-bold border-b-2 pb-3 mb-6">Play Live Game</h1>
     
-            <div class="bg-white p-8 rounded-xl shadow-lg">
+            <div class="card p-8 rounded-xl shadow-lg">
                 <div class="mb-6">
-                    <label for="live-game-select" class="block text-gray-700 text-sm font-bold mb-2">Select Game:</label>
-                    <select id="live-game-select" name="live-game-select" class="shadow border rounded-lg w-full md:w-1/2 py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label for="live-game-select" class="block text-sm font-bold mb-2">Select Game:</label>
+                    <select id="live-game-select" name="live-game-select" class="shadow border rounded-lg w-full md:w-1/2 py-3 px-4 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">-- Select a Game --</option>
                         <option value="golf">Golf</option>
                         <option value="pool">Pool</option>
@@ -115,11 +116,11 @@
                 </div>
     
                 <div id="live-game-tools-container" class="space-y-6">
-                    <p class="text-gray-500 italic">Select a game to see available tools.</p>
+                    <p class="italic">Select a game to see available tools.</p>
                 </div>
     
                  <div id="live-game-submit-area" class="mt-8 text-center border-t pt-6" style="display: none;">
-                     <button id="submit-live-game-score-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow hover:shadow-md">
+                     <button id="submit-live-game-score-btn" class="button button-danger font-bold py-3 px-6 rounded-lg shadow hover:shadow-md">
                         Finish Game & Submit Score
                     </button>
                 </div>
@@ -127,85 +128,85 @@
         </section>
     
         <section id="submit-past-game-section" class="page-section hidden space-y-8">
-            <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Submit Game</h1>
-            <div class="bg-white p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
-                <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Enter Final Score Details</h2>
+            <h1 class="text-4xl font-bold border-b-2 pb-3 mb-6">Submit Game</h1>
+            <div class="card p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
+                <h2 class="text-2xl font-semibold mb-5">Enter Final Score Details</h2>
                 <form id="submit-past-game-form">
                     <div class="mb-4">
-                        <label for="past-game-type" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label>
-                        <select id="past-game-type" name="game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                        <label for="past-game-type" class="block text-sm font-bold mb-2">Game Type:</label>
+                        <select id="past-game-type" name="game-type" class="shadow border rounded-lg w-full py-3 px-4" required>
                             <option value="">Select Game Type</option>
                             </select>
                     </div>
     
                     <div id="past-winner-container" class="mb-4">
-                        <label for="past-winner" class="block text-gray-700 text-sm font-bold mb-2">Winner:</label>
-                        <select id="past-winner" name="winner_or_golfer" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                        <label for="past-winner" class="block text-sm font-bold mb-2">Winner:</label>
+                        <select id="past-winner" name="winner_or_golfer" class="shadow border rounded-lg w-full py-3 px-4" required>
                            <option value="">Select Winner/Golfer</option>
                            </select>
                    </div>
                    <div id="past-loser-container" class="mb-4">
-                       <label for="past-loser" class="block text-gray-700 text-sm font-bold mb-2">Loser:</label>
-                       <select id="past-loser" name="loser" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                       <label for="past-loser" class="block text-sm font-bold mb-2">Loser:</label>
+                       <select id="past-loser" name="loser" class="shadow border rounded-lg w-full py-3 px-4" required>
                            <option value="">Select Loser</option>
                            </select>
                    </div>
                    <div id="past-is-draw-container" class="mb-4"> <label class="inline-flex items-center">
-                            <input type="checkbox" id="past-is-draw" name="is_draw" class="form-checkbox h-5 w-5 text-blue-600">
-                            <span class="ml-2 text-gray-700">Was it a Draw?</span>
+                            <input type="checkbox" id="past-is-draw" name="is_draw" class="form-checkbox h-5 w-5">
+                            <span class="ml-2">Was it a Draw?</span>
                          </label>
                      </div>
-                    <div id="submit-golf-specific-fields" class="hidden space-y-4 border border-indigo-100 p-4 rounded-lg bg-indigo-50 mb-4">
-                         <h3 class="text-lg font-semibold text-indigo-700 mb-0 pb-0">Golf Details</h3>
-                         <div class="mb-4"> <label for="past-golf-course" class="block text-gray-700 text-sm font-bold mb-2">Course Played:*</label>
-                             <select id="past-golf-course" name="past_golf_course" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                    <div id="submit-golf-specific-fields" class="hidden space-y-4 border p-4 rounded-lg mb-4">
+                         <h3 class="text-lg font-semibold mb-0 pb-0">Golf Details</h3>
+                         <div class="mb-4"> <label for="past-golf-course" class="block text-sm font-bold mb-2">Course Played:*</label>
+                             <select id="past-golf-course" name="past_golf_course" class="shadow border rounded-lg w-full py-3 px-4" required>
                                  <option value="">Loading Courses...</option>
                                  </select>
                          </div>
-                         <div class="mb-3"> <span class="block text-gray-700 text-sm font-bold mb-2">Holes Played:*</span>
+                         <div class="mb-3"> <span class="block text-sm font-bold mb-2">Holes Played:*</span>
                             <div class="flex space-x-4">
                                 <label class="inline-flex items-center">
-                                    <input type="radio" name="past_golf_holes_played" value="18" class="form-radio h-4 w-4 text-indigo-600" checked>
+                                    <input type="radio" name="past_golf_holes_played" value="18" class="form-radio h-4 w-4" checked>
                                     <span class="ml-2 text-sm">18 Holes</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="radio" name="past_golf_holes_played" value="9F" class="form-radio h-4 w-4 text-indigo-600">
+                                    <input type="radio" name="past_golf_holes_played" value="9F" class="form-radio h-4 w-4">
                                     <span class="ml-2 text-sm">Front 9</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="radio" name="past_golf_holes_played" value="9B" class="form-radio h-4 w-4 text-indigo-600">
+                                    <input type="radio" name="past_golf_holes_played" value="9B" class="form-radio h-4 w-4">
                                     <span class="ml-2 text-sm">Back 9</span>
                                 </label>
                             </div>
                         </div>
                         <div> <label class="inline-flex items-center">
-                                <input type="checkbox" id="past-golf-track-holes" name="past_golf_track_holes" class="form-checkbox h-5 w-5 text-indigo-600">
-                                <span class="ml-2 text-sm font-medium text-gray-800">Record Hole-by-Hole Scores?</span>
+                                <input type="checkbox" id="past-golf-track-holes" name="past_golf_track_holes" class="form-checkbox h-5 w-5">
+                                <span class="ml-2 text-sm font-medium">Record Hole-by-Hole Scores?</span>
                              </label>
                         </div>
-                        <div id="past-golf-hole-scores-section" class="mt-4 pt-4 border-t border-indigo-200" style="display: none;">
-                             <h4 class="text-md font-semibold mb-3 text-indigo-600">Enter Hole Scores:</h4>
+                        <div id="past-golf-hole-scores-section" class="mt-4 pt-4 border-t" style="display: none;">
+                             <h4 class="text-md font-semibold mb-3">Enter Hole Scores:</h4>
                              <div id="past-golf-hole-inputs-container" class="grid grid-cols-3 sm:grid-cols-5 gap-3">
                                 </div>
                         </div>
                     </div>
                     <div class="mb-4">
-                        <label for="past-score" class="block text-gray-700 text-sm font-bold mb-2">Score:</label>
-                        <input type="text" id="past-score" name="score" placeholder="e.g. 8-3, 21-15" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700">
+                        <label for="past-score" class="block text-sm font-bold mb-2">Score:</label>
+                        <input type="text" id="past-score" name="score" placeholder="e.g. 8-3, 21-15" class="shadow appearance-none border rounded-lg w-full py-3 px-4">
                     </div>
     
                     <div class="mb-4">
-                        <label for="past-date-played" class="block text-gray-700 text-sm font-bold mb-2">Date Played:</label>
-                        <input type="date" id="past-date-played" name="date_played" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                        <label for="past-date-played" class="block text-sm font-bold mb-2">Date Played:</label>
+                        <input type="date" id="past-date-played" name="date_played" class="shadow appearance-none border rounded-lg w-full py-3 px-4" required>
                     </div>
     
-                    <div class="mt-6 flex justify-between items-center"> <button type="button" id="back-to-live-game-btn" class="text-blue-600 hover:underline text-sm">
+                    <div class="mt-6 flex justify-between items-center"> <button type="button" id="back-to-live-game-btn" class="link-button text-sm">
                              &larr; Back to Live Game Tools
                          </button>
-                         <div class="space-x-3"> <button type="button" id="cancel-submit-past-game-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-5 rounded-lg">
+                         <div class="space-x-3"> <button type="button" id="cancel-submit-past-game-btn" class="button button-secondary font-bold py-2 px-5 rounded-lg">
                                 Cancel
                             </button>
-                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg">Submit Game Info</button>
+                            <button type="submit" class="button button-success font-bold py-2 px-5 rounded-lg">Submit Game Info</button>
                         </div>
                     </div>
                 </form>
@@ -213,25 +214,25 @@
         </section>
 
     <section id="game-info-section" class="page-section hidden space-y-8">
-        <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Game Information</h1>
-        <div id="game-info-content" class="bg-white p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
-            <p class="text-gray-500">Game details will be displayed here after submission...</p>
+        <h1 class="text-4xl font-bold border-b-2 pb-3 mb-6">Game Information</h1>
+        <div id="game-info-content" class="card p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
+            <p>Game details will be displayed here after submission...</p>
             </div>
          <div class="text-center mt-6">
-            <button id="share-game-info-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg mr-2">Share</button>
-            <a href="#home-section" class="nav-link text-indigo-600 hover:underline" data-target="home-section">Back to Dashboard</a>
+            <button id="share-game-info-btn" class="button button-primary font-bold py-2 px-4 rounded-lg mr-2">Share</button>
+            <a href="#home-section" class="nav-link" data-target="home-section">Back to Dashboard</a>
         </div>
     </section>
         <section id="rankings-section" class="page-section hidden space-y-8">
-             <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6 flex-wrap gap-4"> <h1 class="text-4xl font-bold text-gray-900">Rankings</h1>
+             <div class="flex justify-between items-center border-b-2 pb-3 mb-6 flex-wrap gap-4"> <h1 class="text-4xl font-bold">Rankings</h1>
                  <div class="flex items-center gap-4 flex-wrap"> <div>
-                         <label for="rankings-game-filter" class="text-sm font-medium text-gray-700 mr-2">Filter by Game:</label>
-                         <select id="rankings-game-filter" name="rankings-game-filter" class="shadow-sm border border-gray-300 rounded-lg py-2 px-3 text-base focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                         <label for="rankings-game-filter" class="text-sm font-medium mr-2">Filter by Game:</label>
+                         <select id="rankings-game-filter" name="rankings-game-filter" class="shadow-sm border rounded-lg py-2 px-3 text-base focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                              <option value="overall">Overall (1v1/2v2)</option>
                              </select>
                      </div>
                      <div class="contextual-admin-button-container">
-                         <button id="open-add-game-modal-btn" class="admin-only bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 text-sm">
+                         <button id="open-add-game-modal-btn" class="admin-only button button-special font-bold py-2 px-4 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 text-sm">
                              ⚙️ Add New Game Type
                          </button>
                      </div>
@@ -239,103 +240,102 @@
              </div>
              <div id="ranking-tables-container">
                  <div id="ranking-table-overall" class="ranking-table active grid grid-cols-1 md:grid-cols-2 gap-8">
-                     <div class="bg-white p-8 rounded-xl shadow-lg">
-                         <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Overall 1v1 Rankings (Elo)</h2>
+                     <div class="card p-8 rounded-xl shadow-lg">
+                         <h2 class="text-2xl font-semibold mb-5">Overall 1v1 Rankings (Elo)</h2>
                          <table class="w-full text-left table-auto text-base">
-                             <thead> <tr class="bg-gray-100"> <th class="px-4 py-3">Rank</th> <th class="px-4 py-3">Player</th> <th class="px-4 py-3">Rating</th> </tr> </thead>
-                             <tbody id="overall-1v1-rankings-body"> <tr class="border-b"><td colspan="3" class="text-center text-gray-500 py-4">Loading...</td></tr> </tbody>
+                             <thead> <tr class="table-header"> <th class="px-4 py-3">Rank</th> <th class="px-4 py-3">Player</th> <th class="px-4 py-3">Rating</th> </tr> </thead>
+                             <tbody id="overall-1v1-rankings-body"> <tr class="border-b"><td colspan="3" class="text-center py-4">Loading...</td></tr> </tbody>
                          </table>
                      </div>
-                     <div class="bg-white p-8 rounded-xl shadow-lg">
-                         <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Overall 2v2 Team Rankings (Elo)</h2>
+                     <div class="card p-8 rounded-xl shadow-lg">
+                         <h2 class="text-2xl font-semibold mb-5">Overall 2v2 Team Rankings (Elo)</h2>
                          <table class="w-full text-left table-auto text-base">
-                             <thead> <tr class="bg-gray-100"> <th class="px-4 py-3">Rank</th> <th class="px-4 py-3">Team</th> <th class="px-4 py-3">Rating</th> </tr> </thead>
-                             <tbody id="overall-2v2-rankings-body"> <tr class="border-b"><td colspan="3" class="text-center text-gray-500 py-4">Loading...</td></tr> </tbody>
+                             <thead> <tr class="table-header"> <th class="px-4 py-3">Rank</th> <th class="px-4 py-3">Team</th> <th class="px-4 py-3">Rating</th> </tr> </thead>
+                             <tbody id="overall-2v2-rankings-body"> <tr class="border-b"><td colspan="3" class="text-center py-4">Loading...</td></tr> </tbody>
                          </table>
                      </div>
                  </div>
                  </div>
         </section>
         <section id="sports-section" class="page-section hidden space-y-8">
-            <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Sports Overview</h1>
+            <h1 class="text-4xl font-bold border-b-2 pb-3 mb-6">Sports Overview</h1>
  
             <div id="sports-gallery" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                    <h2 class="text-2xl font-semibold mb-3 text-indigo-700">Golf</h2>
-                    <p class="text-sm text-gray-600 mb-4">Track scores, handicaps, and course performance.</p>
-                    <button data-sport="golf" class="view-sport-details-btn text-blue-600 hover:underline font-medium">View Details & Courses</button>
+                <div class="card p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <h2 class="text-2xl font-semibold mb-3">Golf</h2>
+                    <p class="text-sm mb-4">Track scores, handicaps, and course performance.</p>
+                    <button data-sport="golf" class="view-sport-details-btn link-button font-medium">View Details & Courses</button>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                     <h2 class="text-2xl font-semibold mb-3 text-indigo-700">Pool</h2>
-                     <p class="text-sm text-gray-600 mb-4">View player rankings and recent match results.</p>
-                     <button data-sport="pool" class="view-sport-details-btn text-blue-600 hover:underline font-medium">View Rankings</button> </div>
-                 <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                     <h2 class="text-2xl font-semibold mb-3 text-indigo-700">Overall</h2>
-                     <p class="text-sm text-gray-600 mb-4">See combined 1v1 and 2v2 rankings.</p>
-                     <button data-sport="overall" class="view-sport-details-btn text-blue-600 hover:underline font-medium">View Rankings</button> </div>
-                <div class="col-span-full text-center text-gray-500 p-4">
+                <div class="card p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                     <h2 class="text-2xl font-semibold mb-3">Pool</h2>
+                     <p class="text-sm mb-4">View player rankings and recent match results.</p>
+                     <button data-sport="pool" class="view-sport-details-btn link-button font-medium">View Rankings</button> </div>
+                 <div class="card p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                     <h2 class="text-2xl font-semibold mb-3">Overall</h2>
+                     <p class="text-sm mb-4">See combined 1v1 and 2v2 rankings.</p>
+                <div class="col-span-full text-center text-gray-800 p-4">
                      </div>
             </div>
  
             <div id="golf-details-view" class="hidden space-y-6 mt-10">
                 <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
-                    <h2 class="text-3xl font-bold text-gray-900">Golf Details</h2>
-                     <button id="back-to-sports-gallery-btn" class="text-blue-600 hover:underline">&larr; Back to Sports Overview</button>
+                    <h2 class="text-3xl font-bold">Golf Details</h2>
+                     <button id="back-to-sports-gallery-btn" class="link-button">&larr; Back to Sports Overview</button>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
-                    <h3 class="text-xl font-semibold mb-2 text-indigo-600">About Golf</h3>
-                    <p class="text-gray-700 mb-4 text-sm">
+                <div class="card p-6 rounded-xl shadow-lg mb-6">
+                    <h3 class="text-xl font-semibold mb-2">About Golf</h3>
+                    <p class="mb-4 text-sm">
                         Golf is a club-and-ball sport in which players use clubs to hit balls into a series of holes on a course in as few strokes as possible. It requires precision, strategy, and mental focus. Players navigate varied terrain, manage different club selections, and adhere to a comprehensive set of rules governing play.
                     </p>
-                    <button id="show-golf-rules-btn" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none">
+                    <button id="show-golf-rules-btn" class="button button-primary font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none">
                         View Official Rules
                     </button>
                 </div>
                 <div class="text-right contextual-admin-button-container">
-                     <button id="open-add-course-modal-btn" class="admin-only bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                     <button id="open-add-course-modal-btn" class="admin-only button button-success font-bold py-2 px-4 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
                          ⛳ Add New Course
                      </button>
                 </div>
                 <div id="golf-rules-modal" class="modal-overlay">
                     <div class="modal-content" style="width: 90%; max-width: 1000px;"> <button id="close-golf-rules-modal-btn" class="modal-close-button">&times;</button>
-                        <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Official Rules of Golf (The R&A)</h2>
+                        <h2 class="text-2xl font-semibold mb-4">Official Rules of Golf (The R&A)</h2>
                         <div class="border rounded-lg overflow-hidden">
                           <iframe id="golf-rules-iframe" src="about:blank" width="100%" height="70vh" frameborder="0" title="Official Rules of Golf">
                               Loading Rules...
                           </iframe>
                         </div>
-                         <p class="text-xs text-gray-500 mt-2">Rules provided by <a href="https://www.randa.org/en/rog/the-rules-of-golf" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">The R&A</a>.</p>
+                         <p class="text-xs mt-2">Rules provided by <a href="https://www.randa.org/en/rog/the-rules-of-golf" target="_blank" rel="noopener noreferrer" class="link-button">The R&A</a>.</p>
                     </div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <h3 class="text-xl font-semibold mb-4 text-indigo-600">Courses</h3>
+                <div class="card p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4">Courses</h3>
                     <div id="golf-courses-list" class="space-y-4">
-                        <p class="text-gray-500">Loading courses...</p>
+                        <p>Loading courses...</p>
                     </div>
                 </div>
  
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <h3 class="text-xl font-semibold mb-4 text-indigo-600">Recent Golf Scores</h3>
+                <div class="card p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4">Recent Golf Scores</h3>
                     <div id="golf-results-list" class="space-y-2">
-                         <p class="text-gray-500">Loading results...</p>
+                         <p>Loading results...</p>
                     </div>
                  </div>
             </div>
  
        </section>
         <section id="results-section" class="page-section hidden space-y-8">
-            <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
-                 <h1 class="text-4xl font-bold text-gray-900">All Game Results</h1>
+            <div class="flex justify-between items-center border-b-2 pb-3 mb-6">
+                 <h1 class="text-4xl font-bold">All Game Results</h1>
                  <div class="contextual-admin-button-container">
-                    <button id="open-record-game-modal-btn" class="admin-only bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                    <button id="open-record-game-modal-btn" class="admin-only button button-success font-bold py-2 px-4 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
                         🏆 Record Game Result
                     </button>
                  </div>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
+            <div class="card p-6 rounded-xl shadow-lg overflow-x-auto">
                 <table class="w-full text-left table-auto text-base">
                     <thead>
-                        <tr class="bg-gray-100">
+                        <tr class="table-header">
                             <th class="px-4 py-3">Date</th>
                             <th class="px-4 py-3">Game Type</th>
                             <th class="px-4 py-3">Description</th>
@@ -343,127 +343,127 @@
                         </tr>
                     </thead>
                     <tbody id="results-table-body">
-                         <tr><td colspan="4" class="text-gray-500 text-center py-4">Loading results...</td></tr>
+                         <tr><td colspan="4" class="text-center py-4">Loading results...</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
         <section id="pool-page" class="page-section hidden space-y-8">
-            <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
-                 <h1 class="text-3xl font-bold text-gray-900">Pool (Billiards)</h1>
-                 <a href="#sports-section" data-target="sports-section" class="nav-link text-blue-600 hover:underline">&larr; Back to Sports Overview</a>
+            <div class="flex justify-between items-center border-b-2 pb-3 mb-6">
+                 <h1 class="text-3xl font-bold">Pool (Billiards)</h1>
+                 <a href="#sports-section" data-target="sports-section" class="nav-link link-button">&larr; Back to Sports Overview</a>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
-                <h3 class="text-xl font-semibold mb-2 text-indigo-600">About Pool</h3>
-                <p class="text-gray-700 mb-4 text-sm">
+            <div class="card p-6 rounded-xl shadow-lg mb-6">
+                <h3 class="text-xl font-semibold mb-2">About Pool</h3>
+                <p class="mb-4 text-sm">
                     Pool, a category of cue sports, involves striking a cue ball to pocket object balls into designated pockets. Popular variations include Eight-ball, Nine-ball, and Straight Pool, each with specific rules and objectives. It demands precision, strategy, and control over the cue ball's position.
                 </p>
-                <a href="https://wpapool.com/rules/" target="_blank" rel="noopener noreferrer" class="inline-block text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none">
+                <a href="https://wpapool.com/rules/" target="_blank" rel="noopener noreferrer" class="inline-block button button-primary font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none">
                     View Official WPA Rules
                 </a>
             </div>
 
-             <div class="bg-white p-8 rounded-xl shadow-lg">
-                 <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Pool Rankings (Elo)</h2>
+             <div class="card p-8 rounded-xl shadow-lg">
+                 <h2 class="text-2xl font-semibold mb-5">Pool Rankings (Elo)</h2>
                  <table class="w-full text-left table-auto text-base">
                      <thead>
-                         <tr class="bg-gray-100">
+                         <tr class="table-header">
                              <th class="px-4 py-3">Rank</th>
                              <th class="px-4 py-3">Player</th>
                              <th class="px-4 py-3">Rating</th>
                          </tr>
                      </thead>
                      <tbody id="pool-rankings-body">
-                         <tr><td colspan="3" class="text-center text-gray-500 py-4">Loading rankings...</td></tr>
+                         <tr><td colspan="3" class="text-center py-4">Loading rankings...</td></tr>
                          </tbody>
                  </table>
             </div>
 
-            <div class="bg-white p-8 rounded-xl shadow-lg">
-                 <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Recent Pool Results</h2>
+            <div class="card p-8 rounded-xl shadow-lg">
+                 <h2 class="text-2xl font-semibold mb-5">Recent Pool Results</h2>
                  <div id="pool-results-list" class="space-y-2">
-                     <p class="text-gray-500">Loading results...</p>
+                     <p>Loading results...</p>
                      </div>
              </div>
 
             </section>
         <section id="players-section" class="page-section hidden space-y-8">
-             <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
-                 <h1 class="text-4xl font-bold text-gray-900">Players</h1>
+             <div class="flex justify-between items-center border-b-2 pb-3 mb-6">
+                 <h1 class="text-4xl font-bold">Players</h1>
                  <div class="contextual-admin-button-container">
-                     <button id="open-add-player-modal-btn" class="admin-only bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                     <button id="open-add-player-modal-btn" class="admin-only button button-primary font-bold py-2 px-4 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
                          ➕ Add New Player
                      </button>
                  </div>
              </div>
              <div id="players-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                 <p class="text-gray-500 col-span-full text-center">Loading players...</p>
+                 <p class="col-span-full text-center">Loading players...</p>
              </div>
         </section>
 
         <section id="tournaments-section" class="page-section hidden space-y-8">
-             <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
-                 <h1 class="text-4xl font-bold text-gray-900">Tournaments</h1>
+             <div class="flex justify-between items-center border-b-2 pb-3 mb-6">
+                 <h1 class="text-4xl font-bold">Tournaments</h1>
                   <div class="contextual-admin-button-container">
-                    <button id="open-create-tournament-modal-btn" class="admin-only bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                    <button id="open-create-tournament-modal-btn" class="admin-only button button-primary font-bold py-2 px-4 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
                         ➕ Create New Tournament
                     </button>
                  </div>
              </div>
-             <div class="bg-white p-8 rounded-xl shadow-lg">
-                 <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Tournament List</h2>
+             <div class="card p-8 rounded-xl shadow-lg">
+                 <h2 class="text-2xl font-semibold mb-5">Tournament List</h2>
                  <div id="tournaments-list-full" class="space-y-6">
-                     <p class="text-gray-500">Loading tournaments...</p>
+                     <p>Loading tournaments...</p>
                  </div>
              </div>
              </section>
 
              <section id="tournament-detail-section" class="page-section hidden space-y-8">
                 <div id="tournament-detail-loading" class="text-center py-10">
-                     <p class="text-gray-500 text-lg">Loading tournament details...</p>
+                     <p class="text-lg">Loading tournament details...</p>
                  </div>
                  <div id="tournament-detail-error" class="text-center py-10">
-                     <p class="text-red-600 text-lg">Error loading tournament details.</p>
-                     <p id="tournament-detail-error-message" class="text-red-500 text-sm mt-1"></p>
+                     <p class="error-text text-lg">Error loading tournament details.</p>
+                     <p id="tournament-detail-error-message" class="error-text text-sm mt-1"></p>
                  </div>
                  <div id="tournament-detail-content">
-                     <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
-                         <h1 class="text-4xl font-bold text-gray-900">Tournament: <span id="tournament-detail-name">[Tournament Name]</span></h1>
-                         <a href="#tournaments" class="text-blue-600 hover:underline nav-link" data-target="tournaments-section">&larr; Back to Tournaments</a>
+                     <div class="flex justify-between items-center border-b-2 pb-3 mb-6">
+                         <h1 class="text-4xl font-bold">Tournament: <span id="tournament-detail-name">[Tournament Name]</span></h1>
+                         <a href="#tournaments" class="link-button nav-link" data-target="tournaments-section">&larr; Back to Tournaments</a>
                      </div>
     
                     <div class="admin-only mb-6 text-right space-x-3">
-                         <button id="edit-tournament-detail-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow hover:shadow-md text-sm">
+                         <button id="edit-tournament-detail-btn" class="button button-warning font-bold py-2 px-4 rounded-lg shadow hover:shadow-md text-sm">
                              Edit Tournament
                          </button>
-                         <button id="delete-tournament-detail-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow hover:shadow-md text-sm">
+                         <button id="delete-tournament-detail-btn" class="button button-danger font-bold py-2 px-4 rounded-lg shadow hover:shadow-md text-sm">
                              Delete Tournament
                          </button>
                      </div>
     
-                     <div class="bg-white p-8 rounded-xl shadow-lg">
+                     <div class="card p-8 rounded-xl shadow-lg">
                         <p class="text-lg mb-1"><strong>Game:</strong> <span id="tournament-detail-game">[Game]</span></p>
                         <p class="text-lg mb-1"><strong>Format:</strong> <span id="tournament-detail-format">[Format]</span></p>
                         <p class="text-lg mb-4"><strong>Status:</strong> <span id="tournament-detail-status" class="font-medium">[Status]</span></p>
     
                         <div class="mt-6 mb-3">
-                            <h3 class="text-xl font-semibold text-indigo-600 inline-block mr-2">Participants</h3>
+                            <h3 class="text-xl font-semibold inline-block mr-2">Participants</h3>
                              
 
                         </div>
                        <div id="tournament-detail-participants" class="space-y-2">
-                           <p class="text-gray-500 italic">Loading participants...</p>
+                           <p class="italic">Loading participants...</p>
                        </div>
     
-                       <h2 class="text-2xl font-semibold mt-8 mb-5 text-indigo-700">Bracket / Matches / Standings</h2>
-                        <div id="tournament-detail-visualization" class="border-2 border-dashed border-gray-300 p-12 text-center text-gray-500 rounded-lg min-h-[250px]">
+                       <h2 class="text-2xl font-semibold mt-8 mb-5">Bracket / Matches / Standings</h2>
+                        <div id="tournament-detail-visualization" class="border-2 border-dashed p-12 text-center rounded-lg min-h-[250px]">
                             Tournament Visualization Area
                             <br>(Requires JavaScript library or custom rendering based on format)
                             <br> <span class="text-xs italic">(Implementation Pending)</span>
                         </div>
                         <div class="admin-only mt-6">
-                            <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                            <button class="button button-success font-bold py-3 px-5 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
                                 Report Match Result </button>
                              
                         </div>
@@ -471,57 +471,57 @@
                  </div>
             </section>
             <section id="register-section" class="page-section hidden">
-                <h1 class="text-4xl font-bold ... text-center">Player Registration</h1>
-                <div class="bg-white p-10 rounded-xl shadow-xl max-w-lg mx-auto">
+                <h1 class="text-4xl font-bold text-center mb-6">Player Registration</h1>
+                <div class="card p-10 rounded-xl shadow-xl max-w-lg mx-auto">
                     <form id="register-form">
                         <div class="mb-4">
-                            <label for="register-email" class="block ...">Email:</label>
-                            <input type="email" id="register-email" name="email" class="shadow appearance-none border ..." required>
+                            <label for="register-email" class="block text-sm font-bold mb-2">Email:</label>
+                            <input type="email" id="register-email" name="email" class="shadow appearance-none border rounded-lg w-full py-3 px-4" required>
                         </div>
                         <div class="mb-6">
-                            <label for="register-password" class="block ...">Password:</label>
-                            <input type="password" id="register-password" name="password" class="shadow appearance-none border ..." required>
+                            <label for="register-password" class="block text-sm font-bold mb-2">Password:</label>
+                            <input type="password" id="register-password" name="password" class="shadow appearance-none border rounded-lg w-full py-3 px-4" required>
                         </div>
                         <div class="mb-4">
-                            <label for="register-player-name" class="block ...">Player Name:</label>
-                            <input type="text" id="register-player-name" name="player-name" class="shadow appearance-none border ..." required>
+                            <label for="register-player-name" class="block text-sm font-bold mb-2">Player Name:</label>
+                            <input type="text" id="register-player-name" name="player-name" class="shadow appearance-none border rounded-lg w-full py-3 px-4" required>
                         </div>
-                        <div id="register-error" class="text-red-500 text-sm mb-4 hidden"></div>
-                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 ...">Register</button>
+                        <div id="register-error" class="error-text text-sm mb-4 hidden"></div>
+                        <button type="submit" class="w-full button button-success font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg">Register</button>
                     </form>
-                    <p class="text-center mt-4">Already have an account? <a href="#player-login-section" class="text-blue-600 hover:underline nav-link" data-target="player-login-section">Login here</a></p>
+                    <p class="text-center mt-4">Already have an account? <a href="#player-login-section" class="link-button nav-link" data-target="player-login-section">Login here</a></p>
                 </div>
            </section>
            
            <section id="player-login-section" class="page-section hidden">
-                <h1 class="text-4xl font-bold ... text-center">Player Login</h1>
-                <div class="bg-white p-10 rounded-xl shadow-xl max-w-lg mx-auto">
+                <h1 class="text-4xl font-bold text-center mb-6">Player Login</h1>
+                <div class="card p-10 rounded-xl shadow-xl max-w-lg mx-auto">
                     <form id="player-login-form">
                         <div class="mb-4">
-                            <label for="player-login-email" class="block ...">Email:</label>
-                            <input type="email" id="player-login-email" name="email" class="shadow appearance-none border ..." required>
+                            <label for="player-login-email" class="block text-sm font-bold mb-2">Email:</label>
+                            <input type="email" id="player-login-email" name="email" class="shadow appearance-none border rounded-lg w-full py-3 px-4" required>
                         </div>
                         <div class="mb-6">
-                            <label for="player-login-password" class="block ...">Password:</label>
-                            <input type="password" id="player-login-password" name="password" class="shadow appearance-none border ..." required>
+                            <label for="player-login-password" class="block text-sm font-bold mb-2">Password:</label>
+                            <input type="password" id="player-login-password" name="password" class="shadow appearance-none border rounded-lg w-full py-3 px-4" required>
                         </div>
-                        <div id="player-login-error" class="text-red-500 text-sm mb-4 hidden"></div>
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 ...">Login</button>
-                        <button type="button" id="google-signin-button" class="w-full bg-red-500 hover:bg-red-600 text-white ... mt-4">Sign In with Google</button>
+                        <div id="player-login-error" class="error-text text-sm mb-4 hidden"></div>
+                        <button type="submit" class="w-full button button-primary font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg">Login</button>
+                        <button type="button" id="google-signin-button" class="w-full button button-google font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg mt-4">Sign In with Google</button>
                     </form>
-                     <p class="text-center mt-4">Need an account? <a href="#register-section" class="text-blue-600 hover:underline nav-link" data-target="register-section">Register here</a></p>
+                     <p class="text-center mt-4">Need an account? <a href="#register-section" class="link-button nav-link" data-target="register-section">Register here</a></p>
                 </div>
            </section>
         <section id="login-section" class="page-section hidden">
-             <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6 text-center">Admin Login</h1>
-             <div class="bg-white p-10 rounded-xl shadow-xl max-w-lg mx-auto">
+             <h1 class="text-4xl font-bold border-b-2 pb-3 mb-6 text-center">Admin Login</h1>
+             <div class="card p-10 rounded-xl shadow-xl max-w-lg mx-auto">
                  <form id="login-form">
                      <div class="mb-6">
-                         <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password:</label>
-                         <input type="password" id="password" name="password" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                         <label for="password" class="block text-sm font-bold mb-2">Password:</label>
+                         <input type="password" id="password" name="password" class="shadow appearance-none border rounded-lg w-full py-3 px-4 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
                      </div>
-                     <div id="login-error" class="text-red-500 text-sm mb-4 hidden">Incorrect password.</div>
-                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"> Login </button>
+                     <div id="login-error" class="error-text text-sm mb-4 hidden">Incorrect password.</div>
+                     <button type="submit" class="w-full button button-primary font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"> Login </button>
                  </form>
              </div>
         </section>
@@ -532,39 +532,39 @@
         <div class="modal-content">
              <button id="close-player-modal-btn" class="modal-close-button">&times;</button>
              <div class="flex items-start space-x-6 mb-4">
-                 <img id="modal-player-icon" src="https://placehold.co/80x80/cccccc/ffffff?text=?" alt="Player Icon" class="w-20 h-20 rounded-full flex-shrink-0 object-cover border-2 border-indigo-200">
+                 <img id="modal-player-icon" src="https://placehold.co/80x80/cccccc/ffffff?text=?" alt="Player Icon" class="w-20 h-20 rounded-full flex-shrink-0 object-cover border-2">
                  <div class="flex-grow">
                      <h2 id="modal-player-name" class="text-3xl font-semibold mb-1 editable-field">Player Name</h2>
-                     <input type="text" id="modal-edit-player-name-input" class="editing-field shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 text-xl font-semibold mb-1" placeholder="Player Name">
-                     <div class="text-sm text-gray-600 mt-1" id="modal-player-overall-stats">
+                     <input type="text" id="modal-edit-player-name-input" class="editing-field shadow appearance-none border rounded-lg w-full py-2 px-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 text-xl font-semibold mb-1" placeholder="Player Name">
+                     <div class="text-sm mt-1" id="modal-player-overall-stats">
                          Loading stats...
                      </div>
                       <div class="editing-field mt-2">
-                          <label for="modal-edit-player-icon-input" class="block text-gray-700 text-sm font-bold mb-1">Icon URL:</label>
-                          <input type="url" id="modal-edit-player-icon-input" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://example.com/icon.png">
+                          <label for="modal-edit-player-icon-input" class="block text-sm font-bold mb-1">Icon URL:</label>
+                          <input type="url" id="modal-edit-player-icon-input" class="shadow appearance-none border rounded-lg w-full py-2 px-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://example.com/icon.png">
                       </div>
                  </div>
                  <div class="admin-only">
                     <div class="view-mode-controls">
-                        <button id="edit-player-modal-btn" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-bold py-2 px-4 rounded-lg text-sm">Edit</button>
+                        <button id="edit-player-modal-btn" class="button button-warning font-bold py-2 px-4 rounded-lg text-sm">Edit</button>
                     </div>
                     <div class="edit-mode-controls space-x-2">
-                        <button id="save-player-changes-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-sm">Save</button>
-                        <button id="cancel-player-edit-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg text-sm">Cancel</button>
-                        <button id="delete-player-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg text-sm ml-4">Delete Player</button>
+                        <button id="save-player-changes-btn" class="button button-success font-bold py-2 px-4 rounded-lg text-sm">Save</button>
+                        <button id="cancel-player-edit-btn" class="button button-secondary font-bold py-2 px-4 rounded-lg text-sm">Cancel</button>
+                        <button id="delete-player-btn" class="button button-danger font-bold py-2 px-4 rounded-lg text-sm ml-4">Delete Player</button>
                     </div>
                 </div>
              </div>
              <div class="mt-4 border-t pt-4">
-                 <h3 class="text-xl font-semibold mb-3 text-indigo-600">Game Ratings (Elo)</h3>
-                 <div id="modal-player-game-stats" class="text-sm text-gray-700 grid grid-cols-2 gap-x-4 gap-y-1">
-                     <p class="text-gray-500 col-span-2">Loading ratings...</p>
+                 <h3 class="text-xl font-semibold mb-3">Game Ratings (Elo)</h3>
+                 <div id="modal-player-game-stats" class="text-sm grid grid-cols-2 gap-x-4 gap-y-1">
+                     <p class="col-span-2">Loading ratings...</p>
                  </div>
              </div>
              <div class="mt-4 border-t pt-4">
-                 <h3 class="text-xl font-semibold mb-3 text-indigo-600">Recent Activity</h3>
-                 <ul id="modal-player-recent-activity" class="list-disc list-inside space-y-1 text-sm text-gray-700">
-                     <li class="text-gray-500">Loading activity...</li>
+                 <h3 class="text-xl font-semibold mb-3">Recent Activity</h3>
+                 <ul id="modal-player-recent-activity" class="list-disc list-inside space-y-1 text-sm">
+                     <li>Loading activity...</li>
                  </ul>
              </div>
          </div>
@@ -578,13 +578,13 @@
     <div id="add-course-modal" class="modal-overlay"> </div>
 
 
-        <footer class="fixed bottom-5 left-0 right-0 px-4 text-center text-gray-600 dark:text-gray-400 text-sm z-40 flex justify-center items-center space-x-4">
+        <footer class="fixed bottom-5 left-0 right-0 px-4 text-center text-sm z-40 flex justify-center items-center space-x-4">
             <span>&copy; 2025 LeaderBored. Keep it friendly!</span>
             <div class="flex items-center space-x-2">
                 <span class="text-xs">☀️</span>
                 <label for="dark-mode-toggle" class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" value="" id="dark-mode-toggle" class="sr-only peer">
-                    <div class="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    <div class="w-9 h-5 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                      <span class="text-xs">🌙</span>
                 </label>
             </div>

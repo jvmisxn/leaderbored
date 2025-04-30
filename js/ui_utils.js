@@ -51,7 +51,7 @@ function assignElements() {
     tournamentDetailSection = document.getElementById('tournament-detail-section');
 
     // Dark Mode
-    darkModeToggle = document.getElementById('dark-toggle');
+    darkModeToggle = document.getElementById('dark-mode-toggle'); // Corrected ID
     bodyElement = document.body;
 
     // Basic checks (optional but recommended)
@@ -97,8 +97,8 @@ async function showSection(targetId) {
                 await populateGameInfoScreen(gameId, null); // Fetch data using ID
             } else {
                 console.log("[NAV] Navigated to game info section without a gameId."); //
-                // Optionally clear the content or show a default message
-                document.getElementById('game-info-content').innerHTML = '<p class="text-gray-500 dark:text-gray-400">No specific game selected.</p>'; // Added dark mode class
+                // Removed color class, rely on default text color
+                document.getElementById('game-info-content').innerHTML = '<p class="italic">No specific game selected.</p>';
             }
          }
          // --- END Game Info Check ---
@@ -112,7 +112,8 @@ async function showSection(targetId) {
                  await fetchAllPlayersForCache(); //
                  if (!playersCachePopulated) { //
                       console.error(`[NAV] Failed to populate cache before showing ${cleanTargetId}. Section content may be incomplete.`); //
-                      if(targetSection) targetSection.innerHTML = `<p class="text-red-500 p-4 text-center">Error: Could not load required player data.</p>`; //
+                      // Added error-text class
+                      if(targetSection) targetSection.innerHTML = `<p class="error-text p-4 text-center">Error: Could not load required player data.</p>`; //
                  }
              }
              // --- End Cache Check ---
@@ -302,13 +303,15 @@ async function populateRecentGamesList(elementId = 'recent-games-list', limit = 
     // Ensure db, gameTypesConfig, globalPlayerCache are accessible
     const listElement = document.getElementById(elementId); //
     if (!listElement || !db) { console.warn(`Recent games list #${elementId} or DB not ready.`); return; } //
-    listElement.innerHTML = `<li class="text-gray-500 dark:text-gray-400">Loading recent games...</li>`; // Added dark mode class
+    // Removed color class, rely on default muted text color
+    listElement.innerHTML = `<li class="loading-text">Loading recent games...</li>`;
     try {
         // Requires index: games: date_played (desc)
         const q = db.collection('games').orderBy('date_played', 'desc').limit(limit); //
         const snapshot = await q.get(); //
         if (snapshot.empty) {
-            listElement.innerHTML = `<li class="text-gray-500 dark:text-gray-400">No games recorded yet.</li>`; // Added dark mode class
+            // Removed color class
+            listElement.innerHTML = `<li class="muted-text">No games recorded yet.</li>`;
             return; //
         }
         listElement.innerHTML = ''; // Clear loading
@@ -341,22 +344,24 @@ async function populateRecentGamesList(elementId = 'recent-games-list', limit = 
             if (game.score) description += ` (${game.score})`; // Append score
 
             const li = document.createElement('li'); //
-            // Added dark mode classes
-            li.className = 'border-b dark:border-gray-700 pb-2 mb-2 last:border-0 last:mb-0 last:pb-0 text-sm text-gray-800 dark:text-gray-200'; //
+            // Removed specific text color classes, rely on base/muted styles from CSS
+            li.className = 'border-b pb-2 mb-2 last:border-0 last:mb-0 last:pb-0 text-sm'; //
             li.innerHTML = `
                 <div class="flex justify-between items-start">
                     <div>${description}</div>
-                    <div class="text-gray-500 dark:text-gray-400 text-xs ml-2 whitespace-nowrap">${gameDate}</div>
+                    <div class="muted-text text-xs ml-2 whitespace-nowrap">${gameDate}</div>
                 </div>`; //
             listElement.appendChild(li); //
         }
     } catch (error) {
         console.error(`Error fetching recent games for ${elementId}:`, error); //
          if (error.code === 'failed-precondition') { //
-             listElement.innerHTML = `<li class="text-red-500">Error: Firestore index missing for date sorting. Check console.</li>`; //
+             // Added error-text class
+             listElement.innerHTML = `<li class="error-text">Error: Firestore index missing for date sorting. Check console.</li>`; //
              console.error("Firestore index needed: games collection, date_played (descending)."); //
          } else {
-            listElement.innerHTML = `<li class="text-red-500">Error loading games: ${error.message}</li>`; //
+            // Added error-text class
+            listElement.innerHTML = `<li class="error-text">Error loading games: ${error.message}</li>`; //
          }
     }
 } // End populateRecentGamesList
@@ -366,33 +371,37 @@ async function populateTopPlayersList(elementId = 'top-players-list', limit = 5)
      // Ensure db, DEFAULT_ELO are accessible
      const listElement = document.getElementById(elementId); //
      if (!listElement || !db) { console.warn(`Top players list #${elementId} or DB not ready.`); return; } //
-     listElement.innerHTML = '<li class="text-gray-500 dark:text-gray-400">Loading rankings...</li>'; // Added dark mode class
+     // Removed color class
+     listElement.innerHTML = '<li class="loading-text">Loading rankings...</li>';
      try {
          // Requires index: players: elo_overall (desc)
          const snapshot = await db.collection('players').orderBy('elo_overall', 'desc').limit(limit).get(); //
          if (snapshot.empty) {
-             listElement.innerHTML = '<li class="text-gray-500 dark:text-gray-400">No players found.</li>'; return; // Added dark mode class
+             // Removed color class
+             listElement.innerHTML = '<li class="muted-text">No players found.</li>'; return;
          }
          listElement.innerHTML = ''; // Clear loading
          let rank = 1; //
          snapshot.forEach(doc => {
              const player = doc.data(); //
              const li = document.createElement('li'); //
-             // Added dark mode classes
-             li.className = "flex justify-between items-center text-gray-800 dark:text-gray-200"; //
+             // Removed specific text color classes, rely on base/accent styles from CSS
+             li.className = "flex justify-between items-center"; //
              li.innerHTML = `
                  <span>${rank}. ${player.name || 'Unnamed'}</span>
-                 <span class="text-sm font-medium text-indigo-600 dark:text-indigo-400">${Math.round(player.elo_overall || DEFAULT_ELO)}</span>`; //
+                 <span class="text-sm font-medium accent-text">${Math.round(player.elo_overall || DEFAULT_ELO)}</span>`; // Use accent-text or similar class styled in CSS
              listElement.appendChild(li); //
              rank++; //
          });
      } catch (error) {
          console.error(`Error fetching top players:`, error); //
           if (error.code === 'failed-precondition') { //
-             listElement.innerHTML = `<li class="text-red-500">Error: Firestore index missing for overall Elo sorting. Check console.</li>`; //
+             // Added error-text class
+             listElement.innerHTML = `<li class="error-text">Error: Firestore index missing for overall Elo sorting. Check console.</li>`; //
              console.error("Firestore index needed: players collection, elo_overall (descending)."); //
          } else {
-            listElement.innerHTML = `<li class="text-red-500">Error loading rankings.</li>`; //
+            // Added error-text class
+            listElement.innerHTML = `<li class="error-text">Error loading rankings.</li>`; //
          }
      }
 } // End populateTopPlayersList
@@ -401,7 +410,8 @@ async function populateTopPlayersList(elementId = 'top-players-list', limit = 5)
 async function populateTopTeamsList(elementId = 'top-teams-list', limit = 5) {
      const listElement = document.getElementById(elementId); //
      if (listElement) { //
-         listElement.innerHTML = '<li class="text-gray-500 dark:text-gray-400 italic">Team rankings not yet implemented.</li>'; // Added dark mode class
+         // Removed color class
+         listElement.innerHTML = '<li class="muted-text italic">Team rankings not yet implemented.</li>';
      }
 } // End populateTopTeamsList
 

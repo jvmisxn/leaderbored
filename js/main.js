@@ -415,12 +415,13 @@ async function initializeApp() {
 
     } catch (error) {
         console.error("Error during app initialization:", error);
-        // Display a user-friendly error message on the page
-        document.body.innerHTML = `<div class="p-4 text-red-700 bg-red-100 border border-red-400 rounded">
-            <h2>Application Error</h2>
-            <p>Could not initialize the application: ${error.message}</p>
-            <p>Please check the console for details and ensure Firebase is configured correctly.</p>
+        // Display a user-friendly error message on the page using CSS classes
+        document.body.innerHTML = `<div class="app-error-container p-4 border rounded">
+            <h2 class="text-xl font-semibold error-title">Application Error</h2>
+            <p class="error-text">Could not initialize the application: ${error.message}</p>
+            <p class="error-text text-sm">Please check the console for details and ensure Firebase is configured correctly.</p>
         </div>`;
+        // Add styles for .app-error-container, .error-title, .error-text in styles.css
     }
 } // End initializeApp
 

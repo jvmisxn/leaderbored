@@ -48,7 +48,31 @@ body {
     background-size: cover;
 }
 a, button, .player-entry { transition: all 0.2s ease-in-out; }
+.timer-display { font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem; }
+        .dice-result { font-size: 3rem; margin: 1rem 0; font-weight: bold; }
+        .score-input { width: 60px; text-align: center; }
 
+        /* --- NEW: Styles for Play Dropdown Dark Mode --- */
+         body.dark #play-dropdown {
+             background-color: var(--card-bg-dark); /* Use dark card background */
+             --tw-ring-opacity: 1;
+             --tw-ring-color: rgba(75, 85, 99, var(--tw-ring-opacity)); /* Example: gray-500 */
+         }
+          /* Style links within the PLAY dropdown */
+          body.dark #play-dropdown a {
+              color: var(--text-muted-dark); /* Use muted text color */
+          }
+          body.dark #play-dropdown a:hover {
+              background-color: #374151; /* Example: Darker gray hover */
+              color: var(--accent-text-dark); /* Use accent text color (white) */
+          }
+        /* --- Make sure Play dropdown has base transition styles --- */
+        #play-dropdown {
+             transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+        }
+        #play-dropdown.hidden {
+             opacity: 0; transform: translateY(-10px); pointer-events: none;
+        }
 /* --- Visibility Control --- */
 /* Admin */
 .admin-only { display: none; }
@@ -229,9 +253,18 @@ input:checked ~ .block { background-color: #4b5563; /* Darker track */ }
 <body>
     <nav class="bg-gradient-to-r from-cyan-600 to-blue-700 text-white p-5 shadow-lg sticky top-0 z-50 flex items-center justify-between">
 
-        <a href="#home-section" class="text-xl font-bold nav-link flex-shrink-0" data-target="home-section">🏆 LeaderBored</a> <div class="flex items-center space-x-4"> 
-            <a href="#play-section" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="play-section">PLAY</a>
-            
+        <a href="#home-section" class="text-xl font-bold nav-link flex-shrink-0" data-target="home-section">🏆 LeaderBored</a>
+
+        <div class="flex items-center space-x-4">
+            <div class="relative group">
+                <button class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium focus:outline-none flex items-center">
+                    PLAY <svg class="w-4 h-4 ml-1 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                </button>
+                <div id="play-dropdown" class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <a href="#live-game-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="live-game-section" role="menuitem">PLAY LIVE GAME</a>
+                    <a href="#submit-past-game-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="submit-past-game-section" role="menuitem">SUBMIT PAST GAME</a>
+                </div>
+            </div>
             <div class="relative group">
                 <button class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium focus:outline-none flex items-center">
                     INFO <svg class="w-4 h-4 ml-1 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
@@ -240,23 +273,23 @@ input:checked ~ .block { background-color: #4b5563; /* Darker track */ }
                     <a href="#players-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="players-section" role="menuitem">PLAYERS</a>
                     <a href="#rankings-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="rankings-section" role="menuitem">RANKINGS</a>
                     <a href="#results-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="results-section" role="menuitem">GAMES</a>
-                    <a href="#sports-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="sports-section" role="menuitem">SPORTS</a> 
+                    <a href="#sports-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="sports-section" role="menuitem">SPORTS</a>
                 </div>
             </div>
-    
+
             <div class="relative group">
                 <button class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium focus:outline-none flex items-center">
                     TOURNAMENTS <svg class="w-4 h-4 ml-1 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
                 </button>
                 <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <a href="#tournaments-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="tournaments-section" role="menuitem">HISTORY</a> 
-                    <a href="#tournaments-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="tournaments-section" role="menuitem">UPCOMING</a> 
+                    <a href="#tournaments-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="tournaments-section" role="menuitem">HISTORY</a>
+                    <a href="#tournaments-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="tournaments-section" role="menuitem">UPCOMING</a>
                 </div>
             </div>
         </div>
-    
+
         <div class="flex items-center space-x-4 flex-shrink-0"> <a href="#player-login-section" id="player-login-link" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow hover:shadow-md public-only player-public-only nav-link" data-target="player-login-section">Login</a>
-            
+
             <div id="profile-section" class="relative player-only">
                 <button id="profile-photo-button" class="block h-10 w-10 rounded-full overflow-hidden border-2 border-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-700 focus:ring-white">
                     <img id="profile-photo-img" src="https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40" alt="My Profile" class="h-full w-full object-cover">
@@ -268,7 +301,7 @@ input:checked ~ .block { background-color: #4b5563; /* Darker track */ }
                 </div>
             </div>
         </div>
-    
+
     </nav>
 
     <div class="container mx-auto mt-8 p-6">
@@ -432,7 +465,46 @@ input:checked ~ .block { background-color: #4b5563; /* Darker track */ }
                 </table>
             </div>
         </section>
+        <section id="pool-page" class="page-section hidden space-y-8">
+            <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
+                 <h1 class="text-3xl font-bold text-gray-900">Pool (Billiards)</h1>
+                 <a href="#sports-section" data-target="sports-section" class="nav-link text-blue-600 hover:underline">&larr; Back to Sports Overview</a>
+            </div>
 
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
+                <h3 class="text-xl font-semibold mb-2 text-indigo-600">About Pool</h3>
+                <p class="text-gray-700 mb-4 text-sm">
+                    Pool, a category of cue sports, involves striking a cue ball to pocket object balls into designated pockets. Popular variations include Eight-ball, Nine-ball, and Straight Pool, each with specific rules and objectives. It demands precision, strategy, and control over the cue ball's position.
+                </p>
+                <a href="https://wpapool.com/rules/" target="_blank" rel="noopener noreferrer" class="inline-block text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none">
+                    View Official WPA Rules
+                </a>
+            </div>
+
+             <div class="bg-white p-8 rounded-xl shadow-lg">
+                 <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Pool Rankings (Elo)</h2>
+                 <table class="w-full text-left table-auto text-base">
+                     <thead>
+                         <tr class="bg-gray-100">
+                             <th class="px-4 py-3">Rank</th>
+                             <th class="px-4 py-3">Player</th>
+                             <th class="px-4 py-3">Rating</th>
+                         </tr>
+                     </thead>
+                     <tbody id="pool-rankings-body">
+                         <tr><td colspan="3" class="text-center text-gray-500 py-4">Loading rankings...</td></tr>
+                         </tbody>
+                 </table>
+            </div>
+
+            <div class="bg-white p-8 rounded-xl shadow-lg">
+                 <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Recent Pool Results</h2>
+                 <div id="pool-results-list" class="space-y-2">
+                     <p class="text-gray-500">Loading results...</p>
+                     </div>
+             </div>
+
+            </section>
         <section id="players-section" class="page-section hidden space-y-8">
              <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
                  <h1 class="text-4xl font-bold text-gray-900">Players</h1>
@@ -621,8 +693,90 @@ input:checked ~ .block { background-color: #4b5563; /* Darker track */ }
     <div id="edit-tournament-modal" class="modal-overlay">
     </div> <div id="add-participants-modal" class="modal-overlay"></div>
     <div id="add-course-modal" class="modal-overlay">
-    </div>
+    
+        <section id="live-game-section" class="page-section hidden space-y-8">
+            <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Play Live Game</h1>
+    
+            <div class="bg-white p-8 rounded-xl shadow-lg">
+                <div class="mb-6">
+                    <label for="live-game-select" class="block text-gray-700 text-sm font-bold mb-2">Select Game:</label>
+                    <select id="live-game-select" name="live-game-select" class="shadow border rounded-lg w-full md:w-1/2 py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Select a Game --</option>
+                        <option value="golf">Golf</option>
+                        <option value="pool">Pool</option>
+                        <option value="chess">Chess</option>
+                        <option value="board_game">Board Game (Generic)</option>
+                         </select>
+                </div>
+    
+                <div id="live-game-tools-container" class="space-y-6">
+                    <p class="text-gray-500 italic">Select a game to see available tools.</p>
+                </div>
+    
+                 <div id="live-game-submit-area" class="mt-8 text-center border-t pt-6" style="display: none;">
+                     <button id="submit-live-game-score-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow hover:shadow-md">
+                        Finish Game & Submit Score
+                    </button>
+                </div>
+            </div>
+        </section>
+    </section>
 
+    <section id="submit-past-game-section" class="page-section hidden space-y-8">
+        <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Submit Past Game</h1>
+        <div class="bg-white p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
+            <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Enter Final Score Details</h2>
+            <form id="submit-past-game-form">
+                <div class="mb-4">
+                    <label for="past-game-type" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label>
+                    <select id="past-game-type" name="game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                        <option value="">Select Game Type</option>
+                        </select>
+                </div>
+                <div class="mb-4">
+                    <label for="past-winner" class="block text-gray-700 text-sm font-bold mb-2">Winner:</label>
+                    <select id="past-winner" name="winner" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                        <option value="">Select Winner</option>
+                        </select>
+                </div>
+                <div class="mb-4">
+                    <label for="past-loser" class="block text-gray-700 text-sm font-bold mb-2">Loser:</label>
+                    <select id="past-loser" name="loser" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                        <option value="">Select Loser</option>
+                        </select>
+                </div>
+                 <div class="mb-4">
+                     <label class="inline-flex items-center">
+                        <input type="checkbox" id="past-is-draw" name="is_draw" class="form-checkbox h-5 w-5 text-blue-600">
+                        <span class="ml-2 text-gray-700">Was it a Draw?</span>
+                     </label>
+                 </div>
+                <div class="mb-4">
+                    <label for="past-score" class="block text-gray-700 text-sm font-bold mb-2">Score (Optional):</label>
+                    <input type="text" id="past-score" name="score" placeholder="e.g. 8-3, 21-15" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700">
+                </div>
+                <div class="mb-4">
+                    <label for="past-date-played" class="block text-gray-700 text-sm font-bold mb-2">Date Played:</label>
+                    <input type="date" id="past-date-played" name="date_played" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg">Submit Game Info</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section id="game-info-section" class="page-section hidden space-y-8">
+        <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Game Information</h1>
+        <div id="game-info-content" class="bg-white p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
+            <p class="text-gray-500">Game details will be displayed here after submission...</p>
+            </div>
+         <div class="text-center mt-6">
+            <button id="share-game-info-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg mr-2">Share</button>
+            <a href="#home-section" class="nav-link text-indigo-600 hover:underline" data-target="home-section">Back to Dashboard</a>
+        </div>
+    </section>
+</div>
     <footer class="fixed bottom-5 left-0 right-0 text-center text-gray-600 dark:text-gray-400 text-sm z-40"> &copy; 2025 LeaderBored. Keep it friendly!
     </footer>
 
@@ -632,6 +786,367 @@ input:checked ~ .block { background-color: #4b5563; /* Darker track */ }
     <script>
 
 
+function setupLiveGameSection() {
+    const gameSelect = document.getElementById('live-game-select');
+    const toolsContainer = document.getElementById('live-game-tools-container');
+    const submitArea = document.getElementById('live-game-submit-area');
+
+    // Populate game select from config (optional, if not hardcoded in HTML)
+    // populateSelectWithOptions(gameSelect, gameTypesConfig, '-- Select a Game --');
+
+    gameSelect?.addEventListener('change', () => {
+        const selectedGame = gameSelect.value;
+        loadLiveGameTools(selectedGame, toolsContainer, submitArea);
+    });
+
+    // Listener for the submit button within the live game section
+    document.getElementById('submit-live-game-score-btn')?.addEventListener('click', () => {
+        const selectedGame = document.getElementById('live-game-select')?.value;
+        navigateToSubmitScore(selectedGame); // Navigate to the submit score page
+    });
+}
+
+function loadLiveGameTools(gameKey, container, submitArea) {
+    if (!container || !submitArea) return;
+
+    container.innerHTML = ''; // Clear previous tools
+    submitArea.style.display = 'none'; // Hide submit button initially
+
+    if (!gameKey) {
+        container.innerHTML = '<p class="text-gray-500 italic">Select a game to see available tools.</p>';
+        return;
+    }
+
+    console.log(`Loading tools for: ${gameKey}`);
+    let toolsHtml = '';
+
+    switch (gameKey) {
+        case 'golf':
+            // Placeholder - In reality, you'd generate or fetch complex scorecard UI
+            toolsHtml = ``; // Replace with actual HTML template string
+             toolsHtml = `
+                <div id="golf-tools">
+    <h3 class="text-xl font-semibold mb-4 text-indigo-600">Golf Scorecard</h3>
+    <div class="mb-4 p-4 border rounded-lg bg-gray-50">
+        <p class="text-center text-gray-600 italic">Golf scorecard spreadsheet/table functionality requires more advanced implementation (e.g., using a JS grid library or significant custom code).</p>
+        <p class="text-center mt-2 text-sm">Placeholder for round stats table.</p>
+        <table class="w-full mt-4 text-sm border-collapse border border-gray-300">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="border border-gray-300 p-2">Hole</th>
+                    <th class="border border-gray-300 p-2">Par</th>
+                    <th class="border border-gray-300 p-2">Score</th>
+                    <th class="border border-gray-300 p-2">Puts</th>
+                    </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="border border-gray-300 p-2 text-center">1</td>
+                    <td class="border border-gray-300 p-2 text-center">4</td>
+                    <td class="border border-gray-300 p-2"><input type="number" class="w-16 p-1 border rounded text-center" /></td>
+                    <td class="border border-gray-300 p-2"><input type="number" class="w-16 p-1 border rounded text-center" /></td>
+                </tr>
+                <tr><td colspan="4" class="text-center p-2 italic">... more holes ...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="text-center">
+        <button class="text-blue-600 hover:underline" onclick="alert('Hole detail view not implemented')">View Fullscreen Hole Detail (Example)</button>
+    </div>
+</div>`;
+            break;
+        case 'pool':
+            toolsHtml = ``; // Replace with actual HTML template string
+            toolsHtml = `
+                <div id="pool-tools" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="border p-4 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">Pool Score (Rounds)</h3>
+        <div id="pool-scoring-area" class="space-y-3">
+            <p class="text-sm mb-2">Game: <span id="pool-game-status">Best 2 out of 3</span></p>
+            <div class="flex items-center justify-between">
+                <label for="score-pool-p1">Player 1:</label>
+                <input type="number" id="score-pool-p1" value="0" min="0" class="border rounded px-2 py-1 score-input w-20">
+            </div>
+            <div class="flex items-center justify-between">
+                <label for="score-pool-p2">Player 2:</label>
+                <input type="number" id="score-pool-p2" value="0" min="0" class="border rounded px-2 py-1 score-input w-20">
+            </div>
+        </div>
+         <button id="pool-next-round-btn" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm w-full">Record Round Winner</button>
+         </div>
+
+    <div class="border p-4 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">Timer</h3>
+        <div id="pool-timer-display" class="timer-display text-center">00:00</div>
+         <div class="mb-3 flex justify-center space-x-4">
+             <label class="inline-flex items-center">
+                 <input type="radio" name="pool-timer-mode" value="up" checked class="form-radio"> <span class="ml-1 text-sm">Count Up</span>
+             </label>
+             <label class="inline-flex items-center">
+                 <input type="radio" name="pool-timer-mode" value="down" class="form-radio"> <span class="ml-1 text-sm">Count Down</span>
+             </label>
+         </div>
+         <div id="pool-timer-settings-down" class="mb-3 hidden text-center">
+              <label for="pool-timer-start-minutes" class="text-sm mr-1">Mins:</label>
+              <input type="number" id="pool-timer-start-minutes" value="5" min="1" class="border rounded px-2 py-1 w-16 text-sm">
+         </div>
+        <div class="flex justify-center space-x-2">
+            <button id="pool-timer-start" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">Start</button>
+            <button id="pool-timer-pause" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">Pause</button>
+            <button id="pool-timer-reset" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Reset</button>
+        </div>
+    </div>
+
+     <div class="border p-4 rounded-lg text-center md:col-span-2">
+        <h3 class="text-lg font-semibold mb-3">Coin Flip (for Break/Turn)</h3>
+        <div id="pool-coin-result" class="text-4xl font-bold my-4">🪙</div>
+        <button id="pool-flip-coin-btn" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm">Flip Coin</button>
+    </div>
+</div>`;
+            break;
+        case 'chess':
+             toolsHtml = ``; // Replace with actual HTML template string
+             toolsHtml = `
+                <div id="chess-tools">
+    <h3 class="text-xl font-semibold mb-4 text-indigo-600">Chess Timers</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="border p-4 rounded-lg text-center">
+            <h4 class="text-lg font-medium mb-2">Player 1 Clock</h4>
+            <div id="chess-timer-p1" class="timer-display">10:00</div>
+            <button id="chess-switch-p1" class="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm w-full mt-2">Switch to Player 2</button>
+        </div>
+         <div class="border p-4 rounded-lg text-center">
+            <h4 class="text-lg font-medium mb-2">Player 2 Clock</h4>
+            <div id="chess-timer-p2" class="timer-display">10:00</div>
+            <button id="chess-switch-p2" class="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm w-full mt-2" disabled>Switch to Player 1</button>
+        </div>
+        <div class="md:col-span-2 border p-4 rounded-lg">
+            <h4 class="text-lg font-medium mb-3 text-center">Game Controls</h4>
+            <div class="flex justify-center space-x-2">
+                <button id="chess-timer-start" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">Start Game</button>
+                <button id="chess-timer-pause" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">Pause</button>
+                <button id="chess-timer-reset" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Reset Clocks</button>
+            </div>
+             <div class="mt-3 text-center">
+                 <label for="chess-time-control" class="text-sm mr-1">Time (mins):</label>
+                 <input type="number" id="chess-time-control" value="10" min="1" class="border rounded px-2 py-1 w-16 text-sm">
+            </div>
+        </div>
+    </div>
+</div>`;
+            break;
+        case 'board_game': // Generic board game
+            toolsHtml = ``; // Replace with actual HTML template string
+            toolsHtml = `
+                 <div id="board_game-tools" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="border p-4 rounded-lg text-center">
+        <h3 class="text-lg font-semibold mb-3">Dice Roller</h3>
+        <div id="board-dice-result" class="dice-result">🎲</div>
+        <button id="board-roll-dice-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded text-sm">Roll Dice</button>
+    </div>
+
+    <div class="border p-4 rounded-lg text-center">
+        <h3 class="text-lg font-semibold mb-3">Coin Flip</h3>
+        <div id="board-coin-result" class="text-4xl font-bold my-4">🪙</div>
+        <button id="board-flip-coin-btn" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm">Flip Coin</button>
+    </div>
+
+     <div class="border p-4 rounded-lg md:col-span-2">
+        <h3 class="text-lg font-semibold mb-3">Simple Timer</h3>
+        <div id="board-timer-display" class="timer-display text-center">00:00</div>
+         <div class="mb-3 flex justify-center space-x-4">
+             <label class="inline-flex items-center">
+                 <input type="radio" name="board-timer-mode" value="up" checked class="form-radio"> <span class="ml-1 text-sm">Count Up</span>
+             </label>
+             <label class="inline-flex items-center">
+                 <input type="radio" name="board-timer-mode" value="down" class="form-radio"> <span class="ml-1 text-sm">Count Down</span>
+             </label>
+         </div>
+         <div id="board-timer-settings-down" class="mb-3 hidden text-center">
+              <label for="board-timer-start-minutes" class="text-sm mr-1">Mins:</label>
+              <input type="number" id="board-timer-start-minutes" value="15" min="1" class="border rounded px-2 py-1 w-16 text-sm">
+         </div>
+        <div class="flex justify-center space-x-2">
+            <button id="board-timer-start" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">Start</button>
+            <button id="board-timer-pause" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">Pause</button>
+            <button id="board-timer-reset" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Reset</button>
+        </div>
+    </div>
+</div>`;
+            break;
+        default:
+            toolsHtml = '<p class="text-gray-500 italic">No specific tools configured for this game.</p>';
+    }
+
+    container.innerHTML = toolsHtml;
+    submitArea.style.display = 'block'; // Show the submit button area
+
+    // Re-attach listeners for dynamically added elements
+    attachDynamicToolListeners(gameKey);
+}
+
+function attachDynamicToolListeners(gameKey) {
+    // Remove previous listeners if necessary (more complex, omitted for brevity)
+    console.log(`Attaching listeners for ${gameKey} tools`);
+
+    switch (gameKey) {
+        case 'pool':
+            document.getElementById('pool-timer-start')?.addEventListener('click', () => startPoolTimer()); // Use specific timer functions
+            document.getElementById('pool-timer-pause')?.addEventListener('click', pausePoolTimer);
+            document.getElementById('pool-timer-reset')?.addEventListener('click', resetPoolTimer);
+            document.querySelectorAll('input[name="pool-timer-mode"]').forEach(radio => {
+                 radio.addEventListener('change', (e) => {
+                    document.getElementById('pool-timer-settings-down').classList.toggle('hidden', e.target.value !== 'down');
+                 });
+            });
+            document.getElementById('pool-flip-coin-btn')?.addEventListener('click', flipPoolCoin);
+            // Add pool scoring logic listener if needed
+             document.getElementById('pool-next-round-btn')?.addEventListener('click', () => alert('Pool round scoring not implemented'));
+            break;
+        case 'chess':
+            // Add chess timer logic listeners
+             document.getElementById('chess-timer-start')?.addEventListener('click', () => alert('Chess timer start not implemented'));
+             document.getElementById('chess-timer-pause')?.addEventListener('click', () => alert('Chess timer pause not implemented'));
+             document.getElementById('chess-timer-reset')?.addEventListener('click', () => alert('Chess timer reset not implemented'));
+             document.getElementById('chess-switch-p1')?.addEventListener('click', () => alert('Chess switch P1 not implemented'));
+             document.getElementById('chess-switch-p2')?.addEventListener('click', () => alert('Chess switch P2 not implemented'));
+            break;
+        case 'board_game':
+             document.getElementById('board-timer-start')?.addEventListener('click', () => startBoardTimer());
+             document.getElementById('board-timer-pause')?.addEventListener('click', pauseBoardTimer);
+             document.getElementById('board-timer-reset')?.addEventListener('click', resetBoardTimer);
+              document.querySelectorAll('input[name="board-timer-mode"]').forEach(radio => {
+                 radio.addEventListener('change', (e) => {
+                    document.getElementById('board-timer-settings-down').classList.toggle('hidden', e.target.value !== 'down');
+                 });
+             });
+             document.getElementById('board-roll-dice-btn')?.addEventListener('click', rollBoardDice);
+             document.getElementById('board-flip-coin-btn')?.addEventListener('click', flipBoardCoin);
+            break;
+         case 'golf':
+            // Listeners for golf scorecard inputs if needed
+            break;
+    }
+     // Generic Timer/Dice logic from original file (if needed for games without specific versions)
+    // E.g., document.getElementById('timer-start')?.addEventListener('click', startTimer);
+     // E.g., document.getElementById('roll-dice-btn')?.addEventListener('click', rollDice);
+}
+
+// --- Navigation to Submit Score ---
+// This function prepares and navigates to the existing 'submit-past-game-section'
+// which will now serve as the unified "Submit Score" screen.
+function navigateToSubmitScore(gameKey = null, /* add other params like scores if needed */) {
+    console.log(`Navigating to Submit Score screen. Game: ${gameKey || 'Not specified'}`);
+
+    const submitSection = document.getElementById('submit-past-game-section');
+    if (!submitSection) {
+        console.error("Submit Past Game section not found!");
+        alert("Error: Cannot navigate to score submission page.");
+        return;
+    }
+
+    // Get the form elements within the submit section
+    const form = submitSection.querySelector('#submit-past-game-form');
+    const gameTypeSelect = form?.querySelector('#past-game-type');
+    const winnerSelect = form?.querySelector('#past-winner'); // Or player1 for draw
+    const loserSelect = form?.querySelector('#past-loser');   // Or player2 for draw
+    const scoreInput = form?.querySelector('#past-score');
+    const dateInput = form?.querySelector('#past-date-played');
+    const drawCheckbox = form?.querySelector('#past-is-draw');
+
+    // --- Prepare the Form ---
+    if (form) {
+        form.reset(); // Clear previous entries
+
+        // Set the game type dropdown if a gameKey was passed from the live session
+        if (gameKey && gameTypeSelect) {
+            if (gameTypesConfig[gameKey]) { // Check if key is valid
+                 gameTypeSelect.value = gameKey;
+                 // Optionally disable it if coming from a live game?
+                 // gameTypeSelect.disabled = true;
+            } else {
+                 console.warn(`Invalid gameKey '${gameKey}' passed to navigateToSubmitScore.`);
+            }
+        } else if (gameTypeSelect) {
+            // If navigating from "Enter Previous Score", ensure game type is enabled and empty
+            gameTypeSelect.disabled = false;
+            gameTypeSelect.value = '';
+        }
+
+         // Pre-fill date with today (optional)
+         if (dateInput) {
+             dateInput.value = new Date().toISOString().split('T')[0];
+         }
+
+        // TODO: Pre-fill players/score if data is passed from live game tools
+        // Example:
+        // if (winnerId) winnerSelect.value = winnerId;
+        // if (loserId) loserSelect.value = loserId;
+        // if (finalScore) scoreInput.value = finalScore;
+        // if (wasDraw) drawCheckbox.checked = true;
+    }
+
+    // Ensure dropdowns are populated (might already be done by showSection logic)
+    setupSubmitPastGameListeners(); // Re-run setup to ensure dropdowns are fresh
+
+    // Show the section
+    showSection('submit-past-game-section');
+}
+
+
+// --- Add specific timer/coin/dice functions for each game type ---
+// Example for Pool Timer (copy and rename from generic timer functions)
+let poolTimerInterval = null, poolTimerSeconds = 0, poolTimerRunning = false, poolCountdownStartSeconds = 0;
+function updatePoolTimerDisplay() { /* ... */ const display = document.getElementById('pool-timer-display'); if (!display) return; const minutes = Math.floor(poolTimerSeconds / 60); const seconds = poolTimerSeconds % 60; display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; }
+function startPoolTimer() { /* ... */ if (poolTimerRunning) return; poolTimerRunning = true; const mode = document.querySelector('input[name="pool-timer-mode"]:checked')?.value || 'up'; if (mode === 'down' && poolTimerSeconds <= 0) { const minutesInput = document.getElementById('pool-timer-start-minutes'); poolCountdownStartSeconds = (parseInt(minutesInput?.value, 10) || 5) * 60; poolTimerSeconds = poolCountdownStartSeconds; if(poolTimerSeconds <= 0){ alert("Set countdown time."); poolTimerRunning = false; return; } } updatePoolTimerDisplay(); poolTimerInterval = setInterval(() => { if (mode === 'up') poolTimerSeconds++; else { poolTimerSeconds--; if (poolTimerSeconds < 0) { clearInterval(poolTimerInterval); poolTimerRunning = false; poolTimerSeconds = 0; alert("Pool time's up!"); } } updatePoolTimerDisplay(); }, 1000); }
+function pausePoolTimer() { /* ... */ clearInterval(poolTimerInterval); poolTimerRunning = false; }
+function resetPoolTimer() { /* ... */ clearInterval(poolTimerInterval); poolTimerRunning = false; const mode = document.querySelector('input[name="pool-timer-mode"]:checked')?.value || 'up'; poolTimerSeconds = (mode === 'down' && poolCountdownStartSeconds > 0) ? poolCountdownStartSeconds : 0; updatePoolTimerDisplay(); }
+
+// Example for Pool Coin Flip
+function flipPoolCoin() { /* ... */ const resultEl = document.getElementById('pool-coin-result'); if (!resultEl) return; resultEl.textContent = Math.random() < 0.5 ? 'Heads' : 'Tails'; /* Add animation? */ }
+
+// Example for Board Game Timer
+let boardTimerInterval = null, boardTimerSeconds = 0, boardTimerRunning = false, boardCountdownStartSeconds = 0;
+function updateBoardTimerDisplay() { /* ... copy logic ... */ const display = document.getElementById('board-timer-display'); if (!display) return; const minutes = Math.floor(boardTimerSeconds / 60); const seconds = boardTimerSeconds % 60; display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; }
+function startBoardTimer() { /* ... copy logic ... */ if (boardTimerRunning) return; boardTimerRunning = true; const mode = document.querySelector('input[name="board-timer-mode"]:checked')?.value || 'up'; if (mode === 'down' && boardTimerSeconds <= 0) { const minutesInput = document.getElementById('board-timer-start-minutes'); boardCountdownStartSeconds = (parseInt(minutesInput?.value, 10) || 15) * 60; boardTimerSeconds = boardCountdownStartSeconds; if(boardTimerSeconds <= 0){ alert("Set countdown time."); boardTimerRunning = false; return; } } updateBoardTimerDisplay(); boardTimerInterval = setInterval(() => { if (mode === 'up') boardTimerSeconds++; else { boardTimerSeconds--; if (boardTimerSeconds < 0) { clearInterval(boardTimerInterval); boardTimerRunning = false; boardTimerSeconds = 0; alert("Board game time's up!"); } } updateBoardTimerDisplay(); }, 1000); }
+function pauseBoardTimer() { /* ... copy logic ... */ clearInterval(boardTimerInterval); boardTimerRunning = false; }
+function resetBoardTimer() { /* ... copy logic ... */ clearInterval(boardTimerInterval); boardTimerRunning = false; const mode = document.querySelector('input[name="board-timer-mode"]:checked')?.value || 'up'; boardTimerSeconds = (mode === 'down' && boardCountdownStartSeconds > 0) ? boardCountdownStartSeconds : 0; updateBoardTimerDisplay(); }
+
+// Example for Board Game Dice
+function rollBoardDice() { /* ... */ const diceResultEl = document.getElementById('board-dice-result'); if (!diceResultEl) return; const roll = Math.floor(Math.random() * 6) + 1; const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']; diceResultEl.textContent = diceFaces[roll - 1]; }
+
+// Example for Board Game Coin Flip
+function flipBoardCoin() { /* ... */ const resultEl = document.getElementById('board-coin-result'); if (!resultEl) return; resultEl.textContent = Math.random() < 0.5 ? 'Heads' : 'Tails'; }
+
+// --- Modify initializeApp or setupEventListeners to include setup ---
+// Make sure to call setupLiveGameSection() within your initialization logic
+// Example modification in initializeApp:
+// async function initializeApp() {
+//      ... other init stuff ...
+//      setupEventListeners(); // General listeners
+//      setupLiveGameSection(); // Setup listeners specific to the live game section controls
+//      ... rest of init ...
+// }
+
+// --- Modify Nav Handlers if needed ---
+// Ensure the "PLAY LIVE GAME" nav link correctly targets 'live-game-section'
+// Ensure the "SUBMIT PAST GAME" nav link calls navigateToSubmitScore(null) or directly targets 'submit-past-game-section'
+
+// Modify the nav link handler for "SUBMIT PAST GAME"
+function handleNavLinkClick(event) {
+     const linkElement = event.target.closest('[data-target]');
+     if (linkElement) {
+         event.preventDefault();
+         const targetId = linkElement.getAttribute('data-target');
+
+         if (targetId === 'submit-past-game-section') {
+             // Special handling for the 'Submit Past Game' link
+             navigateToSubmitScore(null); // Navigate using the function
+         } else if (targetId) {
+             showSection(targetId); // Normal navigation for other links
+         }
+     }
+}
 
 // --- Generic Modal Utilities ---
 function openModal(modalElement) {
@@ -5000,103 +5515,565 @@ async function handleEditTournamentDetail(tournamentId) {
         }
         // --- End Elo Functions ---
 
-// --- Initialization Function ---
-async function initializeApp() { // Added async
-    try {
-        console.log("[INIT] Initializing App...");
-        assignElements(); // Get references to DOM elements
-        if (!db || !auth) { // Check auth too
-            console.error("[INIT] Firebase DB or Auth connection failed. App functionality will be limited.");
-            // Optionally display a more prominent error to the user
-            return; // Stop initialization if Firebase isn't ready
+ // --- Live Game Section Logic ---
+ function setupLiveGameListeners() {
+            // Timer Controls
+            const timerModeRadios = document.querySelectorAll('input[name="timer-mode"]');
+            const timerSettingsDown = document.getElementById('timer-settings-down');
+            timerModeRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    timerSettingsDown.classList.toggle('hidden', e.target.value !== 'down');
+                    // Reset timer when mode changes?
+                });
+            });
+            document.getElementById('timer-start')?.addEventListener('click', startTimer);
+            document.getElementById('timer-pause')?.addEventListener('click', pauseTimer);
+            document.getElementById('timer-reset')?.addEventListener('click', resetTimer);
+            document.getElementById('timer-next-turn')?.addEventListener('click', nextTurn); // Add turn logic
+
+            // Dice Roller
+            document.getElementById('roll-dice-btn')?.addEventListener('click', rollDice);
+
+            // Scoring (Manual update for now)
+            document.getElementById('update-scores-btn')?.addEventListener('click', () => {
+                console.log("Manual score update clicked (no action defined yet)");
+                 // Could read values from inputs here if needed
+            });
+
+            // Submit Final Score Button
+            document.getElementById('submit-live-game-score-btn')?.addEventListener('click', openSubmitScoreFormFromLive);
         }
 
-        // --- Populate Global Cache ---
-        await fetchAllPlayersForCache(); // Wait for cache to populate
+        let timerInterval = null;
+        let timerSeconds = 0;
+        let timerRunning = false;
+        let countdownStartSeconds = 0;
 
-        updateGameTypeDropdowns(); // Initial population of game type dropdowns
-        // checkLoginState(); // <<< THIS LINE IS REMOVED
-        setupEventListeners(); // Set up all event listeners
+        function updateTimerDisplay() {
+            const display = document.getElementById('timer-display');
+            if (!display) return;
+            const minutes = Math.floor(timerSeconds / 60);
+            const seconds = timerSeconds % 60;
+            display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
 
-        // --- MOVE AUTH LISTENER HERE ---
-        auth.onAuthStateChanged(async (user) => {
-            const loginButton = document.getElementById('player-login-link');
-            const profileSection = document.getElementById('profile-section');
-            const profileImg = document.getElementById('profile-photo-img');
+        function startTimer() {
+            if (timerRunning) return;
+            timerRunning = true;
+            const mode = document.querySelector('input[name="timer-mode"]:checked')?.value || 'up';
 
-            // Clear admin state first
-            document.body.classList.remove('player-logged-in');
-            document.body.classList.remove('admin-logged-in'); // Remove admin class initially
-            currentPlayer = null; // Reset current player
+            if (mode === 'down' && timerSeconds <= 0) {
+                 const minutesInput = document.getElementById('timer-start-minutes');
+                 countdownStartSeconds = (parseInt(minutesInput?.value, 10) || 10) * 60;
+                 timerSeconds = countdownStartSeconds;
+                 if (timerSeconds <= 0) {
+                     alert("Please set a valid countdown time.");
+                     timerRunning = false;
+                     return;
+                 }
+            }
 
-            if (user) {
-                // Player is signed in.
-                console.log("Auth State Changed: User is logged in", user.uid);
-                document.body.classList.add('player-logged-in'); // Mark as player logged in
+            updateTimerDisplay(); // Show initial time
 
-                currentPlayer = await getPlayerProfileByAuthId(user.uid);
-
-                if (currentPlayer) {
-                    console.log("Current player data:", currentPlayer);
-
-                    // ---> CHECK FOR ADMIN <---
-                    if (currentPlayer.isAdmin === true) {
-                        console.log("User is an Admin.");
-                        document.body.classList.add('admin-logged-in'); // Add admin class to body
-                    } else {
-                        console.log("User is NOT an Admin.");
-                        // No need to remove admin-logged-in here, it was removed initially
+            timerInterval = setInterval(() => {
+                if (mode === 'up') {
+                    timerSeconds++;
+                } else { // Count down
+                    timerSeconds--;
+                    if (timerSeconds < 0) {
+                        clearInterval(timerInterval);
+                        timerRunning = false;
+                        timerSeconds = 0;
+                        alert("Time's up!");
+                        // Add sound effect here if desired (using Tone.js or similar)
                     }
-                    // ---> END CHECK <---
+                }
+                updateTimerDisplay();
+            }, 1000);
+        }
 
-                    // Update profile photo
-                    const photoURL = currentPlayer.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentPlayer.name || '?')}&background=E0E7FF&color=4F46E5&size=40`;
-                    if (profileImg) profileImg.src = photoURL;
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            timerRunning = false;
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            const mode = document.querySelector('input[name="timer-mode"]:checked')?.value || 'up';
+            timerSeconds = (mode === 'down' && countdownStartSeconds > 0) ? countdownStartSeconds : 0;
+            updateTimerDisplay();
+        }
+
+        function nextTurn() {
+            // Placeholder for turn-based timer logic (e.g., reset turn timer, switch player)
+            console.log("Next Turn clicked");
+             alert("Turn logic not fully implemented.");
+             // Could potentially reset a separate 'turnTimerSeconds' variable here
+        }
+
+        function rollDice() {
+            const diceResultEl = document.getElementById('dice-result');
+            if (!diceResultEl) return;
+            const roll = Math.floor(Math.random() * 6) + 1;
+            // Simple emoji display
+            const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']; // Unicode dice
+            diceResultEl.textContent = diceFaces[roll - 1];
+        }
+
+        function openSubmitScoreFormFromLive() {
+            // This function would likely pre-fill the "Submit Past Game" form
+            // with data gathered during the live session (players, maybe score)
+            // and then navigate the user to that section.
+            console.log("Submit Final Score from Live Game clicked");
+            alert("Transition to final score submission not implemented yet.");
+            // Example:
+            // const player1Score = document.getElementById('score-p1').value;
+            // const player2Score = document.getElementById('score-p2').value;
+            // Pre-fill form elements in #submit-past-game-section
+            // showSection('submit-past-game-section');
+        }
+
+
+        // --- Submit Past Game Section Logic ---
+        function setupSubmitPastGameListeners() {
+             const form = document.getElementById('submit-past-game-form');
+             form?.addEventListener('submit', handleSubmitPastGame);
+
+             // Populate dropdowns when the section becomes visible (or on init)
+             // Needs player and game type data
+             const gameTypeSelect = form?.querySelector('#past-game-type');
+             const winnerSelect = form?.querySelector('#past-winner');
+             const loserSelect = form?.querySelector('#past-loser');
+             const drawCheckbox = form?.querySelector('#past-is-draw');
+             const winnerLabel = form?.querySelector('label[for="past-winner"]');
+             const loserLabel = form?.querySelector('label[for="past-loser"]');
+
+             if (gameTypeSelect) populateSelectWithOptions(gameTypeSelect, gameTypesConfig, 'Select Game Type');
+             // Player dropdowns need the player list (use global cache or fetch)
+             if (winnerSelect && loserSelect && globalPlayerCache) {
+                 const playersArray = Object.values(globalPlayerCache);
+                 populatePlayerDropdown(winnerSelect, playersArray, 'Select Winner');
+                 populatePlayerDropdown(loserSelect, playersArray, 'Select Loser');
+             }
+
+            // Listener for draw checkbox
+            drawCheckbox?.addEventListener('change', (e) => {
+                 if (winnerLabel && loserLabel) {
+                    winnerLabel.textContent = e.target.checked ? 'Player 1:' : 'Winner:';
+                    loserLabel.textContent = e.target.checked ? 'Player 2:' : 'Loser:';
+                 }
+            });
+        }
+
+        async function handleSubmitPastGame(event) {
+            event.preventDefault();
+            const form = event.target;
+            console.log("Submit Past Game form submitted.");
+            if (!db) { alert("Database connection error."); return; }
+
+            // --- Validation (Similar to Record Game Modal) ---
+            let isValid = true;
+            const gameType = form.querySelector('#past-game-type').value;
+            const winnerId = form.querySelector('#past-winner').value;
+            const loserId = form.querySelector('#past-loser').value;
+            const isDraw = form.querySelector('#past-is-draw').checked;
+            const score = form.querySelector('#past-score').value.trim() || null;
+            const datePlayedValue = form.querySelector('#past-date-played').value;
+
+            // Reset previous errors
+            form.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500'));
+
+            if (!gameType) { form.querySelector('#past-game-type').classList.add('border-red-500'); isValid = false; }
+            if (!winnerId) { form.querySelector('#past-winner').classList.add('border-red-500'); isValid = false; }
+            if (!loserId) { form.querySelector('#past-loser').classList.add('border-red-500'); isValid = false; }
+            if (!datePlayedValue) { form.querySelector('#past-date-played').classList.add('border-red-500'); isValid = false; }
+            if (!isDraw && winnerId && loserId && winnerId === loserId) {
+                 alert("Winner and Loser cannot be the same unless it's a draw.");
+                 form.querySelector('#past-winner').classList.add('border-red-500');
+                 form.querySelector('#past-loser').classList.add('border-red-500');
+                 isValid = false;
+            }
+            if (!isValid) { alert("Please fill in all required fields correctly."); return; }
+            // --- End Validation ---
+
+            // Convert date string to Firebase Timestamp
+            let firestoreDate;
+            try {
+                 const dateObj = new Date(datePlayedValue + 'T12:00:00Z');
+                 if (isNaN(dateObj.getTime())) throw new Error("Invalid date");
+                 firestoreDate = firebase.firestore.Timestamp.fromDate(dateObj);
+            } catch(e) {
+                 alert("Invalid Date Played format.");
+                 form.querySelector('#past-date-played').classList.add('border-red-500');
+                 return;
+            }
+
+            // Prepare game data object
+            const gameData = {
+                game_type: gameType,
+                date_played: firestoreDate,
+                score: score,
+                outcome: isDraw ? 'Draw' : 'Win/Loss',
+                participants: isDraw ? [winnerId, loserId].sort() : [winnerId, loserId],
+                // Add any other relevant fields (e.g., recorded_by: currentPlayer.id)
+            };
+
+             console.log("Past Game Data to save:", gameData);
+
+            try {
+                // --- Elo/Stat Calculation (reuse existing logic) ---
+                let eloUpdates = {};
+                const FieldValue = firebase.firestore.FieldValue;
+                const player1StatUpdates = { games_played: FieldValue.increment(1) };
+                const player2StatUpdates = { games_played: FieldValue.increment(1) };
+
+                // Check if the game type uses Elo rating
+                if (ELO_GAME_KEYS.includes(gameType)) {
+                    if (!isDraw) {
+                        eloUpdates = await calculateEloUpdate(winnerId, loserId, gameType);
+                        player1StatUpdates.wins = FieldValue.increment(1);
+                        player2StatUpdates.losses = FieldValue.increment(1);
+                    } else {
+                        eloUpdates = await calculateEloUpdateDraw(winnerId, loserId, gameType);
+                        player1StatUpdates.draws = FieldValue.increment(1);
+                        player2StatUpdates.draws = FieldValue.increment(1);
+                    }
+                } else { // Non-Elo game (just track win/loss/draw)
+                    if (!isDraw) {
+                        player1StatUpdates.wins = FieldValue.increment(1);
+                        player2StatUpdates.losses = FieldValue.increment(1);
+                    } else {
+                        player1StatUpdates.draws = FieldValue.increment(1);
+                        player2StatUpdates.draws = FieldValue.increment(1);
+                    }
+                }
+                // Combine updates
+                const finalUpdates = {};
+                const p1Id = winnerId; const p2Id = loserId;
+                if (p1Id && (eloUpdates[p1Id] || Object.keys(player1StatUpdates).length > 0)) { finalUpdates[p1Id] = { ...(eloUpdates[p1Id] || {}), ...player1StatUpdates }; }
+                if (p2Id && (eloUpdates[p2Id] || Object.keys(player2StatUpdates).length > 0)) { finalUpdates[p2Id] = { ...(eloUpdates[p2Id] || {}), ...player2StatUpdates }; }
+
+                // --- Save to Firestore ---
+                const docRef = await db.collection('games').add(gameData);
+                console.log("Past game saved with ID:", docRef.id);
+                if (Object.keys(finalUpdates).length > 0) {
+                    await updatePlayerElosAndStats(finalUpdates);
+                    console.log("Player stats/elos updated.");
+                }
+
+                alert("Past game submitted successfully!");
+                form.reset(); // Clear the form
+
+                // --- Navigate to Game Info Screen ---
+                populateGameInfoScreen(docRef.id, gameData); // Pass ID and data
+                showSection('game-info-section');
+
+                // Refresh other relevant sections in the background
+                populateResultsTable();
+                populateDashboard();
+                // Optionally refresh rankings if visible
+                if (document.getElementById('rankings-section') && !document.getElementById('rankings-section').classList.contains('hidden')) {
+                     updateRankingsVisibility();
+                }
+
+            } catch (error) {
+                console.error("Error submitting past game:", error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+
+        // --- Game Info Screen Logic ---
+        function setupGameInfoListeners() {
+            document.getElementById('share-game-info-btn')?.addEventListener('click', shareGameInfo);
+        }
+
+        async function populateGameInfoScreen(gameId, gameData) {
+            const contentEl = document.getElementById('game-info-content');
+            if (!contentEl) return;
+
+            contentEl.innerHTML = '<p class="text-gray-500">Loading game details...</p>'; // Loading state
+
+            // Use gameData passed directly if available, otherwise fetch
+            let finalGameData = gameData;
+            if (!finalGameData && gameId && db) {
+                 try {
+                    const docSnap = await db.collection('games').doc(gameId).get();
+                    if (docSnap.exists) {
+                        finalGameData = { id: docSnap.id, ...docSnap.data() };
+                    } else {
+                        throw new Error("Game not found");
+                    }
+                 } catch (err) {
+                     console.error("Error fetching game info:", err);
+                     contentEl.innerHTML = `<p class="text-red-500">Error loading game details: ${err.message}</p>`;
+                     return;
+                 }
+            } else if (!finalGameData) {
+                 contentEl.innerHTML = `<p class="text-red-500">Error: Could not load game details.</p>`;
+                 return;
+            }
+
+
+            // Format data for display (reuse logic from results table population if possible)
+            const gameTypeDisplay = gameTypesConfig[finalGameData.game_type] || finalGameData.game_type || 'N/A';
+            const gameDateStr = finalGameData.date_played?.toDate ? finalGameData.date_played.toDate().toLocaleDateString() : 'N/A';
+            let description = '';
+            let playersHtml = '';
+
+            // Ensure player cache is populated
+            if (!playersCachePopulated) await fetchAllPlayersForCache();
+
+            const participants = finalGameData.participants || [];
+            const participantNames = participants.map(id => globalPlayerCache[id]?.name || 'Unknown Player');
+
+            if (finalGameData.game_type === 'golf' && participantNames.length > 0) {
+                 description = `<b>${participantNames[0]}</b> played ${gameTypeDisplay}`;
+                 playersHtml = `<p><strong>Player:</strong> ${participantNames[0]}</p>`;
+                 // Add course info if available
+            } else if (finalGameData.outcome === 'Win/Loss' && participantNames.length >= 2) {
+                 description = `<b>${participantNames[0]}</b> defeated ${participantNames[1]} in ${gameTypeDisplay}`;
+                 playersHtml = `<p><strong>Winner:</strong> ${participantNames[0]}</p><p><strong>Loser:</strong> ${participantNames[1]}</p>`;
+            } else if (finalGameData.outcome === 'Draw' && participantNames.length >= 2) {
+                 description = `${participantNames[0]} drew with ${participantNames[1]} in ${gameTypeDisplay}`;
+                 playersHtml = `<p><strong>Player 1:</strong> ${participantNames[0]}</p><p><strong>Player 2:</strong> ${participantNames[1]}</p>`;
+            } else {
+                 description = `Game of ${gameTypeDisplay} played`;
+                 playersHtml = `<p><strong>Participants:</strong> ${participantNames.join(', ')}</p>`;
+            }
+
+            // Build HTML
+            contentEl.innerHTML = `
+                <h2 class="text-2xl font-semibold mb-4">${description}</h2>
+                <p class="mb-2"><strong>Date:</strong> ${gameDateStr}</p>
+                ${playersHtml}
+                ${finalGameData.score ? `<p class="mb-2"><strong>Score:</strong> ${finalGameData.score}</p>` : ''}
+                <p class="text-xs text-gray-400 mt-4">Game ID: ${finalGameData.id || gameId}</p>
+            `;
+
+            // Store game ID for sharing
+            contentEl.setAttribute('data-game-id-for-share', finalGameData.id || gameId);
+        }
+
+        function shareGameInfo() {
+            const contentEl = document.getElementById('game-info-content');
+            const gameId = contentEl?.getAttribute('data-game-id-for-share');
+            if (navigator.share && gameId) {
+                 const shareUrl = `${window.location.origin}${window.location.pathname}#game-info-section?gameId=${gameId}`; // Basic share URL structure
+                 navigator.share({
+                     title: 'LeaderBored Game Result',
+                     text: `Check out this game result on LeaderBored!`,
+                     url: shareUrl,
+                 })
+                 .then(() => console.log('Successful share'))
+                 .catch((error) => console.log('Error sharing', error));
+            } else if (gameId) {
+                 // Fallback for browsers that don't support Web Share API
+                 const shareUrl = `${window.location.origin}${window.location.pathname}#game-info-section?gameId=${gameId}`;
+                 prompt("Copy this link to share:", shareUrl);
+            } else {
+                 alert("Could not get game details to share.");
+            }
+        }
+
+        // --- REPLACE existing showSection function with this modified version ---
+        async function showSection(targetId) {
+             if (!sections) { console.error("Sections variable is not assigned yet in showSection"); return; }
+             console.log(`[NAV] Navigating to: ${targetId}`);
+            const cleanTargetId = targetId.startsWith('#') ? targetId.substring(1) : targetId;
+            let sectionFound = false;
+
+            sections.forEach(section => {
+                if (section && section.id) section.classList.add('hidden');
+            });
+
+            const targetSection = document.getElementById(cleanTargetId);
+            if (targetSection && targetSection.classList.contains('page-section')) {
+                console.log(`[NAV] Showing section: ${targetSection.id}`);
+                targetSection.classList.remove('hidden');
+                sectionFound = true;
+
+                 // --- NEW: Check for Game Info Section and Query Param ---
+                 if (cleanTargetId === 'game-info-section') {
+                    const urlParams = new URLSearchParams(window.location.search); // Check query params first
+                    let gameId = urlParams.get('gameId');
+                    if (!gameId) { // If not in query, check hash (less ideal)
+                        const hashParts = window.location.hash.split('?gameId=');
+                        if (hashParts.length > 1) gameId = hashParts[1];
+                    }
+                    if (gameId) {
+                        console.log(`[NAV] Found gameId parameter: ${gameId}. Populating game info.`);
+                        await populateGameInfoScreen(gameId, null); // Fetch data using ID
+                    } else {
+                        console.log("[NAV] Navigated to game info section without a gameId.");
+                        // Optionally clear the content or show a default message
+                        document.getElementById('game-info-content').innerHTML = '<p class="text-gray-500">No specific game selected.</p>';
+                    }
+                 }
+                 // --- END NEW CHECK ---
+
+
+                // Populate content if DB is ready
+                if (db) {
+                    // --- Ensure Cache is Ready for Relevant Sections ---
+                    const needsCache = ['home-section', 'results-section', 'players-section', 'rankings-section', 'submit-past-game-section']; // Added submit-past-game
+                    if (needsCache.includes(cleanTargetId) && !playersCachePopulated) {
+                        console.warn(`[NAV] Player cache not ready for ${cleanTargetId}, attempting population...`);
+                        await fetchAllPlayersForCache();
+                        if (!playersCachePopulated) {
+                             console.error(`[NAV] Failed to populate cache before showing ${cleanTargetId}. Section content may be incomplete.`);
+                             if(targetSection) targetSection.innerHTML = `<p class="text-red-500 p-4 text-center">Error: Could not load required player data.</p>`;
+                        }
+                    }
+                    // --- End Cache Check ---
+
+                    // Populate Section Content (Make calls async with await)
+                    if (playersCachePopulated || !needsCache.includes(cleanTargetId)) {
+                        if (cleanTargetId === 'home-section') await populateDashboard();
+                        if (cleanTargetId === 'rankings-section' && rankingTablesContainer) {
+                            updateGameTypeDropdowns();
+                            await updateRankingsVisibility();
+                        }
+                        if (cleanTargetId === 'results-section' && resultsTableBody) await populateResultsTable();
+                        if (cleanTargetId === 'players-section' && playersGrid) await populatePlayersList();
+                        if (cleanTargetId === 'tournaments-section' && document.getElementById('tournaments-list-full')) await populateTournamentsList('tournaments-list-full');
+                        // --- NEW: Setup Listeners/Populate for new sections ---
+                        if (cleanTargetId === 'live-game-section') setupLiveGameListeners(); // Setup listeners when section shown
+                        if (cleanTargetId === 'submit-past-game-section') setupSubmitPastGameListeners(); // Setup listeners & populate dropdowns
+                        if (cleanTargetId === 'game-info-section') setupGameInfoListeners(); // Setup share button listener
+                        // --- END NEW ---
+                    } else if (needsCache.includes(cleanTargetId)) {
+                         console.error(`[NAV] Cannot populate ${cleanTargetId} because player cache failed to load.`);
+                    }
 
                 } else {
-                    console.warn("Logged in user has no associated player profile!", user.uid);
-                    if (profileImg) profileImg.src = 'https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40'; // Default icon
-                    currentPlayer = { authUid: user.uid, email: user.email, name: "Profile Needed", isAdmin: false }; // Assume not admin
-                }
-
-                // Navigate away from login/register if needed
-                if (window.location.hash === '#player-login-section' || window.location.hash === '#register-section') {
-                    await showSection('home-section');
+                    console.warn(`[NAV] DB not ready, skipping population for section ${cleanTargetId}`);
                 }
 
             } else {
-                // Player is signed out.
-                console.log("Auth State Changed: User is logged out");
-                // Body classes 'player-logged-in' and 'admin-logged-in' were already removed above.
-                document.getElementById('profile-dropdown')?.classList.add('hidden'); // Ensure dropdown is hidden
+                 console.warn(`[NAV] Section with ID "${cleanTargetId}" not found or invalid. Showing home.`);
+                 const homeSection = document.getElementById('home-section');
+                 if (homeSection) {
+                     homeSection.classList.remove('hidden');
+                     if (db) {
+                          if(!playersCachePopulated) await fetchAllPlayersForCache();
+                          if(playersCachePopulated) await populateDashboard();
+                          else console.error("[NAV] Cannot populate home section because player cache failed to load.");
+                     }
+                 } else {
+                     console.error("Critical Error: Home section (#home-section) not found as fallback.");
+                 }
             }
-            // Let CSS handle visibility based on body class, no need to add/remove 'player-only' here.
-        });
-        // --- END AUTH LISTENER ---
 
-        // Handle initial page load based on URL hash or default to home
-        const initialHash = window.location.hash;
-        let initialSectionId = 'home-section'; // Default section
-        if (initialHash && initialHash !== '#') {
-            const targetIdFromHash = initialHash.substring(1);
-            const targetSection = document.getElementById(targetIdFromHash);
-            if (targetSection?.classList.contains('page-section')) {
-                initialSectionId = targetIdFromHash;
-            } else {
-                console.warn(`[INIT] Hash '#${targetIdFromHash}' does not correspond to a valid section. Defaulting to home.`);
+            if (sectionFound) {
+                 // Update hash, removing query params if they exist to avoid confusion
+                 window.location.hash = cleanTargetId;
+                 window.scrollTo(0, 0); // Scroll to top
             }
         }
-        // Show the initial section AFTER setting up the auth listener
-        await showSection(initialSectionId);
 
-        console.log("[INIT] App Initialized Successfully.");
-    } catch (error) {
-        console.error("Error during app initialization:", error);
-        alert(`An error occurred while initializing the application: ${error.message}. Please check the console.`);
-    }
-}
+
+// --- REPLACE existing initializeApp function with this modified version ---
+async function initializeApp() {
+            try {
+                console.log("[INIT] Initializing App...");
+                assignElements();
+                if (!db || !auth) {
+                    console.error("[INIT] Firebase DB or Auth connection failed."); return;
+                }
+
+                await fetchAllPlayersForCache(); // Wait for cache
+
+                updateGameTypeDropdowns();
+                setupEventListeners(); // General listeners setup FIRST
+
+                // ***** ADD THIS LINE HERE *****
+                setupLiveGameSection(); // Setup listeners specific to the live game section controls (like the game select dropdown)
+                // ***** END OF ADDED LINE *****
+
+                // --- Auth Listener (Keep as is) ---
+                auth.onAuthStateChanged(async (user) => {
+                    // ... existing auth logic ...
+                    const loginButton = document.getElementById('player-login-link');
+                    const profileSection = document.getElementById('profile-section');
+                    const profileImg = document.getElementById('profile-photo-img');
+
+                    // Clear admin state first
+                    document.body.classList.remove('player-logged-in');
+                    document.body.classList.remove('admin-logged-in'); // Remove admin class initially
+                    currentPlayer = null; // Reset current player
+
+                    if (user) {
+                        // Player is signed in.
+                        console.log("Auth State Changed: User is logged in", user.uid);
+                        document.body.classList.add('player-logged-in'); // Mark as player logged in
+
+                        currentPlayer = await getPlayerProfileByAuthId(user.uid);
+
+                        if (currentPlayer) {
+                            console.log("Current player data:", currentPlayer);
+
+                            // ---> CHECK FOR ADMIN <---
+                            if (currentPlayer.isAdmin === true) {
+                                console.log("User is an Admin.");
+                                document.body.classList.add('admin-logged-in'); // Add admin class to body
+                            } else {
+                                console.log("User is NOT an Admin.");
+                            }
+                            // ---> END CHECK <---
+
+                            // Update profile photo
+                            const photoURL = currentPlayer.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentPlayer.name || '?')}&background=E0E7FF&color=4F46E5&size=40`;
+                            if (profileImg) profileImg.src = photoURL;
+
+                        } else {
+                            console.warn("Logged in user has no associated player profile!", user.uid);
+                            if (profileImg) profileImg.src = 'https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40'; // Default icon
+                            currentPlayer = { authUid: user.uid, email: user.email, name: "Profile Needed", isAdmin: false }; // Assume not admin
+                        }
+
+                        // Navigate away from login/register if needed
+                        if (window.location.hash === '#player-login-section' || window.location.hash === '#register-section') {
+                            await showSection('home-section');
+                        }
+
+                    } else {
+                        // Player is signed out.
+                        console.log("Auth State Changed: User is logged out");
+                        document.getElementById('profile-dropdown')?.classList.add('hidden'); // Ensure dropdown is hidden
+                    }
+                });
+                // --- END AUTH LISTENER ---
+
+                // Handle initial page load
+                // Separate hash and query parameters for cleaner handling
+                const hash = window.location.hash.split('?')[0]; // Get part before '?'
+                const initialHash = hash || '#home-section'; // Default to home if no hash
+                let initialSectionId = 'home-section';
+
+                if (initialHash && initialHash !== '#') {
+                    const targetIdFromHash = initialHash.substring(1);
+                    const targetSection = document.getElementById(targetIdFromHash);
+                    if (targetSection?.classList.contains('page-section')) {
+                        initialSectionId = targetIdFromHash;
+                    } else {
+                        console.warn(`[INIT] Hash '#${targetIdFromHash}' does not correspond to a valid section. Defaulting to home.`);
+                    }
+                }
+
+                // Show the initial section AFTER setting up the auth listener and other section listeners
+                await showSection(initialSectionId); // showSection now handles the gameId param check
+
+                console.log("[INIT] App Initialized Successfully.");
+            } catch (error) {
+                console.error("Error during app initialization:", error);
+                alert(`An error occurred while initializing the application: ${error.message}. Please check the console.`);
+            }
+        }
 
 // --- Run Initialization on DOM Load ---
+// (Keep this part as it is)
 document.addEventListener('DOMContentLoaded', initializeApp);
     
  

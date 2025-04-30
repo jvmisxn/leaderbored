@@ -8,46 +8,43 @@
 // or ensure they are globally available if defined in other files.
 
 function setupEventListeners() {
-    console.warn("Placeholder setupEventListeners called. Implement or ensure it's loaded.");
-    // Add basic listeners like nav links if needed here for testing
+    console.log("[Main] Setting up event listeners...");
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', (event) => {
             const targetId = link.getAttribute('data-target');
-            if (targetId) {
-                // Basic navigation without full history/hash handling for now
-                // showSection(targetId); // Assuming showSection is defined
+            if (targetId && typeof showSection === 'function') {
+                showSection(targetId);
             }
         });
     });
-    // Add dark mode toggle listener if not already present
-    const darkModeToggle = document.getElementById('dark-mode-toggle');
-    if (darkModeToggle && typeof toggleDarkMode === 'function') { // Check if toggleDarkMode exists
-        darkModeToggle.addEventListener('change', toggleDarkMode);
-    }
+    console.log("[Main] Event listeners setup complete.");
 }
 
 function setupAuthObserver() {
-    console.warn("Placeholder setupAuthObserver called. Implement or ensure auth.js is loaded.");
-    // Basic check if auth object exists
-    if (typeof auth !== 'undefined' && auth) {
-        console.log("[Auth Placeholder] Firebase Auth object seems available.");
-        // Add a dummy listener if needed for testing flow
-        // auth.onAuthStateChanged(user => { console.log("[Auth Placeholder] Auth state changed:", user); });
+    console.log("[Main] Setting up auth observer...");
+    if (auth) {
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                console.log("[Auth] User logged in:", user.uid);
+                // Handle user login logic here
+            } else {
+                console.log("[Auth] User logged out.");
+                // Handle user logout logic here
+            }
+        });
     } else {
-        console.error("[Auth Placeholder] Firebase Auth object ('auth') is NOT available.");
+        console.error("[Auth] Firebase Auth object not available.");
     }
 }
 
 function handleHashChange() {
-    console.warn("Placeholder handleHashChange called. Implement navigation logic.");
-    // Basic logic to show default section if needed
+    console.log("[Main] Handling hash change...");
     const hash = window.location.hash.substring(1);
-    const sectionId = hash.split('?')[0] || 'home-section'; // Default to home
-    if (typeof showSection === 'function') { // Check if showSection exists
-        console.log(`[Hash Placeholder] Navigating to section: ${sectionId}`);
+    const sectionId = hash.split('?')[0] || 'home-section';
+    if (typeof showSection === 'function') {
         showSection(sectionId);
     } else {
-        console.error("[Hash Placeholder] showSection function not found!");
+        console.error("[Main] showSection function not found!");
     }
 }
 
@@ -196,6 +193,14 @@ async function showSection(sectionId, forceLoad = false, queryParams = {}) {
     // Call data population functions based on the section ID
     try {
         switch (sectionId) {
+            case 'home-section':
+                if (typeof populateDashboard === 'function') {
+                    console.log(`[Section] Calling populateDashboard for ${sectionId}.`);
+                    await populateDashboard();
+                } else {
+                    console.error(`[Section] populateDashboard function not found for ${sectionId}.`);
+                }
+                break;
             case 'players-section':
                 if (typeof populatePlayersList === 'function') {
                     console.log(`[Section] Calling populatePlayersList for ${sectionId}.`);
@@ -288,6 +293,14 @@ function setupGlobalEventListeners() {
     }
     console.log("[Events] Setting up global event listeners on #main-content and body.");
 
+    // --- NEW: Check if closeModal is available when listener is set up ---
+    if (typeof closeModal !== 'function') {
+        console.error("[Events Setup] CRITICAL: closeModal function is NOT defined when setting up global listeners!");
+    } else {
+        console.log("[Events Setup] closeModal function confirmed available.");
+    }
+    // --- END Check ---
+
     // --- Main Content Click Delegation ---
     mainContent.addEventListener('click', async (event) => {
         // Player Card Click (Players Section)
@@ -314,26 +327,53 @@ function setupGlobalEventListeners() {
 
     // --- Body Click Delegation (Modals, Dropdowns) ---
     body.addEventListener('click', (event) => {
-        // Close Modal Buttons
-        if (event.target.matches('.modal-close-button') || event.target.matches('.modal-cancel-button')) {
-            const modal = event.target.closest('.modal-container');
-            if (modal && typeof closeModal === 'function') {
-                console.log(`[Event] Close button clicked for modal: #${modal.id}`); // <-- Add Log
-                closeModal(modal);
-            } else if (modal) {
-                console.error("[Event] closeModal function not found!");
-            }
-            return;
-        }
+        // --- Log the actual clicked element and bubble status ---
+        console.log("[Event Body Click] Target:", event.target);
+        console.log("[Event Body Click] Bubbles:", event.bubbles); // <-- ADD THIS LINE
+        // --- END Log ---
 
-        // Close modal by clicking background (optional)
-        if (event.target.matches('.modal-container')) {
-            if (typeof closeModal === 'function') {
-                console.log(`[Event] Modal background clicked for modal: #${event.target.id}`); // <-- Add Log
-                closeModal(event.target);
-            } else {
-                 console.error("[Event] closeModal function not found!");
+        // --- MODIFIED: Use closest() for modal close buttons ---
+        const closeButton = event.target.closest('.modal-close-button');
+        const cancelButton = event.target.closest('.modal-cancel-button'); // Keep this for cancel buttons if any remain
+
+        if (closeButton || cancelButton) {
+            // --- Add check if closeModal exists right before calling ---
+            if (typeof closeModal !== 'function') {
+                console.error("[Event] closeModal function is NOT available at the moment of click!");
+                // Optionally alert the user or provide fallback
+                // alert("Error: Cannot close modal. Function missing.");
+                return; // Stop if function is missing
             }
+            // --- End check ---
+
+            const modal = (closeButton || cancelButton).closest('.modal-container'); // Find parent modal from the button
+            if (modal) { // Check modal exists first
+                if (closeButton) {
+                    console.log(`[Event] Modal 'X' close button (or element inside) clicked for modal: #${modal.id}. Calling closeModal...`);
+                } else {
+                    console.log(`[Event] Modal cancel button (or element inside) clicked for modal: #${modal.id}. Calling closeModal...`);
+                }
+                closeModal(modal); // Call the function from ui_utils.js
+            } else {
+                console.warn("[Event] Close/Cancel button clicked, but couldn't find parent modal container.");
+            }
+            return; // Stop further processing
+        }
+        // --- END MODIFICATION ---
+
+        // Close modal by clicking background (overlay)
+        // Check if the direct target IS the modal container (overlay)
+        if (event.target.matches('.modal-container')) {
+            // The openModal function now handles adding/removing this specific listener
+            // We might not need this block anymore if openModal's listener works reliably.
+            // Let's keep it for now but log if it fires unexpectedly.
+            console.log(`[Event Body Click] Click detected directly on modal container background: #${event.target.id}. Should be handled by openModal's listener.`);
+            // If openModal's listener isn't working, uncomment the below:
+            // if (typeof closeModal === 'function') {
+            //     closeModal(event.target);
+            // } else {
+            //     console.error("[Event] closeModal function not found for background click!");
+            // }
             return;
         }
 

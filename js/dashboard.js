@@ -7,35 +7,64 @@ async function populateDashboard() {
     const recentGamesList = document.getElementById('recent-games-list');
     const topPlayersList = document.getElementById('top-players-list');
     const topTeamsList = document.getElementById('top-teams-list');
-    const tournamentsList = document.getElementById('dashboard-tournaments-list');
+    const tournamentsList = document.getElementById('dashboard-tournaments-list'); // Element itself
 
-    // Call functions to populate each section (implement these elsewhere or here)
-    if (recentGamesList && typeof populateResultsTable === 'function') {
-        // Maybe a specific version for dashboard? populateRecentGames(recentGamesList, 5);
-        console.log("[Dashboard] Populating recent games (placeholder)...");
-        recentGamesList.innerHTML = '<li>Game 1</li><li>Game 2</li><li>Game 3</li>'; // Placeholder
-    } else if (recentGamesList) {
-        recentGamesList.innerHTML = '<li>Error loading recent games function.</li>';
+    // Check if elements exist before proceeding
+    if (!recentGamesList || !topPlayersList || !topTeamsList || !tournamentsList) {
+        console.error("[Dashboard] One or more required dashboard list elements not found in the DOM.");
+        // Optionally display an error in the UI if critical elements are missing
+        return;
     }
 
-    if (topPlayersList && typeof populateOverallRankings === 'function') {
-        // Maybe a specific version? populateTopPlayers(topPlayersList, 5);
-        console.log("[Dashboard] Populating top players (placeholder)...");
-        topPlayersList.innerHTML = '<li>Player A</li><li>Player B</li><li>Player C</li>'; // Placeholder
-    } else if (topPlayersList) {
-        topPlayersList.innerHTML = '<li>Error loading top players function.</li>';
+    // Set loading states
+    recentGamesList.innerHTML = '<li class="loading-text">Loading recent games...</li>';
+    topPlayersList.innerHTML = '<li class="loading-text">Loading top players...</li>';
+    topTeamsList.innerHTML = '<li class="loading-text">Loading top teams...</li>';
+    tournamentsList.innerHTML = '<li class="loading-text">Loading tournaments...</li>';
+
+    // Call functions to populate each section (these should be defined elsewhere, e.g., ui_utils.js)
+    const promises = [];
+
+    if (typeof populateRecentGamesListElement === 'function') {
+        console.log("[Dashboard] Calling populateRecentGamesListElement...");
+        promises.push(populateRecentGamesListElement(recentGamesList, 5));
+    } else {
+        console.error("[Dashboard] populateRecentGamesListElement function not found.");
+        recentGamesList.innerHTML = '<li class="error-text">Error loading recent games function.</li>';
     }
 
-     if (topTeamsList) {
-        console.log("[Dashboard] Populating top teams (placeholder)...");
-        topTeamsList.innerHTML = '<li class="muted-text italic">Team rankings not implemented.</li>'; // Placeholder
+    if (typeof populateTopPlayersListElement === 'function') {
+        console.log("[Dashboard] Calling populateTopPlayersListElement...");
+        promises.push(populateTopPlayersListElement(topPlayersList, 5));
+    } else {
+        console.error("[Dashboard] populateTopPlayersListElement function not found.");
+        topPlayersList.innerHTML = '<li class="error-text">Error loading top players function.</li>';
     }
 
-    if (tournamentsList && typeof populateTournamentsList === 'function') {
-        console.log("[Dashboard] Populating tournaments list...");
-        await populateTournamentsList('dashboard-tournaments-list', 3); // Use existing function
-    } else if (tournamentsList) {
-        tournamentsList.innerHTML = '<li>Error loading tournaments function.</li>';
+    if (typeof populateTopTeamsListElement === 'function') {
+        console.log("[Dashboard] Calling populateTopTeamsListElement...");
+        promises.push(populateTopTeamsListElement(topTeamsList, 5)); // This function currently shows 'not implemented'
+    } else {
+         console.error("[Dashboard] populateTopTeamsListElement function not found.");
+         topTeamsList.innerHTML = '<li class="error-text">Error loading top teams function.</li>';
+    }
+
+    if (typeof populateTournamentsList === 'function') {
+        console.log("[Dashboard] Calling populateTournamentsList for dashboard...");
+        // Pass the ID string 'dashboard-tournaments-list'
+        promises.push(populateTournamentsList('dashboard-tournaments-list', 3));
+    } else {
+        console.error("[Dashboard] populateTournamentsList function not found.");
+        tournamentsList.innerHTML = '<li class="error-text">Error loading tournaments function.</li>';
+    }
+
+    // Wait for all population functions to complete
+    try {
+        await Promise.all(promises);
+        console.log("[Dashboard] All population promises settled.");
+    } catch (error) {
+        console.error("[Dashboard] Error during population:", error);
+        // Specific error handling might already be inside the individual functions
     }
 
     console.log("[Dashboard] Population attempt complete.");

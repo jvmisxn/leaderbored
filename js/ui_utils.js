@@ -371,34 +371,38 @@ function openModal(modalElement) {
 }
 
 /**
- * Closes a modal dialog.
- * Removes 'modal-active' class from the modal container and 'modal-open' from the body.
- * Removes the overlay click listener.
+ * Closes a modal dialog. (Simplified for Debugging)
+ * Removes 'modal-active' class, 'modal-open' from body, and sets display: none.
  * @param {HTMLElement} modalElement - The modal container element.
  */
 function closeModal(modalElement) {
+    console.log(`[UI Modal - closeModal DEBUG] Function called.`);
     if (!modalElement) {
-        console.error("closeModal: Provided modalElement is null or undefined.");
+        console.error("[UI Modal - closeModal DEBUG] Error: Provided modalElement is null or undefined.");
         return;
     }
-    console.log(`[UI Modal] Closing modal: #${modalElement.id}`);
+    console.log(`[UI Modal - closeModal DEBUG] Attempting to close modal with ID: #${modalElement.id}`);
+    console.log(`[UI Modal - closeModal DEBUG] Current classes on modal:`, modalElement.className);
+    console.log(`[UI Modal - closeModal DEBUG] Current classes on body:`, document.body.className);
+
+    // --- Direct Actions (Debugging) ---
     modalElement.classList.remove('modal-active');
     document.body.classList.remove('modal-open');
+    modalElement.style.display = 'none'; // Hide directly
+    // --- End Direct Actions ---
 
-    // *** Remove the overlay click listener ***
+    console.log(`[UI Modal - closeModal DEBUG] Removed 'modal-active' from #${modalElement.id}. New classes:`, modalElement.className);
+    console.log(`[UI Modal - closeModal DEBUG] Removed 'modal-open' from body. New classes:`, document.body.className);
+    console.log(`[UI Modal - closeModal DEBUG] Set display: none for #${modalElement.id}.`);
+
+    // Remove overlay listener if it exists
     if (currentOverlayClickHandler) {
         modalElement.removeEventListener('click', currentOverlayClickHandler);
-        console.log(`[UI Modal] Removed overlay click listener for #${modalElement.id}.`);
-        currentOverlayClickHandler = null; // Clear the stored handler
+        console.log(`[UI Modal - closeModal DEBUG] Removed overlay click listener for #${modalElement.id}.`);
+        currentOverlayClickHandler = null;
+    } else {
+        console.warn(`[UI Modal - closeModal DEBUG] No overlay click handler was stored for #${modalElement.id} to remove.`);
     }
-
-    // Wait for transitions to finish before setting display: none
-    setTimeout(() => {
-        modalElement.style.display = 'none';
-        // Optional: Clear modal content after closing to prevent stale data flashing
-        // const content = modalElement.querySelector('.modal-content');
-        // if (content) content.innerHTML = ''; // Be careful if content structure is complex
-    }, 300); // Example: 300ms transition duration
 }
 
 /**

@@ -321,15 +321,9 @@ body.admin-logged-in .player-public-only { display: none; }
     padding: 20px; /* Add padding for smaller screens */
 }
 
-/* Style for when the modal is active/visible */
 .modal-container.modal-active {
-    display: flex !important; /* Force display */
-    opacity: 1 !important; /* Force opacity */
-}
-
-/* Prevent body scrolling when modal is open */
-body.modal-open {
-    overflow: hidden;
+    display: flex; /* Show when active */
+    opacity: 1;
 }
 
 .modal-content {
@@ -344,44 +338,43 @@ body.modal-open {
     width: 90%; /* Responsive width */
     max-width: 600px; /* Max width */
     border-radius: 8px;
-    position: relative; /* For positioning the close button */
+    position: relative; /* Needed for absolute positioning of the close button */
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     /* Add transition for scaling effect */
-    transform: scale(0.9); /* Start slightly smaller */
-    opacity: 0; /* Start transparent */
-    transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* Smooth transitions */
+    transform: scale(0.95);
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-out; /* Smooth transitions */
     visibility: hidden; /* Hide initially */
     z-index: 101; /* Ensure content is above overlay */
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
-/* When modal container is active, make content visible and scale up */
 .modal-container.modal-active .modal-content {
-    transform: scale(1) !important; /* Force transform */
+    transform: scale(1);
     opacity: 1 !important; /* Force opacity */
     visibility: visible !important; /* Force visibility */
 }
 
 .modal-close-button {
     position: absolute;
-    top: 8px; /* Adjust position */
-    right: 12px; /* Adjust position */
-    color: #aaa;
-    background: none; /* Ensure no background covers clicks */
-    border: none; /* Ensure no border covers clicks */
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
     line-height: 1;
-    padding: 0; /* Remove padding */
-    z-index: 102; /* Ensure close button is highest */
+    cursor: pointer;
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    color: rgb(107, 114, 128);
+    z-index: 50;
 }
 
-.modal-close-button:hover,
-.modal-close-button:focus {
-    color: black;
-    @apply dark:text-gray-300;
-    text-decoration: none;
-    cursor: pointer;
+.modal-close-button:hover {
+    color: rgb(31, 41, 55);
+}
+
+body.modal-open {
+    overflow: hidden; /* Prevent background scroll */
 }
 
 /* Player Modal Specific Edit/View Toggling */

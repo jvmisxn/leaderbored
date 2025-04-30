@@ -26,31 +26,38 @@ function populateParticipantChecklist(containerElement, playersArray, selectedPa
     console.log(`[UI] Populated participant checklist in ${containerElement.id || '(no id)'} with ${playersArray.length} players.`); //
 }
 
+// --- Tournament Data Functions ---
 
-// --- Create Tournament Modal Functions ---
-
-async function openCreateTournamentModal() {
-    // ... existing code ...
+/**
+ * Fetches tournaments based on status (upcoming, completed, etc.)
+ * @param {string} status - 'upcoming', 'completed', 'active', or 'all'.
+ * @param {number} limitCount - Max number of tournaments to fetch.
+ * @returns {Promise<Array>} - A promise that resolves to an array of tournament objects.
+ */
+async function fetchTournaments(status = 'upcoming', limitCount = 20) {
+    // Ensure db is available before proceeding
+    if (!db) {
+        console.error("[TOURNAMENTS FETCH] Firestore db object not available.");
+        return []; // Return empty array on error
+    }
+    console.log(`[TOURNAMENTS FETCH] Fetching ${status} tournaments (limit: ${limitCount})...`);
+    // ... rest of fetchTournaments function ...
 }
-function closeCreateTournamentModal() {
-    // ... existing code ...
-}
-async function handleCreateTournamentSubmit(event) {
-    // ... existing code ...
-}
 
-
-// --- Tournament List Population ---
-async function populateTournamentsList(listElementId, limit = 10, filter = 'upcoming') {
+/**
+ * Populates a list element with tournament data.
+ * @param {string} listElementId - The ID of the UL element to populate.
+ * @param {number} limitCount - The maximum number of tournaments to display.
+ * @param {string} filter - 'upcoming', 'completed', 'active', or 'all'.
+ */
+async function populateTournamentsList(listElementId, limitCount = 20, filter = 'upcoming') {
     console.log(`[TOURNAMENTS] Starting populateTournamentsList for #${listElementId} with filter: ${filter}`);
 
-    // INITIALIZATION CHECK
-    if (typeof firebase === 'undefined' || !firebase.app) {
-        console.error('[TOURNAMENTS] Firebase not initialized');
-        return;
-    }
-    if (typeof db === 'undefined') {
-        console.error('[TOURNAMENTS] Firestore db object not initialized');
+    // Ensure db is available before proceeding
+    if (!db) {
+        console.error(`[TOURNAMENTS POPULATE ${listElementId}] Firestore db object not available.`);
+        const listElement = document.getElementById(listElementId);
+        if (listElement) listElement.innerHTML = '<li class="error-text">Error: Database connection failed.</li>';
         return;
     }
 
@@ -82,7 +89,7 @@ async function populateTournamentsList(listElementId, limit = 10, filter = 'upco
         }
 
         // Apply ordering and limit
-        query = query.orderBy('date_created', 'desc').limit(limit);
+        query = query.orderBy('date_created', 'desc').limit(limitCount);
 
         console.log(`[TOURNAMENTS] Executing query...`, query);
         const snapshot = await query.get();
@@ -129,15 +136,30 @@ async function populateTournamentsList(listElementId, limit = 10, filter = 'upco
     }
 }
 
-// Add this initialization check at the end of the file
-console.log('[TOURNAMENTS] Module loaded. Testing DB connection...');
-if (typeof firebase !== 'undefined' && firebase.app) {
-    console.log('[TOURNAMENTS] Firebase available');
-    if (typeof db !== 'undefined') {
-        console.log('[TOURNAMENTS] Firestore db object available');
-    } else {
-        console.error('[TOURNAMENTS] Firestore db object not initialized');
-    }
-} else {
-    console.error('[TOURNAMENTS] Firebase not initialized');
+// --- Create Tournament Modal Functions ---
+
+async function openCreateTournamentModal() {
+    // ... existing code ...
 }
+function closeCreateTournamentModal() {
+    // ... existing code ...
+}
+async function handleCreateTournamentSubmit(event) {
+    // ... existing code ...
+}
+
+// --- Initial Check Removed ---
+// console.log("[TOURNAMENTS] Module loaded. Testing DB connection...");
+// if (typeof firebase !== 'undefined' && firebase.app) {
+//     console.log("[TOURNAMENTS] Firebase available");
+//     if (db) { // This check happens too early
+//         console.log("[TOURNAMENTS] Firestore db object initialized");
+//     } else {
+//         console.error("[TOURNAMENTS] Firestore db object not initialized"); // This error will likely always show
+//     }
+// } else {
+//     console.warn("[TOURNAMENTS] Firebase not available yet.");
+// }
+// --- End Initial Check Removed ---
+
+console.log("[TOURNAMENTS] Module loaded."); // Keep a simple load confirmation

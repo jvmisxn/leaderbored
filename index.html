@@ -4520,51 +4520,56 @@ async function initializeApp() { // Added async
 
         // --- MOVE AUTH LISTENER HERE ---
         auth.onAuthStateChanged(async (user) => {
-            const loginButton = document.getElementById('player-login-link');
-            const profileSection = document.getElementById('profile-section');
-            const profileImg = document.getElementById('profile-photo-img'); // Get img inside button now
+     const loginButton = document.getElementById('player-login-link');
+     const profileSection = document.getElementById('profile-section');
+     const profileImg = document.getElementById('profile-photo-img');
 
-            if (user) {
-                // Player is signed in.
-                console.log("Auth State Changed: User is logged in", user.uid);
-                document.body.classList.add('player-logged-in');
+     // Clear admin state first
+     document.body.classList.remove('player-logged-in');
+     document.body.classList.remove('admin-logged-in'); // Remove admin class initially
+     currentPlayer = null; // Reset current player
 
-                // Add class to body if user is admin (for admin-only content visibility)
-                currentPlayer = await getPlayerProfileByAuthId(user.uid);
-                if (currentPlayer && currentPlayer.isAdmin) {
-                    document.body.classList.add('admin-logged-in');
-                } else {
-                    document.body.classList.remove('admin-logged-in');
-                }
+     if (user) {
+         // Player is signed in.
+         console.log("Auth State Changed: User is logged in", user.uid);
+         document.body.classList.add('player-logged-in'); // Mark as player logged in
 
-                // Update profile photo using currentPlayer
-                if (currentPlayer) {
-                     console.log("Current player data:", currentPlayer);
-                     const photoURL = currentPlayer.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentPlayer.name || '?')}&background=E0E7FF&color=4F46E5&size=40`;
-                     if (profileImg) profileImg.src = photoURL;
-                } else {
-                    console.warn("Logged in user has no associated player profile!", user.uid);
-                     if (profileImg) profileImg.src = 'https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40'; // Default icon
-                    currentPlayer = { authUid: user.uid, email: user.email, name: "Profile Needed", isAdmin: false }; // Assume not admin if profile missing
-                }
+         currentPlayer = await getPlayerProfileByAuthId(user.uid);
 
-                // Navigate away from login/register if needed
-                if (window.location.hash === '#player-login-section' || window.location.hash === '#register-section') {
-                    await showSection('home-section'); // Use await here too
-                }
+         if (currentPlayer) {
+             console.log("Current player data:", currentPlayer);
 
-            } else {
-                // Player is signed out.
-                console.log("Auth State Changed: User is logged out");
-                document.body.classList.remove('player-logged-in');
-                document.body.classList.remove('admin-logged-in'); // Remove admin class on logout
-                currentPlayer = null;
-                document.getElementById('profile-dropdown')?.classList.add('hidden'); // Ensure dropdown is hidden
+             // ---> CHECK FOR ADMIN <---
+             if (currentPlayer.isAdmin === true) {
+                 console.log("User is an Admin.");
+                 document.body.classList.add('admin-logged-in'); // Add admin class to body
+             } else {
+                  console.log("User is NOT an Admin.");
+                  // No need to remove admin-logged-in here, it was removed initially
+             }
+             // ---> END CHECK <---
 
-                // Navigate to home or login page on logout
-                // Don't necessarily force navigation on initial load if logged out
-                // await showSection('home-section'); // Only navigate explicitly on logout action?
-            }
+             // Update profile photo
+             const photoURL = currentPlayer.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentPlayer.name || '?')}&background=E0E7FF&color=4F46E5&size=40`;
+             if (profileImg) profileImg.src = photoURL;
+
+         } else {
+             console.warn("Logged in user has no associated player profile!", user.uid);
+             if (profileImg) profileImg.src = 'https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40'; // Default icon
+             currentPlayer = { authUid: user.uid, email: user.email, name: "Profile Needed", isAdmin: false }; // Assume not admin
+         }
+
+         // Navigate away from login/register if needed
+         if (window.location.hash === '#player-login-section' || window.location.hash === '#register-section') {
+             await showSection('home-section');
+         }
+
+     } else {
+         // Player is signed out.
+         console.log("Auth State Changed: User is logged out");
+         // Body classes 'player-logged-in' and 'admin-logged-in' were already removed above.
+         document.getElementById('profile-dropdown')?.classList.add('hidden'); // Ensure dropdown is hidden
+     }
              // Let CSS handle visibility based on body class, no need to add/remove 'player-only' here.
         });
         // --- END AUTH LISTENER ---

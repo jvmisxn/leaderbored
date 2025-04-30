@@ -575,10 +575,20 @@
     <div id="add-game-modal" class="modal-overlay"> </div>
     <div id="edit-tournament-modal" class="modal-overlay"></div> 
     <div id="add-participants-modal" class="modal-overlay"></div>
-    <div id="add-course-modal" class="modal-overlay"> 
+    <div id="add-course-modal" class="modal-overlay"> </div>
 
-    <footer class="fixed bottom-5 left-0 right-0 text-center text-gray-600 dark:text-gray-400 text-sm z-40"> &copy; 2025 LeaderBored. Keep it friendly!
-    </footer>
+
+        <footer class="fixed bottom-5 left-0 right-0 px-4 text-center text-gray-600 dark:text-gray-400 text-sm z-40 flex justify-center items-center space-x-4">
+            <span>&copy; 2025 LeaderBored. Keep it friendly!</span>
+            <div class="flex items-center space-x-2">
+                <span class="text-xs">☀️</span>
+                <label for="dark-mode-toggle" class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" value="" id="dark-mode-toggle" class="sr-only peer">
+                    <div class="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                     <span class="text-xs">🌙</span>
+                </label>
+            </div>
+            </footer>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>

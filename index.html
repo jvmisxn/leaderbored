@@ -5515,34 +5515,7 @@ async function handleEditTournamentDetail(tournamentId) {
         }
         // --- End Elo Functions ---
 
- // --- Live Game Section Logic ---
- function setupLiveGameListeners() {
-            // Timer Controls
-            const timerModeRadios = document.querySelectorAll('input[name="timer-mode"]');
-            const timerSettingsDown = document.getElementById('timer-settings-down');
-            timerModeRadios.forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    timerSettingsDown.classList.toggle('hidden', e.target.value !== 'down');
-                    // Reset timer when mode changes?
-                });
-            });
-            document.getElementById('timer-start')?.addEventListener('click', startTimer);
-            document.getElementById('timer-pause')?.addEventListener('click', pauseTimer);
-            document.getElementById('timer-reset')?.addEventListener('click', resetTimer);
-            document.getElementById('timer-next-turn')?.addEventListener('click', nextTurn); // Add turn logic
 
-            // Dice Roller
-            document.getElementById('roll-dice-btn')?.addEventListener('click', rollDice);
-
-            // Scoring (Manual update for now)
-            document.getElementById('update-scores-btn')?.addEventListener('click', () => {
-                console.log("Manual score update clicked (no action defined yet)");
-                 // Could read values from inputs here if needed
-            });
-
-            // Submit Final Score Button
-            document.getElementById('submit-live-game-score-btn')?.addEventListener('click', openSubmitScoreFormFromLive);
-        }
 
         let timerInterval = null;
         let timerSeconds = 0;
@@ -5939,7 +5912,7 @@ async function handleEditTournamentDetail(tournamentId) {
                         if (cleanTargetId === 'players-section' && playersGrid) await populatePlayersList();
                         if (cleanTargetId === 'tournaments-section' && document.getElementById('tournaments-list-full')) await populateTournamentsList('tournaments-list-full');
                         // --- NEW: Setup Listeners/Populate for new sections ---
-                        if (cleanTargetId === 'live-game-section') setupLiveGameListeners(); // Setup listeners when section shown
+                        
                         if (cleanTargetId === 'submit-past-game-section') setupSubmitPastGameListeners(); // Setup listeners & populate dropdowns
                         if (cleanTargetId === 'game-info-section') setupGameInfoListeners(); // Setup share button listener
                         // --- END NEW ---

@@ -38,7 +38,68 @@ try {
     throw new Error("Firebase Initialization Failed");
 }
 
+// --- Dark Mode Toggle Logic ---
+function setupDarkMode() {
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const body = document.body;
 
+    // Function to apply the theme based on toggle state or saved preference
+    const applyTheme = (isDark) => {
+        if (isDark) {
+            body.classList.add('dark');
+            if (darkModeToggle) darkModeToggle.checked = true;
+        } else {
+            body.classList.remove('dark');
+            if (darkModeToggle) darkModeToggle.checked = false;
+        }
+    };
+
+    // Check for saved theme preference in localStorage
+    const savedTheme = localStorage.getItem('theme');
+    // Check system preference if no saved theme
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    // Determine initial theme
+    let initialDarkMode = false;
+    if (savedTheme === 'dark') {
+        initialDarkMode = true;
+    } else if (savedTheme === 'light') {
+        initialDarkMode = false;
+    } else {
+        // If no saved theme, use system preference
+        initialDarkMode = prefersDark;
+    }
+
+    // Apply the initial theme
+    applyTheme(initialDarkMode);
+    console.log(`[Theme] Initial dark mode set to: ${initialDarkMode} (Saved: ${savedTheme}, Prefers: ${prefersDark})`);
+
+
+    // Add event listener to the toggle
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('change', () => {
+            const isChecked = darkModeToggle.checked;
+            applyTheme(isChecked);
+            // Save the user's preference
+            localStorage.setItem('theme', isChecked ? 'dark' : 'light');
+            console.log(`[Theme] Theme toggled. Dark mode: ${isChecked}. Preference saved.`);
+        });
+    } else {
+        console.warn("[Theme] Dark mode toggle element (#dark-mode-toggle) not found.");
+    }
+
+     // Listen for system theme changes (optional, but good practice)
+     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+        // Only apply system change if no explicit user preference is saved
+        if (!localStorage.getItem('theme')) {
+            console.log("[Theme] System theme changed. Applying system preference.");
+            applyTheme(event.matches);
+        } else {
+            console.log("[Theme] System theme changed, but user preference overrides.");
+        }
+     });
+
+}
 // --- Event Listeners Setup ---
 // This function sets up listeners for static elements and delegates others.
 // Dependencies: Needs access to handler functions defined in other files

@@ -338,7 +338,91 @@ input:checked ~ .block { background-color: #4b5563; /* Darker track */ }
                  </div>
              </div>
         </section>
+        <section id="live-game-section" class="page-section hidden space-y-8">
+            <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Play Live Game</h1>
+    
+            <div class="bg-white p-8 rounded-xl shadow-lg">
+                <div class="mb-6">
+                    <label for="live-game-select" class="block text-gray-700 text-sm font-bold mb-2">Select Game:</label>
+                    <select id="live-game-select" name="live-game-select" class="shadow border rounded-lg w-full md:w-1/2 py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Select a Game --</option>
+                        <option value="golf">Golf</option>
+                        <option value="pool">Pool</option>
+                        <option value="chess">Chess</option>
+                        <option value="board_game">Board Game (Generic)</option>
+                         </select>
+                </div>
+    
+                <div id="live-game-tools-container" class="space-y-6">
+                    <p class="text-gray-500 italic">Select a game to see available tools.</p>
+                </div>
+    
+                 <div id="live-game-submit-area" class="mt-8 text-center border-t pt-6" style="display: none;">
+                     <button id="submit-live-game-score-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow hover:shadow-md">
+                        Finish Game & Submit Score
+                    </button>
+                </div>
+            </div>
+        </section>
+    
+    <section id="submit-past-game-section" class="page-section hidden space-y-8">
+        <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Submit Past Game</h1>
+        <div class="bg-white p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
+            <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Enter Final Score Details</h2>
+            <form id="submit-past-game-form">
+                <div class="mb-4">
+                    <label for="past-game-type" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label>
+                    <select id="past-game-type" name="game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                        <option value="">Select Game Type</option>
+                        </select>
+                </div>
+                <div id="past-winner-container" class="mb-4">
+                    <label for="past-winner" class="block text-gray-700 text-sm font-bold mb-2">Winner:</label>
+                   <select id="past-winner" name="winner_or_golfer" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                       <option value="">Select Winner/Golfer</option>
+                       </select>
+               </div>
 
+               <div id="past-loser-container" class="mb-4">
+                   <label for="past-loser" class="block text-gray-700 text-sm font-bold mb-2">Loser:</label>
+                   <select id="past-loser" name="loser" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                       <option value="">Select Loser</option>
+                       </select>
+               </div>
+                 <div class="mb-4">
+                     <label class="inline-flex items-center">
+                        <input type="checkbox" id="past-is-draw" name="is_draw" class="form-checkbox h-5 w-5 text-blue-600">
+                        <span class="ml-2 text-gray-700">Was it a Draw?</span>
+                     </label>
+                 </div>
+                <div class="mb-4">
+                    <label for="past-score" class="block text-gray-700 text-sm font-bold mb-2">Score (Optional):</label>
+                    <input type="text" id="past-score" name="score" placeholder="e.g. 8-3, 21-15" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700">
+                </div>
+                <div class="mb-4">
+                    <label for="past-date-played" class="block text-gray-700 text-sm font-bold mb-2">Date Played:</label>
+                    <input type="date" id="past-date-played" name="date_played" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" required>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button type="button" id="cancel-submit-past-game-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-5 rounded-lg">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg">Submit Game Info</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section id="game-info-section" class="page-section hidden space-y-8">
+        <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Game Information</h1>
+        <div id="game-info-content" class="bg-white p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
+            <p class="text-gray-500">Game details will be displayed here after submission...</p>
+            </div>
+         <div class="text-center mt-6">
+            <button id="share-game-info-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg mr-2">Share</button>
+            <a href="#home-section" class="nav-link text-indigo-600 hover:underline" data-target="home-section">Back to Dashboard</a>
+        </div>
+    </section>
         <section id="rankings-section" class="page-section hidden space-y-8">
              <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6 flex-wrap gap-4"> <h1 class="text-4xl font-bold text-gray-900">Rankings</h1>
                  <div class="flex items-center gap-4 flex-wrap"> <div>
@@ -694,87 +778,7 @@ input:checked ~ .block { background-color: #4b5563; /* Darker track */ }
     </div> <div id="add-participants-modal" class="modal-overlay"></div>
     <div id="add-course-modal" class="modal-overlay">
     
-        <section id="live-game-section" class="page-section hidden space-y-8">
-            <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Play Live Game</h1>
-    
-            <div class="bg-white p-8 rounded-xl shadow-lg">
-                <div class="mb-6">
-                    <label for="live-game-select" class="block text-gray-700 text-sm font-bold mb-2">Select Game:</label>
-                    <select id="live-game-select" name="live-game-select" class="shadow border rounded-lg w-full md:w-1/2 py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">-- Select a Game --</option>
-                        <option value="golf">Golf</option>
-                        <option value="pool">Pool</option>
-                        <option value="chess">Chess</option>
-                        <option value="board_game">Board Game (Generic)</option>
-                         </select>
-                </div>
-    
-                <div id="live-game-tools-container" class="space-y-6">
-                    <p class="text-gray-500 italic">Select a game to see available tools.</p>
-                </div>
-    
-                 <div id="live-game-submit-area" class="mt-8 text-center border-t pt-6" style="display: none;">
-                     <button id="submit-live-game-score-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow hover:shadow-md">
-                        Finish Game & Submit Score
-                    </button>
-                </div>
-            </div>
-        </section>
-    
-    <section id="submit-past-game-section" class="page-section hidden space-y-8">
-        <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Submit Past Game</h1>
-        <div class="bg-white p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
-            <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Enter Final Score Details</h2>
-            <form id="submit-past-game-form">
-                <div class="mb-4">
-                    <label for="past-game-type" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label>
-                    <select id="past-game-type" name="game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
-                        <option value="">Select Game Type</option>
-                        </select>
-                </div>
-                <div class="mb-4">
-                    <label for="past-winner" class="block text-gray-700 text-sm font-bold mb-2">Winner:</label>
-                    <select id="past-winner" name="winner" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
-                        <option value="">Select Winner</option>
-                        </select>
-                </div>
-                <div class="mb-4">
-                    <label for="past-loser" class="block text-gray-700 text-sm font-bold mb-2">Loser:</label>
-                    <select id="past-loser" name="loser" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
-                        <option value="">Select Loser</option>
-                        </select>
-                </div>
-                 <div class="mb-4">
-                     <label class="inline-flex items-center">
-                        <input type="checkbox" id="past-is-draw" name="is_draw" class="form-checkbox h-5 w-5 text-blue-600">
-                        <span class="ml-2 text-gray-700">Was it a Draw?</span>
-                     </label>
-                 </div>
-                <div class="mb-4">
-                    <label for="past-score" class="block text-gray-700 text-sm font-bold mb-2">Score (Optional):</label>
-                    <input type="text" id="past-score" name="score" placeholder="e.g. 8-3, 21-15" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700">
-                </div>
-                <div class="mb-4">
-                    <label for="past-date-played" class="block text-gray-700 text-sm font-bold mb-2">Date Played:</label>
-                    <input type="date" id="past-date-played" name="date_played" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" required>
-                </div>
-                <div class="mt-6 flex justify-end">
-                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg">Submit Game Info</button>
-                </div>
-            </form>
-        </div>
-    </section>
 
-    <section id="game-info-section" class="page-section hidden space-y-8">
-        <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Game Information</h1>
-        <div id="game-info-content" class="bg-white p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
-            <p class="text-gray-500">Game details will be displayed here after submission...</p>
-            </div>
-         <div class="text-center mt-6">
-            <button id="share-game-info-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg mr-2">Share</button>
-            <a href="#home-section" class="nav-link text-indigo-600 hover:underline" data-target="home-section">Back to Dashboard</a>
-        </div>
-    </section>
 </div>
     <footer class="fixed bottom-5 left-0 right-0 text-center text-gray-600 dark:text-gray-400 text-sm z-40"> &copy; 2025 LeaderBored. Keep it friendly!
     </footer>
@@ -800,9 +804,18 @@ function setupLiveGameSection() {
 
     // Listener for the submit button within the live game section
     document.getElementById('submit-live-game-score-btn')?.addEventListener('click', () => {
-        const selectedGame = document.getElementById('live-game-select')?.value;
-        navigateToSubmitScore(selectedGame); // Navigate to the submit score page
+        const gameKey = document.getElementById('live-game-select')?.value;
+        if (!gameKey) {
+            alert("Please select a game first."); // Should not happen if button is only shown when game is selected
+            return;
+        }
+        // ** Get results from the current tools **
+        const liveResults = getLiveGameResults(gameKey);
+
+        // ** Pass gameKey AND results to navigation function **
+        navigateToSubmitScore(gameKey, liveResults); // Pass the results object
     });
+    // --- END MODIFICATION ---
 }
 
 function loadLiveGameTools(gameKey, container, submitArea) {
@@ -821,39 +834,46 @@ function loadLiveGameTools(gameKey, container, submitArea) {
 
     switch (gameKey) {
         case 'golf':
-            // Placeholder - In reality, you'd generate or fetch complex scorecard UI
-            toolsHtml = ``; // Replace with actual HTML template string
-             toolsHtml = `
-                <div id="golf-tools">
-    <h3 class="text-xl font-semibold mb-4 text-indigo-600">Golf Scorecard</h3>
-    <div class="mb-4 p-4 border rounded-lg bg-gray-50">
-        <p class="text-center text-gray-600 italic">Golf scorecard spreadsheet/table functionality requires more advanced implementation (e.g., using a JS grid library or significant custom code).</p>
-        <p class="text-center mt-2 text-sm">Placeholder for round stats table.</p>
-        <table class="w-full mt-4 text-sm border-collapse border border-gray-300">
-            <thead>
-                <tr class="bg-gray-100">
-                    <th class="border border-gray-300 p-2">Hole</th>
-                    <th class="border border-gray-300 p-2">Par</th>
-                    <th class="border border-gray-300 p-2">Score</th>
-                    <th class="border border-gray-300 p-2">Puts</th>
+            // New Golf tools HTML with Course Selection
+            toolsHtml = `
+<div id="golf-tools">
+    <h3 class="text-xl font-semibold mb-4 text-indigo-600">Live Golf Round</h3>
+
+    <div class="mb-6">
+        <label for="live-golf-course-select" class="block text-gray-700 text-sm font-bold mb-2">Select Course:</label>
+        <select id="live-golf-course-select" name="live-golf-course-select" class="shadow border rounded-lg w-full md:w-2/3 py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">-- Select a Course --</option>
+            </select>
+    </div>
+
+    <div id="live-golf-scorecard-area" class="mt-4 border-t pt-4 hidden">
+        <h4 id="live-golf-course-name" class="text-lg font-medium mb-3 text-center">Course Name</h4>
+        <div class="overflow-x-auto bg-gray-50 p-4 rounded-lg shadow-inner">
+            <table class="w-full text-sm border-collapse border border-gray-300 min-w-[400px]">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="border border-gray-300 p-2">Hole</th>
+                        <th class="border border-gray-300 p-2">Par</th>
+                        <th class="border border-gray-300 p-2">Score</th>
+                        <th class="border border-gray-300 p-2">Puts</th>
+                        </tr>
+                </thead>
+                <tbody id="live-golf-scorecard-body">
+                    <tr><td colspan="4" class="text-center p-4 text-gray-500 italic">Select a course to view scorecard.</td></tr>
+                </tbody>
+                <tfoot>
+                    <tr class="bg-gray-100 font-semibold">
+                         <td class="border border-gray-300 p-2 text-center">Total</td>
+                         <td id="live-golf-total-par" class="border border-gray-300 p-2 text-center">-</td>
+                         <td id="live-golf-total-score" class="border border-gray-300 p-2 text-center">-</td>
+                         <td id="live-golf-total-puts" class="border border-gray-300 p-2 text-center">-</td>
                     </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="border border-gray-300 p-2 text-center">1</td>
-                    <td class="border border-gray-300 p-2 text-center">4</td>
-                    <td class="border border-gray-300 p-2"><input type="number" class="w-16 p-1 border rounded text-center" /></td>
-                    <td class="border border-gray-300 p-2"><input type="number" class="w-16 p-1 border rounded text-center" /></td>
-                </tr>
-                <tr><td colspan="4" class="text-center p-2 italic">... more holes ...</td></tr>
-            </tbody>
-        </table>
-    </div>
-    <div class="text-center">
-        <button class="text-blue-600 hover:underline" onclick="alert('Hole detail view not implemented')">View Fullscreen Hole Detail (Example)</button>
-    </div>
+                </tfoot>
+            </table>
+        </div>
+         </div>
 </div>`;
-            break;
+            break; // Make sure break is here
         case 'pool':
             toolsHtml = ``; // Replace with actual HTML template string
             toolsHtml = `
@@ -983,7 +1003,152 @@ function loadLiveGameTools(gameKey, container, submitArea) {
     // Re-attach listeners for dynamically added elements
     attachDynamicToolListeners(gameKey);
 }
+// --- Live Golf Tool Specific Functions ---
 
+// Cache for fetched course data to avoid re-fetching
+let liveGolfCourseDataCache = {};
+
+// Fetches courses and populates the dropdown in the live golf section
+async function populateLiveGolfCourseSelect() {
+    const selectElement = document.getElementById('live-golf-course-select');
+    if (!selectElement || !db) {
+        console.warn("[Live Golf] Course select element or DB not found.");
+        if (selectElement) selectElement.innerHTML = '<option value="">Error loading courses</option>';
+        return;
+    }
+    console.log("[Live Golf] Populating course select...");
+    selectElement.innerHTML = '<option value="">Loading Courses...</option>'; // Show loading state
+
+    try {
+        // Requires Firestore index: golf_courses: name (asc)
+        const snapshot = await db.collection('golf_courses').orderBy('name').get();
+        selectElement.innerHTML = '<option value="">-- Select a Course --</option>'; // Reset with prompt
+
+        if (snapshot.empty) {
+            console.warn("[Live Golf] No golf courses found in Firestore.");
+            selectElement.innerHTML = '<option value="">No courses found</option>';
+            return;
+        }
+
+        snapshot.forEach(doc => {
+            const course = { id: doc.id, ...doc.data() };
+            // Store fetched data in cache
+            liveGolfCourseDataCache[course.id] = course;
+            // Add option to dropdown
+            const option = new Option(`${course.name} (Par ${course.total_par || 'N/A'})`, course.id);
+            selectElement.add(option);
+        });
+        console.log(`[Live Golf] Populated ${snapshot.size} courses.`);
+
+    } catch (error) {
+        console.error("[Live Golf] Error fetching courses:", error);
+        selectElement.innerHTML = '<option value="">Error loading courses</option>';
+        // Check for index error specifically
+        if (error.code === 'failed-precondition') {
+            console.error("Firestore index required: 'golf_courses' collection, 'name' field (ascending). Please create this index in your Firebase console.");
+            alert("Database Error: A required index for golf courses is missing. Please contact the administrator.");
+        }
+    }
+}
+
+// Handles selection of a course, fetches par data, and updates the scorecard UI
+function handleLiveGolfCourseSelect() {
+    const selectElement = document.getElementById('live-golf-course-select');
+    const scorecardArea = document.getElementById('live-golf-scorecard-area');
+    const scorecardBody = document.getElementById('live-golf-scorecard-body');
+    const courseNameEl = document.getElementById('live-golf-course-name');
+    const totalParEl = document.getElementById('live-golf-total-par');
+    const totalScoreEl = document.getElementById('live-golf-total-score');
+    const totalPutsEl = document.getElementById('live-golf-total-puts');
+
+    if (!selectElement || !scorecardArea || !scorecardBody || !courseNameEl || !totalParEl) {
+        console.error("[Live Golf] Scorecard elements not found.");
+        return;
+    }
+
+    const selectedCourseId = selectElement.value;
+
+    if (!selectedCourseId) {
+        scorecardArea.classList.add('hidden'); // Hide scorecard if no course selected
+        scorecardBody.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-gray-500 italic">Select a course to view scorecard.</td></tr>';
+        return;
+    }
+
+    console.log(`[Live Golf] Course selected: ${selectedCourseId}`);
+
+    // Use cached data if available, otherwise show error (should be cached by populate function)
+    const courseData = liveGolfCourseDataCache[selectedCourseId];
+    if (!courseData) {
+        console.error(`[Live Golf] Course data not found in cache for ID: ${selectedCourseId}`);
+        alert("Error: Could not retrieve course details. Please refresh and try again.");
+        scorecardArea.classList.add('hidden');
+        return;
+    }
+
+    // --- Update UI based on selected course ---
+    courseNameEl.textContent = courseData.name || 'Unnamed Course';
+
+    // Generate Scorecard Rows (Example using 18 holes and total par)
+    // TODO: Ideally, fetch and use per-hole par data if available in Firestore
+    // Example: const holePars = courseData.pars || Array(18).fill('?');
+    const totalPar = courseData.total_par || 0;
+    totalParEl.textContent = totalPar || '-'; // Display total par
+    scorecardBody.innerHTML = ''; // Clear previous content or "select course" message
+
+    // Basic example assuming 18 holes, using average par if hole-specific isn't available
+    const avgPar = totalPar > 0 ? Math.round(totalPar / 18) : '?';
+
+    for (let i = 1; i <= 18; i++) {
+        const tr = document.createElement('tr');
+        tr.className = 'text-center';
+        const parForHole = avgPar; // Replace with actual hole par if available: holePars[i-1]
+
+        tr.innerHTML = `
+            <td class="border border-gray-300 p-2 font-medium">${i}</td>
+            <td class="border border-gray-300 p-2 par-cell">${parForHole}</td>
+            <td class="border border-gray-300 p-2"><input type="number" class="w-16 p-1 border rounded text-center score-input" data-hole="${i}" min="1"></td>
+            <td class="border border-gray-300 p-2"><input type="number" class="w-16 p-1 border rounded text-center puts-input" data-hole="${i}" min="0"></td>
+        `;
+        scorecardBody.appendChild(tr);
+    }
+
+    // Add listener to update totals whenever score/puts inputs change
+    scorecardBody.addEventListener('input', updateLiveGolfTotals);
+    updateLiveGolfTotals(); // Initial calculation
+
+    scorecardArea.classList.remove('hidden'); // Show the scorecard
+}
+
+// Calculates and updates the total row in the live scorecard
+function updateLiveGolfTotals() {
+    const scorecardBody = document.getElementById('live-golf-scorecard-body');
+    const totalScoreEl = document.getElementById('live-golf-total-score');
+    const totalPutsEl = document.getElementById('live-golf-total-puts');
+
+    if (!scorecardBody || !totalScoreEl || !totalPutsEl) return;
+
+    let currentTotalScore = 0;
+    let currentTotalPuts = 0;
+
+    scorecardBody.querySelectorAll('.score-input').forEach(input => {
+        const score = parseInt(input.value, 10);
+        if (!isNaN(score) && score > 0) {
+            currentTotalScore += score;
+        }
+    });
+
+    scorecardBody.querySelectorAll('.puts-input').forEach(input => {
+        const puts = parseInt(input.value, 10);
+        if (!isNaN(puts) && puts >= 0) {
+            currentTotalPuts += puts;
+        }
+    });
+
+    totalScoreEl.textContent = currentTotalScore > 0 ? currentTotalScore : '-';
+    totalPutsEl.textContent = currentTotalPuts > 0 ? currentTotalPuts : '-'; // Only show puts total if > 0 maybe? Or always show 0?
+}
+
+// --- End Live Golf ---
 function attachDynamicToolListeners(gameKey) {
     // Remove previous listeners if necessary (more complex, omitted for brevity)
     console.log(`Attaching listeners for ${gameKey} tools`);
@@ -1022,7 +1187,15 @@ function attachDynamicToolListeners(gameKey) {
              document.getElementById('board-roll-dice-btn')?.addEventListener('click', rollBoardDice);
              document.getElementById('board-flip-coin-btn')?.addEventListener('click', flipBoardCoin);
             break;
-         case 'golf':
+            case 'golf':
+            // *** ADD THESE LINES ***
+            populateLiveGolfCourseSelect(); // Fetch courses and fill the dropdown
+            const courseSelect = document.getElementById('live-golf-course-select');
+            courseSelect?.addEventListener('change', handleLiveGolfCourseSelect); // Add listener for course selection
+            // Note: Scorecard input listeners are added/handled within handleLiveGolfCourseSelect/updateLiveGolfTotals
+            // *** END ADDED LINES ***
+
+            // Original placeholder listeners (remove if not needed)
             // Listeners for golf scorecard inputs if needed
             break;
     }
@@ -1030,12 +1203,70 @@ function attachDynamicToolListeners(gameKey) {
     // E.g., document.getElementById('timer-start')?.addEventListener('click', startTimer);
      // E.g., document.getElementById('roll-dice-btn')?.addEventListener('click', rollDice);
 }
+// --- Add this new function ---
+/**
+ * Retrieves the final results from the currently displayed live game tools.
+ * @param {string} gameKey - The key of the game currently selected (e.g., 'golf', 'pool').
+ * @returns {object} An object containing results like score. Example: { score: '75' } or { score: '3-2' } or {}
+ */
+function getLiveGameResults(gameKey) {
+    let results = {};
+    console.log(`[Live Results] Getting results for game: ${gameKey}`);
 
-// --- Navigation to Submit Score ---
-// This function prepares and navigates to the existing 'submit-past-game-section'
-// which will now serve as the unified "Submit Score" screen.
-function navigateToSubmitScore(gameKey = null, /* add other params like scores if needed */) {
-    console.log(`Navigating to Submit Score screen. Game: ${gameKey || 'Not specified'}`);
+    switch (gameKey) {
+        case 'golf':
+            const totalScoreEl = document.getElementById('live-golf-total-score');
+            const scoreValue = totalScoreEl?.textContent;
+            // Only include score if it's a valid number (not '-' or empty)
+            if (scoreValue && scoreValue !== '-' && !isNaN(parseInt(scoreValue))) {
+                results.score = scoreValue;
+            } else {
+                 results.score = null; // Or maybe prompt the user if score is missing?
+                 console.warn("[Live Results] Golf score not found or invalid in #live-golf-total-score.");
+            }
+            break;
+
+        case 'pool':
+            const p1ScoreEl = document.getElementById('score-pool-p1');
+            const p2ScoreEl = document.getElementById('score-pool-p2');
+            const p1Score = p1ScoreEl?.value;
+            const p2Score = p2ScoreEl?.value;
+            // Include score if both are valid numbers
+            if (p1Score && p2Score && !isNaN(parseInt(p1Score)) && !isNaN(parseInt(p2Score)) ) {
+                 results.score = `${p1Score}-${p2Score}`; // Example format
+            } else {
+                 results.score = null;
+                 console.warn("[Live Results] Pool scores not found or invalid.");
+            }
+            break;
+
+        case 'chess':
+            // Chess might not have a 'score' in the traditional sense to pass.
+            // You might pass winner/loser info if your tool logic determined it.
+            results.score = null; // No score to pass for now
+            break;
+
+        case 'board_game':
+            // Board games often don't have a simple score to pass.
+            results.score = null;
+            break;
+
+        default:
+            console.log(`[Live Results] No specific result gathering implemented for ${gameKey}`);
+            results.score = null;
+    }
+
+    console.log("[Live Results] Gathered results:", results);
+    return results;
+}
+// --- Modify this function signature and add pre-filling logic ---
+/**
+ * Prepares and navigates to the submit score screen.
+ * @param {string | null} gameKey - The key for the game played (optional).
+ * @param {object} results - An object containing results from live tools (e.g., { score: '75' }). Defaults to empty object.
+ */
+ function navigateToSubmitScore(gameKey = null, results = {}) { // Added results parameter
+    console.log(`Navigating to Submit Score screen. Game: ${gameKey || 'Not specified'}, Results:`, results); // Log results
 
     const submitSection = document.getElementById('submit-past-game-section');
     if (!submitSection) {
@@ -1044,11 +1275,10 @@ function navigateToSubmitScore(gameKey = null, /* add other params like scores i
         return;
     }
 
-    // Get the form elements within the submit section
     const form = submitSection.querySelector('#submit-past-game-form');
     const gameTypeSelect = form?.querySelector('#past-game-type');
-    const winnerSelect = form?.querySelector('#past-winner'); // Or player1 for draw
-    const loserSelect = form?.querySelector('#past-loser');   // Or player2 for draw
+    const winnerSelect = form?.querySelector('#past-winner');
+    const loserSelect = form?.querySelector('#past-loser');
     const scoreInput = form?.querySelector('#past-score');
     const dateInput = form?.querySelector('#past-date-played');
     const drawCheckbox = form?.querySelector('#past-is-draw');
@@ -1057,40 +1287,48 @@ function navigateToSubmitScore(gameKey = null, /* add other params like scores i
     if (form) {
         form.reset(); // Clear previous entries
 
-        // Set the game type dropdown if a gameKey was passed from the live session
+        // --- Pre-fill Game Type ---
         if (gameKey && gameTypeSelect) {
-            if (gameTypesConfig[gameKey]) { // Check if key is valid
+            if (gameTypesConfig[gameKey]) {
                  gameTypeSelect.value = gameKey;
-                 // Optionally disable it if coming from a live game?
+                 // Keep it enabled so user can change if needed, unless explicitly decided otherwise
                  // gameTypeSelect.disabled = true;
             } else {
                  console.warn(`Invalid gameKey '${gameKey}' passed to navigateToSubmitScore.`);
             }
         } else if (gameTypeSelect) {
-            // If navigating from "Enter Previous Score", ensure game type is enabled and empty
             gameTypeSelect.disabled = false;
             gameTypeSelect.value = '';
         }
 
-         // Pre-fill date with today (optional)
-         if (dateInput) {
-             dateInput.value = new Date().toISOString().split('T')[0];
-         }
+        // --- Pre-fill Score --- * NEW *
+        if (results.score && scoreInput) {
+            console.log(`Pre-filling score with: ${results.score}`);
+            scoreInput.value = results.score;
+        } else if (scoreInput) {
+            scoreInput.value = ''; // Ensure score is empty if not passed
+        }
+        // --- End Pre-fill Score ---
 
-        // TODO: Pre-fill players/score if data is passed from live game tools
-        // Example:
-        // if (winnerId) winnerSelect.value = winnerId;
-        // if (loserId) loserSelect.value = loserId;
-        // if (finalScore) scoreInput.value = finalScore;
-        // if (wasDraw) drawCheckbox.checked = true;
+        // Pre-fill date with today (optional)
+        if (dateInput) {
+             dateInput.value = new Date().toISOString().split('T')[0];
+        }
+
+        // TODO: Pre-fill players/draw status if data is passed from live game tools
+        // if (results.winnerId) winnerSelect.value = results.winnerId;
+        // if (results.loserId) loserSelect.value = results.loserId;
+        // if (results.isDraw !== undefined) drawCheckbox.checked = results.isDraw;
+
     }
 
-    // Ensure dropdowns are populated (might already be done by showSection logic)
+    // Ensure player dropdowns are populated
     setupSubmitPastGameListeners(); // Re-run setup to ensure dropdowns are fresh
 
     // Show the section
     showSection('submit-past-game-section');
 }
+// --- End Modification ---
 
 
 // --- Add specific timer/coin/dice functions for each game type ---
@@ -1670,8 +1908,7 @@ auth.onAuthStateChanged(async (user) => {
         // Navigate to home or login page on logout
         showSection('home-section');
     }
-    // Always ensure admin UI is correct based on admin login state too
-    checkLoginState();
+
 });
         // --- Page Section Navigation ---
 // --- Page Section Navigation (Refactored for Async and Cache Check) ---
@@ -5608,34 +5845,97 @@ async function handleEditTournamentDetail(tournamentId) {
 
 
         // --- Submit Past Game Section Logic ---
-        function setupSubmitPastGameListeners() {
+       // --- Submit Past Game Section Logic (UPDATED) ---
+       function setupSubmitPastGameListeners() {
              const form = document.getElementById('submit-past-game-form');
              form?.addEventListener('submit', handleSubmitPastGame);
 
-             // Populate dropdowns when the section becomes visible (or on init)
-             // Needs player and game type data
+             // Get references to form elements
              const gameTypeSelect = form?.querySelector('#past-game-type');
-             const winnerSelect = form?.querySelector('#past-winner');
+             const winnerSelect = form?.querySelector('#past-winner'); // Used for Winner OR Golfer
              const loserSelect = form?.querySelector('#past-loser');
              const drawCheckbox = form?.querySelector('#past-is-draw');
-             const winnerLabel = form?.querySelector('label[for="past-winner"]');
-             const loserLabel = form?.querySelector('label[for="past-loser"]');
+             const scoreInput = form?.querySelector('#past-score');
 
-             if (gameTypeSelect) populateSelectWithOptions(gameTypeSelect, gameTypesConfig, 'Select Game Type');
-             // Player dropdowns need the player list (use global cache or fetch)
+             // Get references to field CONTAINERS and LABELS for showing/hiding/relabeling
+             const winnerContainer = form?.querySelector('#past-winner-container');
+             const loserContainer = form?.querySelector('#past-loser-container');
+             const drawContainer = form?.querySelector('#past-is-draw-container');
+             const winnerLabel = winnerContainer?.querySelector('label'); // Label for #past-winner
+             const loserLabel = loserContainer?.querySelector('label'); // Label for #past-loser
+
+             // Populate Game Types dropdown
+             if (gameTypeSelect) {
+                 populateSelectWithOptions(gameTypeSelect, gameTypesConfig, 'Select Game Type');
+             }
+
+             // Populate Player Dropdowns (Winner/Golfer and Loser) using cache
              if (winnerSelect && loserSelect && globalPlayerCache) {
-                 const playersArray = Object.values(globalPlayerCache);
-                 populatePlayerDropdown(winnerSelect, playersArray, 'Select Winner');
+                 const playersArray = Object.values(globalPlayerCache); // Use cached player list
+                 populatePlayerDropdown(winnerSelect, playersArray, 'Select Winner/Golfer'); // Updated prompt
                  populatePlayerDropdown(loserSelect, playersArray, 'Select Loser');
              }
 
-            // Listener for draw checkbox
+            // --- Listener for Game Type Change (Handles UI adjustments) ---
+            gameTypeSelect?.addEventListener('change', () => {
+                const selectedGameType = gameTypeSelect.value;
+                const isGolf = selectedGameType === 'golf';
+
+                console.log(`[Submit Form] Game type changed to: ${selectedGameType}, isGolf: ${isGolf}`); // Debug log
+
+                // Toggle visibility of containers based on whether it's Golf
+                winnerContainer?.classList.remove('hidden');      // Winner/Golfer field is always shown
+                loserContainer?.classList.toggle('hidden', isGolf); // Hide Loser if Golf
+                drawContainer?.classList.toggle('hidden', isGolf);  // Hide Draw if Golf
+
+                // Update required status for validation
+                winnerSelect.required = true;         // Winner/Golfer select is always required
+                loserSelect.required = !isGolf;       // Loser only required if NOT Golf
+                scoreInput.required = isGolf;         // Score input required only for Golf
+
+                // Update labels
+                if (winnerLabel) {
+                    winnerLabel.textContent = isGolf ? 'Golfer:' : 'Winner:'; // Change label text
+                }
+                // Reset loser label text if switching back from Golf
+                if (!isGolf && loserLabel) {
+                    loserLabel.textContent = 'Loser:';
+                }
+
+                // Reset fields that become hidden or irrelevant
+                if (isGolf) {
+                    if (drawCheckbox) drawCheckbox.checked = false; // Uncheck draw if switching to Golf
+                    loserSelect.value = ''; // Clear loser selection if switching to Golf
+                } else {
+                    // If switching away from Golf, ensure winner label is correct based on draw state
+                    // (The draw listener below will handle the Player 1/Player 2 case)
+                     if (winnerLabel && !drawCheckbox?.checked) winnerLabel.textContent = 'Winner:';
+                }
+                 // Adjust score placeholder text
+                 scoreInput.placeholder = isGolf ? 'Enter Total Score (e.g., 75)' : 'e.g. 8-3, 21-15';
+
+
+            });
+            // --- END Game Type Change Listener ---
+
+            // Modified listener for draw checkbox
             drawCheckbox?.addEventListener('change', (e) => {
-                 if (winnerLabel && loserLabel) {
-                    winnerLabel.textContent = e.target.checked ? 'Player 1:' : 'Winner:';
-                    loserLabel.textContent = e.target.checked ? 'Player 2:' : 'Loser:';
+                 // Only change labels if NOT golf and the containers are visible
+                 const isChecked = e.target.checked;
+                 if (gameTypeSelect?.value !== 'golf' && winnerLabel && loserLabel && !winnerContainer?.classList.contains('hidden')) {
+                    winnerLabel.textContent = isChecked ? 'Player 1:' : 'Winner:';
+                    loserLabel.textContent = isChecked ? 'Player 2:' : 'Loser:';
                  }
             });
+
+             // Cancel button listener
+             const cancelButton = form?.querySelector('#cancel-submit-past-game-btn');
+             cancelButton?.addEventListener('click', () => {
+                 console.log("Cancel submit score clicked.");
+                 showSection('live-game-section'); // Or navigate back based on stored state if implemented
+             });
+
+             console.log("[Submit Form] Listeners set up."); // Confirm setup
         }
 
         async function handleSubmitPastGame(event) {

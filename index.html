@@ -17,13 +17,20 @@ body.admin-logged-in #tournament-detail-content .admin-only { display: inline-bl
 
         /* --- Admin visibility control --- */
         .admin-only { display: none; }
-        body.admin-logged-in #logout-button { display: inline-flex; }
         body.admin-logged-in td .admin-only { display: inline-flex; gap: 0.5rem; vertical-align: middle; }
         body.admin-logged-in #player-info-modal .admin-only { display: block; }
         body.admin-logged-in .contextual-admin-button-container .admin-only { display: inline-flex; }
         body.admin-logged-in .public-only { display: none; }
         /* --- End Admin visibility control --- */
-
+/* Basic dropdown visibility controlled by JS adding/removing 'hidden' class */
+#profile-dropdown {
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+#profile-dropdown.hidden {
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none; /* Prevent interaction when hidden */
+}
         /* Modal styles */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
         .modal-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
@@ -77,20 +84,23 @@ body.admin-logged-in .player-public-only { display: none; }
     <nav class="bg-gradient-to-r from-cyan-600 to-blue-700 text-white p-5 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <a href="#home" class="text-3xl font-bold hover:text-blue-100 nav-link" data-target="home-section">🏆 LeaderBored</a>
-            <div class="space-x-5">
-                <a href="#home" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="home-section">Home</a>
+
+            <div class="flex items-center space-x-5">  <a href="#home" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="home-section">Home</a>
                 <a href="#rankings" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="rankings-section">Rankings</a>
                 <a href="#results" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="results-section">Results</a>
                 <a href="#players" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="players-section">Players</a>
                 <a href="#tournaments" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="tournaments-section">Tournaments</a>
-                <a href="#login" id="login-link" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium public-only nav-link shadow hover:shadow-md" data-target="login-section">Admin Login</a>
-                <a href="#player-login-section" id="player-login-link" class="bg-green-500 ... public-only player-public-only nav-link" data-target="player-login-section">Player Login</a>
-                <a href="#my-profile-section" id="my-profile-link" class="hover:text-blue-100 ... player-only nav-link" data-target="my-profile-section">My Profile</a> <button id="player-logout-button" class="bg-orange-500 ... player-only">Player Logout</button>
-                <a href="#login" id="login-link" class="... public-only admin-public-only nav-link" ...>Admin Login</a>
-                    <button id="logout-button" class="... admin-only" ...>Admin Logout</button>
-                    <button id="logout-button" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium admin-only shadow hover:shadow-md">Logout</button>
-            </div>
-        </div>
+
+                <a href="#player-login-section" id="player-login-link" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow hover:shadow-md public-only player-public-only nav-link" data-target="player-login-section">Login</a>
+
+                <div id="profile-section" class="relative player-only"> <button id="profile-photo-button" class="block h-10 w-10 rounded-full overflow-hidden border-2 border-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-700 focus:ring-white">
+                        <img id="profile-photo-img" src="https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40" alt="My Profile" class="h-full w-full object-cover">
+                    </button> <div id="profile-dropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden" role="menu" aria-orientation="vertical" aria-labelledby="profile-photo-button">
+                        <a href="#" id="dropdown-edit-profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Edit Profile</a>
+                        <a href="#" id="dropdown-logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Logout</a>
+                    </div>
+                </div>
+                </div> </div>
     </nav>
 
     <div class="container mx-auto mt-8 p-6">
@@ -383,6 +393,9 @@ body.admin-logged-in .player-public-only { display: none; }
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script>
+
+
+
 // --- Generic Modal Utilities ---
 function openModal(modalElement) {
             if (!modalElement) {
@@ -3413,6 +3426,7 @@ async function populateGameRankings(gameKey) {
 
         // --- Event Listeners Setup ---
         // --- Event Listeners Setup ---
+// --- Event Listeners Setup ---
 function setupEventListeners() {
     console.log("[LISTENERS] Setting up...");
 
@@ -3420,26 +3434,61 @@ function setupEventListeners() {
     // Handles main nav links AND other links with data-target (like login/register toggles)
     document.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', handleNavLinkClick));
 
-    // --- Admin Login/Logout ---
-    loginForm?.addEventListener('submit', handleLoginFormSubmit); // Admin login form
-    logoutButton?.addEventListener('click', logout); // Admin logout button
-
-    // --- Player Login/Register/Logout ---
+    // --- Player Login/Register/Logout/Profile ---
     document.getElementById('register-form')?.addEventListener('submit', handlePlayerRegister);
     document.getElementById('player-login-form')?.addEventListener('submit', handlePlayerLogin);
     document.getElementById('google-signin-button')?.addEventListener('click', handleGoogleSignIn);
-    document.getElementById('player-logout-button')?.addEventListener('click', handlePlayerLogout);
-    document.getElementById('my-profile-link')?.addEventListener('click', handleMyProfileClick); // Listener for "My Profile"
+    // Note: The old player logout button (#player-logout-button) and My Profile link (#my-profile-link)
+    // were removed from HTML as they are replaced by the dropdown.
 
-    // --- Admin Contextual Buttons (Modal Triggers) ---
+    // --- New Profile Dropdown Listeners ---
+    const profileButton = document.getElementById('profile-photo-button');
+    const profileDropdown = document.getElementById('profile-dropdown');
+    const editProfileLink = document.getElementById('dropdown-edit-profile');
+    const logoutLink = document.getElementById('dropdown-logout');
+
+    profileButton?.addEventListener('click', (event) => {
+        event.stopPropagation(); // Prevent click from bubbling to document
+        profileDropdown?.classList.toggle('hidden');
+    });
+
+    editProfileLink?.addEventListener('click', (event) => {
+        event.preventDefault();
+        profileDropdown?.classList.add('hidden'); // Hide dropdown
+        if (currentPlayer && currentPlayer.id) {
+            openPlayerModal(currentPlayer.id); // Open profile modal
+        } else {
+            console.warn("Edit profile clicked, but no current player ID found.");
+            // Optionally redirect to login or show message
+            alert("Please log in to edit your profile.");
+            showSection('player-login-section');
+        }
+    });
+
+    logoutLink?.addEventListener('click', (event) => {
+        event.preventDefault();
+        profileDropdown?.classList.add('hidden'); // Hide dropdown
+        handlePlayerLogout(); // Call existing player logout function (which uses auth.signOut())
+    });
+
+    // Optional: Close dropdown if clicking outside
+    document.addEventListener('click', (event) => {
+        if (!profileButton?.contains(event.target) && !profileDropdown?.contains(event.target)) {
+            profileDropdown?.classList.add('hidden');
+        }
+    });
+    // --- End New Profile Dropdown Listeners ---
+
+
+    // --- Admin Contextual Buttons (Modal Triggers - Visibility controlled by CSS/isAdmin flag) ---
     openRecordGameModalBtn?.addEventListener('click', openRecordGameModal);
     openAddPlayerModalBtn?.addEventListener('click', openAddPlayerModal);
     openCreateTournamentModalBtn?.addEventListener('click', openCreateTournamentModal);
     openAddGameModalBtn?.addEventListener('click', openAddGameModal);
-    // Note: Edit/Delete buttons for tournaments/games are handled via event delegation below or within modals
+    // Note: Edit/Delete buttons for tournaments/games are handled via event delegation or within modals
+
 
     // --- Modal Overlay Click-to-Close (Generic for main modals) ---
-    // Define the list of modal elements you want this behavior for
     const mainModals = [
         document.getElementById('record-game-modal'), // Also used for edit game
         document.getElementById('player-info-modal'),
@@ -3447,13 +3496,12 @@ function setupEventListeners() {
         document.getElementById('create-tournament-modal'),
         document.getElementById('add-game-modal'),
         document.getElementById('edit-tournament-modal'),
-        document.getElementById('add-participants-modal') // Added participant modal
+        document.getElementById('add-participants-modal')
     ];
     mainModals.forEach(modal => {
         modal?.addEventListener('click', (event) => {
             // Only close if the overlay background itself is clicked, not content inside
             if (event.target === modal) {
-                // Call the generic closeModal directly with the clicked overlay element
                 console.log(`[MODAL] Closing modal via overlay click: #${modal.id}`);
                 closeModal(modal); // Use the generic close function
             }
@@ -3467,19 +3515,18 @@ function setupEventListeners() {
     // Handles clicks within the Player Info Modal content area
     document.getElementById('player-info-modal')?.querySelector('.modal-content')?.addEventListener('click', (event) => {
         if (event.target.matches('#close-player-modal-btn')) {
-             closePlayerModal();
+            closePlayerModal();
         } else if (event.target.matches('#edit-player-modal-btn')) {
             // This button might be within admin-only or player-only controls,
-            // the visibility logic in openPlayerModal handles who sees it.
-             togglePlayerModalEdit(true);
+            // the visibility logic handles who sees it.
+            togglePlayerModalEdit(true);
         } else if (event.target.matches('#save-player-changes-btn')) {
-             savePlayerChanges(); // This function should verify user permissions
+            savePlayerChanges(); // This function should verify user permissions if needed
         } else if (event.target.matches('#cancel-player-edit-btn')) {
-             togglePlayerModalEdit(false);
+            togglePlayerModalEdit(false);
         } else if (event.target.matches('#delete-player-btn')) {
-             // This button might be admin-only depending on your HTML structure/CSS
-             // Or you might add logic here to check if it's the player deleting themselves
-             deletePlayer(); // This function should verify permissions if needed
+            // This button might be admin-only depending on your HTML structure/CSS
+            deletePlayer(); // This function should verify permissions if needed
         }
     });
 
@@ -3497,7 +3544,7 @@ function setupEventListeners() {
     });
 
     // --- Results Table Gear Icon Click (Event Delegation for Edit/Delete) ---
-    // Handles clicks on the gear icon in the results table
+    // Handles clicks on the gear icon in the results table (Admin only)
     resultsTableBody?.addEventListener('click', (event) => {
         const targetButton = event.target.closest('.edit-delete-game-btn');
         if (!targetButton) return; // Exit if the click wasn't on the button
@@ -3507,8 +3554,7 @@ function setupEventListeners() {
             console.error("Gear button clicked, but no game-id found on the button.");
             return;
         }
-        // Only Admins should see this button due to '.admin-only' class,
-        // so we proceed to open the edit modal.
+        // Assumes visibility is handled by '.admin-only' class controlled by isAdmin flag check
         console.log(`[Results Table] Edit/Delete gear clicked for game: ${gameId}`);
         handleEditGame(gameId); // Function opens the Edit Game Modal
     });
@@ -3518,9 +3564,10 @@ function setupEventListeners() {
     document.body.addEventListener('click', (event) => {
 
         // Handle "View Details" links for tournaments
-        if (event.target.matches('.view-tournament-details-link')) {
+        const tournamentLink = event.target.closest('.view-tournament-details-link');
+        if (tournamentLink) {
             event.preventDefault(); // Prevent default link behavior
-            const tournamentId = event.target.getAttribute('data-tournament-id');
+            const tournamentId = tournamentLink.getAttribute('data-tournament-id');
             if (tournamentId) {
                 console.log(`[NAV Delegation] Viewing tournament details for: ${tournamentId}`);
                 showSection('tournament-detail-section'); // Navigate to the detail section
@@ -3549,7 +3596,6 @@ function setupEventListeners() {
 
     console.log("[LISTENERS] Setup complete.");
 }
-
         // --- Specific Event Handlers ---
         function handleNavLinkClick(event) {
             // Handles clicks on main navigation links AND other links with data-target
@@ -4454,53 +4500,100 @@ async function handleEditTournamentDetail(tournamentId) {
 
         // --- Initialization Function ---
 // --- Initialization Function (Refactored) ---
+// --- Initialization Function ---
 async function initializeApp() { // Added async
-             try {
-                console.log("[INIT] Initializing App...");
-                assignElements(); // Get references to DOM elements
-                if (!db) {
-                    console.error("[INIT] Firebase DB connection failed. App functionality will be limited.");
-                    // Optionally display a more prominent error to the user
-                }
-
-                // --- Populate Global Cache ---
-                await fetchAllPlayersForCache(); // Wait for cache to populate
-                // --- End Cache Population ---
-
-                updateGameTypeDropdowns(); // Initial population of game type dropdowns
-                const isLoggedIn = checkLoginState(); // Check if admin is logged in and update UI
-                setupEventListeners(); // Set up all event listeners
-
-                // Handle initial page load based on URL hash or default to home
-                const initialHash = window.location.hash;
-                let initialSectionId = 'home-section'; // Default section
-                if (initialHash && initialHash !== '#') {
-                     const targetIdFromHash = initialHash.substring(1);
-                     const targetSection = document.getElementById(targetIdFromHash);
-                     // Validate that the hash corresponds to a valid section ID
-                     if (targetSection?.classList.contains('page-section')) {
-                          initialSectionId = targetIdFromHash;
-                          // Note: Auto-loading tournament details from hash is not implemented here
-                     } else {
-                         console.warn(`[INIT] Hash '#${targetIdFromHash}' does not correspond to a valid section. Defaulting to home.`);
-                     }
-                }
-                // Show the initial section (this also triggers data population)
-                await showSection(initialSectionId); // <<< ADD await HERE
-
-                console.log("[INIT] App Initialized Successfully (DB connection attempted).");
-             } catch (error) {
-                 console.error("Error during app initialization:", error);
-                 alert(`An error occurred while initializing the application: ${error.message}. Please check the console.`);
-             }
+     try {
+        console.log("[INIT] Initializing App...");
+        assignElements(); // Get references to DOM elements
+        if (!db || !auth) { // Check auth too
+            console.error("[INIT] Firebase DB or Auth connection failed. App functionality will be limited.");
+            // Optionally display a more prominent error to the user
+            return; // Stop initialization if Firebase isn't ready
         }
 
-        // --- Run Initialization on DOM Load ---
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        // --- Populate Global Cache ---
+        await fetchAllPlayersForCache(); // Wait for cache to populate
 
-        // --- Run Initialization on DOM Load ---
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        updateGameTypeDropdowns(); // Initial population of game type dropdowns
+        checkLoginState(); // Check if admin state needs UI update (for admin-only content)
+        setupEventListeners(); // Set up all event listeners
 
+        // --- MOVE AUTH LISTENER HERE ---
+        auth.onAuthStateChanged(async (user) => {
+            const loginButton = document.getElementById('player-login-link');
+            const profileSection = document.getElementById('profile-section');
+            const profileImg = document.getElementById('profile-photo-img'); // Get img inside button now
+
+            if (user) {
+                // Player is signed in.
+                console.log("Auth State Changed: User is logged in", user.uid);
+                document.body.classList.add('player-logged-in');
+
+                // Add class to body if user is admin (for admin-only content visibility)
+                currentPlayer = await getPlayerProfileByAuthId(user.uid);
+                if (currentPlayer && currentPlayer.isAdmin) {
+                    document.body.classList.add('admin-logged-in');
+                } else {
+                    document.body.classList.remove('admin-logged-in');
+                }
+
+                // Update profile photo using currentPlayer
+                if (currentPlayer) {
+                     console.log("Current player data:", currentPlayer);
+                     const photoURL = currentPlayer.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentPlayer.name || '?')}&background=E0E7FF&color=4F46E5&size=40`;
+                     if (profileImg) profileImg.src = photoURL;
+                } else {
+                    console.warn("Logged in user has no associated player profile!", user.uid);
+                     if (profileImg) profileImg.src = 'https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40'; // Default icon
+                    currentPlayer = { authUid: user.uid, email: user.email, name: "Profile Needed", isAdmin: false }; // Assume not admin if profile missing
+                }
+
+                // Navigate away from login/register if needed
+                if (window.location.hash === '#player-login-section' || window.location.hash === '#register-section') {
+                    await showSection('home-section'); // Use await here too
+                }
+
+            } else {
+                // Player is signed out.
+                console.log("Auth State Changed: User is logged out");
+                document.body.classList.remove('player-logged-in');
+                document.body.classList.remove('admin-logged-in'); // Remove admin class on logout
+                currentPlayer = null;
+                document.getElementById('profile-dropdown')?.classList.add('hidden'); // Ensure dropdown is hidden
+
+                // Navigate to home or login page on logout
+                // Don't necessarily force navigation on initial load if logged out
+                // await showSection('home-section'); // Only navigate explicitly on logout action?
+            }
+             // Let CSS handle visibility based on body class, no need to add/remove 'player-only' here.
+        });
+        // --- END AUTH LISTENER ---
+
+
+        // Handle initial page load based on URL hash or default to home
+        const initialHash = window.location.hash;
+        let initialSectionId = 'home-section'; // Default section
+        if (initialHash && initialHash !== '#') {
+             const targetIdFromHash = initialHash.substring(1);
+             const targetSection = document.getElementById(targetIdFromHash);
+             if (targetSection?.classList.contains('page-section')) {
+                  initialSectionId = targetIdFromHash;
+             } else {
+                 console.warn(`[INIT] Hash '#${targetIdFromHash}' does not correspond to a valid section. Defaulting to home.`);
+             }
+        }
+        // Show the initial section AFTER setting up the auth listener
+        await showSection(initialSectionId);
+
+        console.log("[INIT] App Initialized Successfully.");
+     } catch (error) {
+         console.error("Error during app initialization:", error);
+         alert(`An error occurred while initializing the application: ${error.message}. Please check the console.`);
+     }
+}
+
+// --- Run Initialization on DOM Load ---
+document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 
 </body>

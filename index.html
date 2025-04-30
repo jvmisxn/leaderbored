@@ -62,7 +62,15 @@ body.admin-logged-in #tournament-detail-content .admin-only { display: inline-bl
         #tournament-detail-section.error #tournament-detail-error { display: block; }
         #tournament-detail-section:not(.error) #tournament-detail-error { display: none; }
         #tournament-detail-loading, #tournament-detail-error { display: none; } /* Hide initially */
+/* Player visibility control */
+.player-only { display: none; }
+.player-public-only { display: inline-flex; } /* Or block */
+body.player-logged-in .player-only { display: inline-flex; } /* Or block */
+body.player-logged-in .player-public-only { display: none; }
 
+/* Hide admin login if player is logged in, and vice-versa */
+body.player-logged-in .admin-public-only { display: none; }
+body.admin-logged-in .player-public-only { display: none; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-white to-cyan-50 text-gray-800">
@@ -76,7 +84,11 @@ body.admin-logged-in #tournament-detail-content .admin-only { display: inline-bl
                 <a href="#players" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="players-section">Players</a>
                 <a href="#tournaments" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="tournaments-section">Tournaments</a>
                 <a href="#login" id="login-link" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium public-only nav-link shadow hover:shadow-md" data-target="login-section">Admin Login</a>
-                <button id="logout-button" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium admin-only shadow hover:shadow-md">Logout</button>
+                <a href="#player-login-section" id="player-login-link" class="bg-green-500 ... public-only player-public-only nav-link" data-target="player-login-section">Player Login</a>
+                <a href="#my-profile-section" id="my-profile-link" class="hover:text-blue-100 ... player-only nav-link" data-target="my-profile-section">My Profile</a> <button id="player-logout-button" class="bg-orange-500 ... player-only">Player Logout</button>
+                <a href="#login" id="login-link" class="... public-only admin-public-only nav-link" ...>Admin Login</a>
+                    <button id="logout-button" class="... admin-only" ...>Admin Logout</button>
+                    <button id="logout-button" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium admin-only shadow hover:shadow-md">Logout</button>
             </div>
         </div>
     </nav>
@@ -259,6 +271,48 @@ body.admin-logged-in #tournament-detail-content .admin-only { display: inline-bl
                     </div>
                  </div>
             </section>
+            <section id="register-section" class="page-section hidden">
+                <h1 class="text-4xl font-bold ... text-center">Player Registration</h1>
+                <div class="bg-white p-10 rounded-xl shadow-xl max-w-lg mx-auto">
+                    <form id="register-form">
+                        <div class="mb-4">
+                            <label for="register-email" class="block ...">Email:</label>
+                            <input type="email" id="register-email" name="email" class="shadow appearance-none border ..." required>
+                        </div>
+                        <div class="mb-6">
+                            <label for="register-password" class="block ...">Password:</label>
+                            <input type="password" id="register-password" name="password" class="shadow appearance-none border ..." required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="register-player-name" class="block ...">Player Name:</label>
+                            <input type="text" id="register-player-name" name="player-name" class="shadow appearance-none border ..." required>
+                        </div>
+                        <div id="register-error" class="text-red-500 text-sm mb-4 hidden"></div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 ...">Register</button>
+                    </form>
+                    <p class="text-center mt-4">Already have an account? <a href="#player-login-section" class="text-blue-600 hover:underline nav-link" data-target="player-login-section">Login here</a></p>
+                </div>
+           </section>
+           
+           <section id="player-login-section" class="page-section hidden">
+                <h1 class="text-4xl font-bold ... text-center">Player Login</h1>
+                <div class="bg-white p-10 rounded-xl shadow-xl max-w-lg mx-auto">
+                    <form id="player-login-form">
+                        <div class="mb-4">
+                            <label for="player-login-email" class="block ...">Email:</label>
+                            <input type="email" id="player-login-email" name="email" class="shadow appearance-none border ..." required>
+                        </div>
+                        <div class="mb-6">
+                            <label for="player-login-password" class="block ...">Password:</label>
+                            <input type="password" id="player-login-password" name="password" class="shadow appearance-none border ..." required>
+                        </div>
+                        <div id="player-login-error" class="text-red-500 text-sm mb-4 hidden"></div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 ...">Login</button>
+                        <button type="button" id="google-signin-button" class="w-full bg-red-500 hover:bg-red-600 text-white ... mt-4">Sign In with Google</button>
+                    </form>
+                     <p class="text-center mt-4">Need an account? <a href="#register-section" class="text-blue-600 hover:underline nav-link" data-target="register-section">Register here</a></p>
+                </div>
+           </section>
         <section id="login-section" class="page-section hidden">
              <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6 text-center">Admin Login</h1>
              <div class="bg-white p-10 rounded-xl shadow-xl max-w-lg mx-auto">
@@ -327,7 +381,7 @@ body.admin-logged-in #tournament-detail-content .admin-only { display: inline-bl
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script>
 // --- Generic Modal Utilities ---
 function openModal(modalElement) {
@@ -417,6 +471,7 @@ let playersCachePopulated = false; // Flag to track if initial population happen
             } else {
                 app = firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore();
+                auth = firebase.auth();
                 console.log("[INIT] Firebase Initialized Successfully with Project ID:", firebaseConfig.projectId);
             }
         } catch (error) {
@@ -565,7 +620,144 @@ function populatePlayerDropdown(selectElement, playersArray, prompt = 'Select Pl
             if (rankingsFilterSelect) populateSelectWithOptions(rankingsFilterSelect, rankingsOptions); // Use combined options
             if (tournamentGameSelect) populateSelectWithOptions(tournamentGameSelect, gameTypesConfig, 'Select Type'); // Populate in create tournament modal
         }
+// --- Player Authentication Functions ---
+let currentPlayer = null; // Variable to store logged-in player data
 
+async function handlePlayerRegister(event) {
+    event.preventDefault();
+    const form = event.target;
+    const email = form.email.value;
+    const password = form.password.value;
+    const playerName = form['player-name'].value.trim(); // Get player name
+    const errorDiv = document.getElementById('register-error');
+    errorDiv.textContent = '';
+    errorDiv.classList.add('hidden');
+
+    if (!playerName) {
+        errorDiv.textContent = "Player Name is required.";
+        errorDiv.classList.remove('hidden');
+        return;
+    }
+
+    try {
+        console.log("Attempting registration for:", email);
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        console.log("Registration successful, User:", user);
+
+        // --- Link Auth user to a new Firestore Player profile ---
+        await createPlayerProfile(user.uid, email, playerName);
+
+        alert(`Registration successful for ${playerName}! You are now logged in.`);
+        // onAuthStateChanged will handle UI updates and navigation
+        form.reset(); // Clear the form
+
+    } catch (error) {
+        console.error("Registration Error:", error);
+        errorDiv.textContent = `Registration failed: ${error.message}`;
+        errorDiv.classList.remove('hidden');
+    }
+}
+
+async function handlePlayerLogin(event) {
+    event.preventDefault();
+    const form = event.target;
+    const email = form.email.value;
+    const password = form.password.value;
+    const errorDiv = document.getElementById('player-login-error');
+    errorDiv.textContent = '';
+    errorDiv.classList.add('hidden');
+
+    try {
+        console.log("Attempting login for:", email);
+        await auth.signInWithEmailAndPassword(email, password);
+        console.log("Player login successful");
+         alert("Login successful!");
+         // onAuthStateChanged will handle UI updates and navigation
+         form.reset();
+    } catch (error) {
+        console.error("Player Login Error:", error);
+        errorDiv.textContent = `Login failed: ${error.message}`;
+        errorDiv.classList.remove('hidden');
+    }
+}
+
+async function handleGoogleSignIn() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+        console.log("Attempting Google Sign-In...");
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+        console.log("Google Sign-In successful, User:", user);
+
+        // Check if a player profile already exists for this Auth UID
+        const playerProfile = await getPlayerProfileByAuthId(user.uid);
+
+        if (!playerProfile) {
+            // If no profile exists, create one using Google profile info
+            console.log("No existing profile found, creating one...");
+            await createPlayerProfile(user.uid, user.email, user.displayName, user.photoURL);
+             alert(`Welcome ${user.displayName}! Profile created and logged in.`);
+        } else {
+            console.log("Existing profile found:", playerProfile);
+            alert(`Welcome back ${playerProfile.name}!`);
+        }
+         // onAuthStateChanged handles UI updates
+    } catch (error) {
+         console.error("Google Sign-In Error:", error);
+         alert(`Google Sign-In failed: ${error.message}`);
+    }
+}
+
+
+function handlePlayerLogout() {
+    auth.signOut().then(() => {
+        console.log("Player logged out successfully.");
+        alert("You have been logged out.");
+        // onAuthStateChanged handles UI updates and navigation
+    }).catch((error) => {
+        console.error("Logout Error:", error);
+         alert(`Logout failed: ${error.message}`);
+    });
+}
+
+// Listen for authentication state changes
+auth.onAuthStateChanged(async (user) => {
+    if (user) {
+        // Player is signed in.
+        console.log("Auth State Changed: User is logged in", user.uid);
+        document.body.classList.add('player-logged-in');
+        document.body.classList.remove('admin-logged-in'); // Ensure admin is logged out visually
+        sessionStorage.removeItem('isAdminLoggedIn'); // Clear admin session state if player logs in
+
+        // Fetch associated player profile data
+        currentPlayer = await getPlayerProfileByAuthId(user.uid);
+        if (!currentPlayer) {
+            console.warn("Logged in user has no associated player profile!", user.uid);
+            // Handle this case - maybe force profile creation or show an error
+            // For now, keep minimal user info
+            currentPlayer = { authUid: user.uid, email: user.email, name: "Profile Setup Needed" };
+        } else {
+             console.log("Current player data:", currentPlayer);
+             // Update any UI elements needing player name/icon immediately
+             // Example: document.getElementById('profile-name-display').textContent = currentPlayer.name;
+        }
+        // Optionally navigate to a default logged-in section like home or profile
+        if (!window.location.hash || window.location.hash === '#player-login-section' || window.location.hash === '#register-section') {
+            showSection('home-section');
+        }
+
+    } else {
+        // Player is signed out.
+        console.log("Auth State Changed: User is logged out");
+        document.body.classList.remove('player-logged-in');
+        currentPlayer = null;
+        // Navigate to home or login page on logout
+        showSection('home-section');
+    }
+    // Always ensure admin UI is correct based on admin login state too
+    checkLoginState();
+});
         // --- Page Section Navigation ---
 // --- Page Section Navigation (Refactored for Async and Cache Check) ---
 async function showSection(targetId) { // Added async
@@ -677,108 +869,191 @@ async function showSection(targetId) { // Added async
         // --- Player List and Modal Functions (Firestore - Refactored for Generic Modal) ---
         // Existing populatePlayersList function remains the same...
 
-        async function openPlayerModal(playerId) {
-            // Get the specific modal container element
-            const modalElement = document.getElementById('player-info-modal');
-            if (!modalElement || !db) {
-                 console.error("Player modal element (#player-info-modal) or DB not ready.");
-                 alert("Error: Cannot open player details.");
-                 return;
-            }
-            const modalContent = modalElement.querySelector('.modal-content');
-             if (!modalContent) { console.error("Player modal content div not found."); return; }
+        // --- Player Modal Functions (Handles data loading and conditional edit controls) ---
 
-            console.log(`[PLAYER MODAL] Opening modal for player ID: ${playerId}`);
+async function openPlayerModal(playerId) {
+    // Get the specific modal container element
+    const modalElement = document.getElementById('player-info-modal');
+    if (!modalElement) {
+         console.error("Player modal element (#player-info-modal) not found.");
+         alert("Error: Cannot open player details. Modal element missing.");
+         return;
+    }
+    // Check for DB connection
+    if (!db) {
+         console.error("Player modal: DB not ready.");
+         alert("Error: Cannot open player details. Database not connected.");
+         return;
+    }
 
-            // --- References & Reset Content of Existing Elements ---
-            // Get references to elements WITHIN the modal structure
-            const nameEl = modalContent.querySelector('#modal-player-name');
-            const statsEl = modalContent.querySelector('#modal-player-game-stats');
-            const activityEl = modalContent.querySelector('#modal-player-recent-activity');
-            const iconEl = modalContent.querySelector('#modal-player-icon');
-            const nameInputEl = modalContent.querySelector('#modal-edit-player-name-input');
-            const iconInputEl = modalContent.querySelector('#modal-edit-player-icon-input');
-            const overallStatsEl = modalContent.querySelector('#modal-player-overall-stats');
+    const modalContent = modalElement.querySelector('.modal-content');
+     if (!modalContent) {
+        console.error("Player modal content div (.modal-content) not found.");
+        alert("Error: Cannot open player details. Modal content missing.");
+        return;
+    }
 
-            // Reset content to loading states *before* opening
-            if(nameEl) nameEl.textContent='Loading...';
-            if(statsEl) statsEl.innerHTML='<p class="text-gray-500 col-span-2">Loading ratings...</p>';
-            if(activityEl) activityEl.innerHTML='<li class="text-gray-500">Loading activity...</li>';
-            if(iconEl) iconEl.src='https://placehold.co/80x80/cccccc/ffffff?text=?'; // Placeholder icon
-            if(nameInputEl) nameInputEl.value=''; // Clear edit inputs
-            if(iconInputEl) iconInputEl.value=''; // Clear edit inputs
-            if(overallStatsEl) overallStatsEl.innerHTML='Loading stats...';
-            modalElement.classList.remove('modal-editing'); // Ensure it starts in view mode
-            modalElement.removeAttribute('data-current-player-id'); // Clear any previous player ID
-            // --- End Reset ---
+    console.log(`[PLAYER MODAL] Opening modal for player ID: ${playerId}`);
 
-            // 1. Call the generic openModal function to make the modal visible
-            openModal(modalElement);
+    // --- References & Reset Content of Existing Elements ---
+    // Get references to elements WITHIN the modal structure
+    const nameEl = modalContent.querySelector('#modal-player-name');
+    const statsEl = modalContent.querySelector('#modal-player-game-stats');
+    const activityEl = modalContent.querySelector('#modal-player-recent-activity');
+    const iconEl = modalContent.querySelector('#modal-player-icon');
+    const nameInputEl = modalContent.querySelector('#modal-edit-player-name-input');
+    const iconInputEl = modalContent.querySelector('#modal-edit-player-icon-input');
+    const overallStatsEl = modalContent.querySelector('#modal-player-overall-stats');
+    const playerEditControls = modalContent.querySelector('.player-edit-controls'); // Container for player's own edit buttons
+    // Note: Admin controls visibility is handled by CSS (.admin-only and body.admin-logged-in)
 
-            // 2. Fetch and Populate the data *after* the modal is technically open
-            try {
-                 // --- Fetch Player Data ---
-                 console.log(`[PLAYER MODAL] Fetching player data for ${playerId}...`);
-                 const playerDocRef = db.collection('players').doc(playerId);
-                 const docSnap = await playerDocRef.get();
-                 if (!docSnap.exists) { throw new Error(`Player document not found for ID: ${playerId}`); }
-                 const details = { id: docSnap.id, ...docSnap.data() };
-                 console.log(`[PLAYER MODAL] Player data fetched:`, details);
-                 // Store the current player ID on the modal element itself for reference
-                 modalElement.setAttribute('data-current-player-id', playerId);
+    // Reset content to loading states *before* opening
+    if (nameEl) nameEl.textContent = 'Loading...';
+    if (statsEl) statsEl.innerHTML = '<p class="text-gray-500 col-span-2">Loading ratings...</p>';
+    if (activityEl) activityEl.innerHTML = '<li class="text-gray-500">Loading activity...</li>';
+    if (iconEl) iconEl.src = 'https://placehold.co/80x80/cccccc/ffffff?text=?'; // Placeholder icon
+    if (nameInputEl) nameInputEl.value = ''; // Clear edit inputs
+    if (iconInputEl) iconInputEl.value = ''; // Clear edit inputs
+    if (overallStatsEl) overallStatsEl.innerHTML = 'Loading stats...';
+    if (playerEditControls) playerEditControls.style.display = 'none'; // Hide player controls initially
+    modalElement.classList.remove('modal-editing'); // Ensure it starts in view mode
+    modalElement.removeAttribute('data-current-player-id'); // Clear any previous player ID
+    // --- End Reset ---
 
-                 // --- Populate Basic Details ---
-                 const iconSrc = details.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(details.name || '?')}&background=E0E7FF&color=4F46E5&size=80`;
-                 if(iconEl) { iconEl.src = iconSrc; iconEl.alt = `Icon ${details.name || ''}`; }
-                 if(nameEl) nameEl.textContent = details.name || 'Unnamed Player';
-                 if(nameInputEl) nameInputEl.value = details.name || ''; // Populate edit field too
-                 if(iconInputEl) iconInputEl.value = details.iconUrl || ''; // Populate edit field too
+    // 1. Call the generic openModal function to make the modal visible
+    openModal(modalElement);
 
-                 // --- Populate Overall Stats ---
-                 if (overallStatsEl) {
-                     const wins = details.wins || 0; const losses = details.losses || 0; const draws = details.draws || 0; const played = details.games_played || 0;
-                     overallStatsEl.innerHTML = `Overall: <span class="font-medium text-green-600">${wins}W</span>/<span class="font-medium text-red-600">${losses}L</span>/<span class="font-medium text-gray-600">${draws}D</span> (${played} Played) | Elo: <span class="font-medium">${Math.round(details.elo_overall || DEFAULT_ELO)}</span>`;
-                 }
+    // 2. Fetch and Populate the data *after* the modal is technically open
+    try {
+         // --- Fetch Player Data ---
+         console.log(`[PLAYER MODAL] Fetching player data for ${playerId}...`);
+         const playerDocRef = db.collection('players').doc(playerId);
+         const docSnap = await playerDocRef.get();
+         if (!docSnap.exists) { throw new Error(`Player document not found for ID: ${playerId}`); }
+         const details = { id: docSnap.id, ...docSnap.data() };
+         console.log(`[PLAYER MODAL] Player data fetched:`, details);
+         // Store the current player ID on the modal element itself for reference
+         modalElement.setAttribute('data-current-player-id', playerId);
 
-                 // --- Populate game-specific stats (Elo or Handicap) ---
-                 if (statsEl) {
-                    console.log(`[PLAYER MODAL DEBUG] Populating game stats for ${details.name}`);
-                    statsEl.innerHTML = ''; // Clear loading message
-                    const elos = details.elos || {}; let statsHtml = '';
-                    Object.entries(gameTypesConfig).forEach(([gameKey, gameName]) => {
-                        let ratingDisplay = '';
-                        if (gameKey === 'golf') { // Handle Golf Handicap
-                            const handicapValue = details.golf_handicap;
-                            if (typeof handicapValue === 'number') {
-                                ratingDisplay = `${handicapValue.toFixed(1)} Hcp`; // Format handicap
-                            } else { ratingDisplay = 'Not Rated'; } // Fallback
-                            statsHtml += `<div class="font-medium text-gray-900">${gameName}:</div><div class="text-blue-600 font-semibold">${ratingDisplay}</div>`;
-                        } else { // Handle other games (Elo)
-                            const rating = Math.round(elos[gameKey] || DEFAULT_ELO); // Use elos map
-                            ratingDisplay = `${rating} Elo`;
-                            statsHtml += `<div class="font-medium text-gray-900">${gameName}:</div><div class="text-indigo-600">${ratingDisplay}</div>`;
-                        }
-                    });
-                    if (!statsHtml) { statsHtml = '<p class="text-gray-500 col-span-2 italic">No specific game stats found.</p>'; }
-                    statsEl.innerHTML = statsHtml; // Update the display
-                    console.log(`[PLAYER MODAL DEBUG] Updated #modal-player-game-stats.`);
-                 } else { console.error("[PLAYER MODAL DEBUG] #modal-player-game-stats element not found!"); }
+         // --- Populate Basic Details ---
+         const iconSrc = details.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(details.name || '?')}&background=E0E7FF&color=4F46E5&size=80`;
+         if(iconEl) { iconEl.src = iconSrc; iconEl.alt = `Icon ${details.name || ''}`; }
+         if(nameEl) nameEl.textContent = details.name || 'Unnamed Player';
+         if(nameInputEl) nameInputEl.value = details.name || ''; // Populate edit field too
+         if(iconInputEl) iconInputEl.value = details.iconUrl || ''; // Populate edit field too
 
-                 // --- Populate Recent Activity ---
-                 // Ensure the activity element reference is valid before calling
-                 if (activityEl) {
-                    await populatePlayerRecentActivity(activityEl, playerId, 5);
-                 } else {
-                     console.error("[PLAYER MODAL] Recent activity element (#modal-player-recent-activity) not found.");
-                 }
+         // --- Populate Overall Stats ---
+         if (overallStatsEl) {
+             const wins = details.wins || 0; const losses = details.losses || 0; const draws = details.draws || 0; const played = details.games_played || 0;
+             overallStatsEl.innerHTML = `Overall: <span class="font-medium text-green-600">${wins}W</span>/<span class="font-medium text-red-600">${losses}L</span>/<span class="font-medium text-gray-600">${draws}D</span> (${played} Played) | Elo: <span class="font-medium">${Math.round(details.elo_overall || DEFAULT_ELO)}</span>`;
+         }
 
-             } catch (error) {
-                  console.error("[PLAYER MODAL] Error fetching or populating data:", error);
-                  alert(`Error loading player details: ${error.message}`);
-                  // Close the modal if fetching fails critically
-                  closePlayerModal(); // Use the specific close function
+         // --- Populate game-specific stats (Elo or Handicap) ---
+         if (statsEl) {
+            console.log(`[PLAYER MODAL DEBUG] Populating game stats for ${details.name}`);
+            statsEl.innerHTML = ''; // Clear loading message
+            const elos = details.elos || {}; let statsHtml = '';
+            Object.entries(gameTypesConfig).forEach(([gameKey, gameName]) => {
+                let ratingDisplay = '';
+                if (gameKey === 'golf') { // Handle Golf Handicap
+                    const handicapValue = details.golf_handicap;
+                    if (typeof handicapValue === 'number') {
+                        ratingDisplay = `${handicapValue.toFixed(1)} Hcp`; // Format handicap
+                    } else { ratingDisplay = 'Not Rated'; } // Fallback
+                    statsHtml += `<div class="font-medium text-gray-900">${gameName}:</div><div class="text-blue-600 font-semibold">${ratingDisplay}</div>`;
+                } else { // Handle other games (Elo)
+                    const rating = Math.round(elos[gameKey] || DEFAULT_ELO); // Use elos map
+                    ratingDisplay = `${rating} Elo`;
+                    statsHtml += `<div class="font-medium text-gray-900">${gameName}:</div><div class="text-indigo-600">${ratingDisplay}</div>`;
+                }
+            });
+            if (!statsHtml) { statsHtml = '<p class="text-gray-500 col-span-2 italic">No specific game stats found.</p>'; }
+            statsEl.innerHTML = statsHtml; // Update the display
+            console.log(`[PLAYER MODAL DEBUG] Updated #modal-player-game-stats.`);
+         } else { console.error("[PLAYER MODAL DEBUG] #modal-player-game-stats element not found!"); }
+
+         // --- Control Edit/Delete Visibility ---
+         // This section determines if the PLAYER's edit controls should be shown
+         if (playerEditControls) {
+             // Show controls ONLY if the logged-in player (currentPlayer global variable)
+             // matches the authUid of the profile being viewed (details.authUid)
+             if (currentPlayer && details.authUid && currentPlayer.authUid === details.authUid) {
+                 console.log("[PLAYER MODAL] Current user matches profile. Showing player edit controls.");
+                 playerEditControls.style.display = 'block'; // Or 'inline-flex', check your CSS/HTML structure
+
+                 // Optional: Hide delete button even for the player themselves
+                 // const deleteBtn = playerEditControls.querySelector('#delete-player-btn');
+                 // if (deleteBtn) deleteBtn.style.display = 'none';
+
+             } else {
+                 console.log("[PLAYER MODAL] Current user does not match profile (or not logged in/profile has no authUid). Hiding player edit controls.");
+                 playerEditControls.style.display = 'none';
              }
-        }
+         } else {
+              console.warn("[PLAYER MODAL] '.player-edit-controls' container not found in modal HTML.");
+         }
+         // Note: Admin controls (.admin-only) visibility is handled separately by the 'body.admin-logged-in' CSS class.
+
+         // --- Populate Recent Activity ---
+         // Ensure the activity element reference is valid before calling
+         if (activityEl) {
+            // Ensure global player cache is populated before showing activity
+            if (!playersCachePopulated) await fetchAllPlayersForCache();
+            await populatePlayerRecentActivity(activityEl, playerId, 5); // Limit to 5 items
+         } else {
+             console.error("[PLAYER MODAL] Recent activity element (#modal-player-recent-activity) not found.");
+         }
+
+     } catch (error) {
+          console.error("[PLAYER MODAL] Error fetching or populating data:", error);
+          alert(`Error loading player details: ${error.message}`);
+          // Close the modal if fetching fails critically
+          closePlayerModal(); // Use the specific close function
+     }
+}
+// --- Specific Event Handlers ---
+// ... (keep handleNavLinkClick, handleLoginFormSubmit, etc.) ...
+
+// Handles clicks on the "My Profile" link in the navigation
+function handleMyProfileClick(event) {
+    event.preventDefault(); // Prevent the link from changing the hash directly
+
+    // Check if the currentPlayer object is populated (meaning a player is logged in)
+    // and if it has the Firestore document ID
+    if (currentPlayer && currentPlayer.id) {
+        console.log(`[NAV] My Profile clicked. Opening modal for player ID: ${currentPlayer.id}`);
+        // Open the player modal using the logged-in player's Firestore ID
+        openPlayerModal(currentPlayer.id);
+    } else if (currentPlayer && currentPlayer.authUid) {
+        // Case where user is authenticated but profile data/ID might be missing
+        console.warn("[NAV] My Profile clicked, but currentPlayer object missing Firestore ID.");
+        alert("Your player profile information isn't fully loaded or linked yet. Please try again shortly.");
+        // Optional: You could try fetching the profile again here
+        // getPlayerProfileByAuthId(currentPlayer.authUid).then(profile => { ... });
+    } else {
+        // Case where no player is logged in
+        console.log("[NAV] My Profile clicked, but no player logged in.");
+        alert("You need to be logged in to view your profile.");
+        // Navigate the user to the player login section
+        showSection('player-login-section');
+    }
+}
+
+// ... (rest of your JavaScript code) ...
+// --- Make sure you also have the corresponding closePlayerModal function ---
+function closePlayerModal() {
+    const modalElement = document.getElementById('player-info-modal');
+    if (!modalElement) {
+        console.error("Player info modal element (#player-info-modal) not found when trying to close.");
+        return;
+    }
+    // Call the generic closeModal function.
+    // It handles hiding the modal and restoring scroll.
+    // It also has special handling to reset the 'modal-editing' class
+    // and remove the 'data-current-player-id' attribute for this specific modal ID.
+    // It *does not* clear the innerHTML for this modal by default (based on definition in provided file context).
+    closeModal(modalElement);
+}
 
                  // --- Player List and Modal Functions (Firestore - Refactored for Generic Modal) ---
         function closePlayerModal() {
@@ -2377,7 +2652,72 @@ function closeEditGameModal() {
                  }
              }
         }
+// Function to create a player profile document in Firestore
+async function createPlayerProfile(authUid, email, playerName, iconUrl = null) {
+    if (!db) return null;
+    console.log(`Creating player profile for authUid: ${authUid}, name: ${playerName}`);
+    try {
+         // Check if a profile already exists for this authUid (important for Google Sign-In)
+         const existing = await getPlayerProfileByAuthId(authUid);
+         if(existing) {
+             console.warn("Profile already exists for this auth user:", existing);
+             return existing.id; // Return existing ID
+         }
 
+         // Initialize Elos (excluding golf) - similar to handleAddPlayerSubmit
+         const initialElos = { overall: DEFAULT_ELO };
+         ELO_GAME_KEYS.forEach(gameKey => {
+             if (gameKey !== 'golf') {
+                 initialElos[gameKey] = DEFAULT_ELO;
+             }
+         });
+
+         const playerData = {
+             authUid: authUid, // Link to Firebase Auth User ID
+             email: email,     // Store email for reference
+             name: playerName,
+             iconUrl: iconUrl,
+             elo_overall: DEFAULT_ELO,
+             elos: initialElos,
+             wins: 0, losses: 0, draws: 0, games_played: 0,
+             golf_handicap: null,
+             date_created: firebase.firestore.FieldValue.serverTimestamp()
+         };
+
+        const docRef = await db.collection('players').add(playerData);
+        console.log("Player profile created successfully with ID:", docRef.id);
+         if (playersGrid) await populatePlayersList(); // Refresh player list
+        return docRef.id; // Return the new Firestore document ID
+
+    } catch (error) {
+        console.error("Error creating player profile:", error);
+        alert(`Failed to create player profile: ${error.message}`);
+        return null;
+    }
+}
+
+// Function to get a player profile document by Auth UID
+async function getPlayerProfileByAuthId(authUid) {
+    if (!db || !authUid) return null;
+    try {
+        // Firestore index needed: players collection, authUid field (ascending)
+        const querySnapshot = await db.collection('players').where('authUid', '==', authUid).limit(1).get();
+        if (!querySnapshot.empty) {
+            const doc = querySnapshot.docs[0];
+            return { id: doc.id, ...doc.data() }; // Return profile data including Firestore ID
+        } else {
+            return null; // No profile found for this authUid
+        }
+    } catch (error) {
+         if (error.code === 'failed-precondition') {
+             console.error("Firestore index missing: players collection, field 'authUid' (ascending). Please create this index.");
+             alert("Database error: Cannot retrieve player profile. Missing index (check console).");
+         } else {
+            console.error("Error fetching player profile by authUid:", error);
+         }
+         return null;
+    }
+}
 
         // --- Player Modal Edit Mode Handlers (Firestore) ---
         function togglePlayerModalEdit(editMode) {
@@ -3072,105 +3412,143 @@ async function populateGameRankings(gameKey) {
 
 
         // --- Event Listeners Setup ---
-        function setupEventListeners() {
-             console.log("[LISTENERS] Setting up...");
-            // Navigation Links
-            navLinks?.forEach(link => link.addEventListener('click', handleNavLinkClick));
+        // --- Event Listeners Setup ---
+function setupEventListeners() {
+    console.log("[LISTENERS] Setting up...");
 
-            // Login/Logout
-            loginForm?.addEventListener('submit', handleLoginFormSubmit);
-            logoutButton?.addEventListener('click', logout);
+    // --- Navigation & General Links ---
+    // Handles main nav links AND other links with data-target (like login/register toggles)
+    document.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', handleNavLinkClick));
 
-            // Contextual Admin Buttons (Modal Triggers)
-            openRecordGameModalBtn?.addEventListener('click', openRecordGameModal);
-            openAddPlayerModalBtn?.addEventListener('click', openAddPlayerModal);
-            openCreateTournamentModalBtn?.addEventListener('click', openCreateTournamentModal);
-            openAddGameModalBtn?.addEventListener('click', openAddGameModal);
+    // --- Admin Login/Logout ---
+    loginForm?.addEventListener('submit', handleLoginFormSubmit); // Admin login form
+    logoutButton?.addEventListener('click', logout); // Admin logout button
 
-        // Modal Overlay Click-to-Close (Generic for all modals)
-        [recordGameModal, playerInfoModal, addPlayerModal, createTournamentModal, addGameModal].forEach(modal => {
-             modal?.addEventListener('click', (event) => {
-                 // Only close if the overlay background itself is clicked, not content inside
-                 if (event.target === modal) {
-                         // Call the generic closeModal directly with the clicked overlay element
-                         closeModal(event.target);
-                     }
-             });
+    // --- Player Login/Register/Logout ---
+    document.getElementById('register-form')?.addEventListener('submit', handlePlayerRegister);
+    document.getElementById('player-login-form')?.addEventListener('submit', handlePlayerLogin);
+    document.getElementById('google-signin-button')?.addEventListener('click', handleGoogleSignIn);
+    document.getElementById('player-logout-button')?.addEventListener('click', handlePlayerLogout);
+    document.getElementById('my-profile-link')?.addEventListener('click', handleMyProfileClick); // Listener for "My Profile"
+
+    // --- Admin Contextual Buttons (Modal Triggers) ---
+    openRecordGameModalBtn?.addEventListener('click', openRecordGameModal);
+    openAddPlayerModalBtn?.addEventListener('click', openAddPlayerModal);
+    openCreateTournamentModalBtn?.addEventListener('click', openCreateTournamentModal);
+    openAddGameModalBtn?.addEventListener('click', openAddGameModal);
+    // Note: Edit/Delete buttons for tournaments/games are handled via event delegation below or within modals
+
+    // --- Modal Overlay Click-to-Close (Generic for main modals) ---
+    // Define the list of modal elements you want this behavior for
+    const mainModals = [
+        document.getElementById('record-game-modal'), // Also used for edit game
+        document.getElementById('player-info-modal'),
+        document.getElementById('add-player-modal'),
+        document.getElementById('create-tournament-modal'),
+        document.getElementById('add-game-modal'),
+        document.getElementById('edit-tournament-modal'),
+        document.getElementById('add-participants-modal') // Added participant modal
+    ];
+    mainModals.forEach(modal => {
+        modal?.addEventListener('click', (event) => {
+            // Only close if the overlay background itself is clicked, not content inside
+            if (event.target === modal) {
+                // Call the generic closeModal directly with the clicked overlay element
+                console.log(`[MODAL] Closing modal via overlay click: #${modal.id}`);
+                closeModal(modal); // Use the generic close function
+            }
         });
+    });
 
-            // Rankings Filter Dropdown
-            rankingsGameFilter?.addEventListener('change', updateRankingsVisibility);
+    // --- Rankings Filter Dropdown ---
+    rankingsGameFilter?.addEventListener('change', updateRankingsVisibility);
 
-            // Player Info Modal Buttons (Event Delegation)
-            playerInfoModal?.querySelector('.modal-content')?.addEventListener('click', (event) => {
-                if (event.target.matches('#close-player-modal-btn')) closePlayerModal();
-                else if (event.target.matches('#edit-player-modal-btn')) togglePlayerModalEdit(true);
-                else if (event.target.matches('#save-player-changes-btn')) savePlayerChanges();
-                else if (event.target.matches('#cancel-player-edit-btn')) togglePlayerModalEdit(false);
-                else if (event.target.matches('#delete-player-btn')) deletePlayer();
-            });
-
-            // Players Grid Click (Event Delegation)
-            playersGrid?.addEventListener('click', (event) => {
-                const playerEntry = event.target.closest('.player-entry');
-                if (playerEntry) {
-                    const playerId = playerEntry.getAttribute('data-player-id');
-                    if (playerId) openPlayerModal(playerId);
-                }
-            });
-
-            // Results Table Gear Icon Click (Event Delegation for Edit/Delete)
-            resultsTableBody?.addEventListener('click', (event) => {
-                // Find the closest ancestor button with the correct class
-                const targetButton = event.target.closest('.edit-delete-game-btn');
-                // If the click wasn't on the button or inside it, exit
-                if (!targetButton) return;
-
-                // Get the game ID directly from the button's data attribute
-                const gameId = targetButton.getAttribute('data-game-id');
-                if (!gameId) {
-                    console.error("Gear button clicked, but no game-id found on the button.");
-                    return;
-                }
-
-                // Call the function that fetches game data and opens the modal
-                console.log(`Gear icon clicked for game: ${gameId}`);
-                handleEditGame(gameId); // This should trigger the modal
-
-            });
-
-// Inside setupEventListeners or your main event delegation listener:
-document.body.addEventListener('click', (event) => {
-    // --- Keep other listeners (like player-link below) ---
-
-    if (event.target.matches('.view-tournament-details-link')) {
-        event.preventDefault(); // Prevent default link behavior
-        const tournamentId = event.target.getAttribute('data-tournament-id');
-        if (tournamentId) {
-            console.log(`[NAV] Viewing tournament details for: ${tournamentId}`);
-            showSection('tournament-detail-section'); // Navigate to the detail section
-            populateTournamentDetails(tournamentId); // Fetch and display details *after* showing section
-        } else {
-            console.warn("Clicked view details link without a tournament ID.");
+    // --- Player Info Modal Buttons (Event Delegation) ---
+    // Handles clicks within the Player Info Modal content area
+    document.getElementById('player-info-modal')?.querySelector('.modal-content')?.addEventListener('click', (event) => {
+        if (event.target.matches('#close-player-modal-btn')) {
+             closePlayerModal();
+        } else if (event.target.matches('#edit-player-modal-btn')) {
+            // This button might be within admin-only or player-only controls,
+            // the visibility logic in openPlayerModal handles who sees it.
+             togglePlayerModalEdit(true);
+        } else if (event.target.matches('#save-player-changes-btn')) {
+             savePlayerChanges(); // This function should verify user permissions
+        } else if (event.target.matches('#cancel-player-edit-btn')) {
+             togglePlayerModalEdit(false);
+        } else if (event.target.matches('#delete-player-btn')) {
+             // This button might be admin-only depending on your HTML structure/CSS
+             // Or you might add logic here to check if it's the player deleting themselves
+             deletePlayer(); // This function should verify permissions if needed
         }
-    }
+    });
 
-    // --- Add the player-link listener here (Step 5) ---
-    const playerLink = event.target.closest('.player-link'); // Find the closest parent with the class
-    if (playerLink) {
-        event.preventDefault(); // Prevent default if it's an actual <a> tag
-        const playerId = playerLink.getAttribute('data-player-id');
-        if (playerId) {
-            console.log(`[PLAYER LINK] Clicked for player ID: ${playerId}`);
-            openPlayerModal(playerId); // Open the existing player modal
-        } else {
-             console.warn("Clicked player link without a player ID.");
+    // --- Players Grid Click (Event Delegation) ---
+    // Handles clicks on player cards in the main player list
+    playersGrid?.addEventListener('click', (event) => {
+        const playerEntry = event.target.closest('.player-entry');
+        if (playerEntry) {
+            const playerId = playerEntry.getAttribute('data-player-id');
+            if (playerId) {
+                console.log(`[Player Grid] Clicked player ID: ${playerId}`);
+                openPlayerModal(playerId);
+            }
         }
-    }
-});
+    });
 
-             console.log("[LISTENERS] Setup complete.");
+    // --- Results Table Gear Icon Click (Event Delegation for Edit/Delete) ---
+    // Handles clicks on the gear icon in the results table
+    resultsTableBody?.addEventListener('click', (event) => {
+        const targetButton = event.target.closest('.edit-delete-game-btn');
+        if (!targetButton) return; // Exit if the click wasn't on the button
+
+        const gameId = targetButton.getAttribute('data-game-id');
+        if (!gameId) {
+            console.error("Gear button clicked, but no game-id found on the button.");
+            return;
         }
+        // Only Admins should see this button due to '.admin-only' class,
+        // so we proceed to open the edit modal.
+        console.log(`[Results Table] Edit/Delete gear clicked for game: ${gameId}`);
+        handleEditGame(gameId); // Function opens the Edit Game Modal
+    });
+
+
+    // --- Body-Level Event Delegation (for dynamically added content like tournament links, player links) ---
+    document.body.addEventListener('click', (event) => {
+
+        // Handle "View Details" links for tournaments
+        if (event.target.matches('.view-tournament-details-link')) {
+            event.preventDefault(); // Prevent default link behavior
+            const tournamentId = event.target.getAttribute('data-tournament-id');
+            if (tournamentId) {
+                console.log(`[NAV Delegation] Viewing tournament details for: ${tournamentId}`);
+                showSection('tournament-detail-section'); // Navigate to the detail section
+                populateTournamentDetails(tournamentId); // Fetch and display details *after* showing section
+            } else {
+                console.warn("Clicked view details link without a tournament ID.");
+            }
+        }
+
+        // Handle clicks on player names (e.g., in tournament participant lists)
+        const playerLink = event.target.closest('.player-link'); // Find the closest parent with the class
+        if (playerLink) {
+            event.preventDefault(); // Prevent default if it's an actual <a> tag
+            const playerId = playerLink.getAttribute('data-player-id');
+            if (playerId) {
+                console.log(`[PLAYER LINK Delegation] Clicked for player ID: ${playerId}`);
+                openPlayerModal(playerId); // Open the existing player modal
+            } else {
+                console.warn("Clicked player link without a player ID.");
+            }
+        }
+
+        // Add other body-level delegated listeners here if needed...
+
+    });
+
+    console.log("[LISTENERS] Setup complete.");
+}
 
         // --- Specific Event Handlers ---
         function handleNavLinkClick(event) {

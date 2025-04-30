@@ -1,0 +1,238 @@
+html {
+    height: 100%; /* Ensure the root element takes full height */
+}
+
+/* --- Theme Color Variables --- */
+:root {
+  /* --- Light Mode: Blue & White --- */
+  --bg-color-light: #f3f4f6;           /* White background */
+  --text-color-light: #1e40af;         /* Dark Blue text (like Tailwind blue-800) */
+  --accent-bg-light: #2563eb;        /* Medium Blue accent background (like blue-600) */
+  --accent-text-light: #ffffff;       /* White text on blue accents */
+  --card-bg-light: #ffffff;           /* White card background */
+  --text-muted-light: #6b7280;       /* Gray for muted text */
+  --link-color-light: #1d4ed8;         /* Medium-Dark Blue links (like blue-700) */
+  --border-color-light: #dbeafe;       /* Light Blue border (like blue-200) */
+
+  /* --- Dark Mode: Red & Black --- */
+  --bg-color-dark: #111827;           /* Black background */
+  --text-color-dark: #ef4444;         /* Medium Red text (like red-500) */
+  --accent-bg-dark: #dc2626;        /* Medium-Dark Red accent background (like red-600) */
+  --accent-text-dark: #ffffff;       /* White text on red accents (Adjust if contrast needed) */
+  --card-bg-dark: #1f2937;           /* Very Dark Gray/Off-black card background */
+  --text-muted-dark: #9ca3af;       /* Light gray for muted text */
+  --link-color-dark: #f87171;         /* Lighter Red links (like red-400) */
+  --border-color-dark: #7f1d1d;       /* Dark Red border (like red-900) */
+}
+
+/* --- Base Body Styles --- */
+body {
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh; /* Full viewport height */
+    background-color: var(--bg-color-light);
+    color: var(--text-color-light);
+    /* Removed gradient, using solid color */
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+a, button, .player-entry { transition: all 0.2s ease-in-out; }
+.timer-display { font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem; }
+        .dice-result { font-size: 3rem; margin: 1rem 0; font-weight: bold; }
+        .score-input { width: 60px; text-align: center; }
+
+        /* --- NEW: Styles for Play Dropdown Dark Mode --- */
+         body.dark #play-dropdown {
+             background-color: var(--card-bg-dark); /* Use dark card background */
+             --tw-ring-opacity: 1;
+             --tw-ring-color: rgba(75, 85, 99, var(--tw-ring-opacity)); /* Example: gray-500 */
+         }
+          /* Style links within the PLAY dropdown */
+          body.dark #play-dropdown a {
+              color: var(--text-muted-dark); /* Use muted text color */
+          }
+          body.dark #play-dropdown a:hover {
+              background-color: #374151; /* Example: Darker gray hover */
+              color: var(--accent-text-dark); /* Use accent text color (white) */
+          }
+        /* --- Make sure Play dropdown has base transition styles --- */
+        #play-dropdown {
+             transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+        }
+        #play-dropdown.hidden {
+             opacity: 0; transform: translateY(-10px); pointer-events: none;
+        }
+/* --- Visibility Control --- */
+/* Admin */
+.admin-only { display: none; }
+body.admin-logged-in #tournament-detail-content .admin-only { display: inline-block; }
+body.admin-logged-in td .admin-only { display: inline-flex; gap: 0.5rem; vertical-align: middle; }
+body.admin-logged-in #player-info-modal .admin-only { display: block; }
+body.admin-logged-in .contextual-admin-button-container .admin-only { display: inline-flex; }
+body.admin-logged-in .public-only { display: none; }
+/* Player */
+.player-only { display: none; }
+.player-public-only { display: inline-flex; }
+body.player-logged-in .player-only { display: inline-flex; }
+body.player-logged-in .player-public-only { display: none; }
+/* Combined Logins */
+body.player-logged-in .admin-public-only { display: none; }
+body.admin-logged-in .player-public-only { display: none; }
+
+/* --- Layout & Components --- */
+/* Dropdown */
+#profile-dropdown { transition: opacity 0.2s ease-out, transform 0.2s ease-out; }
+#profile-dropdown.hidden { opacity: 0; transform: translateY(-10px); pointer-events: none; }
+/* Modals */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
+.modal-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
+.modal-content { background-color: var(--card-bg-light); padding: 1.5rem 2rem 2rem 2rem; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); max-width: 95%; width: 550px; max-height: 90vh; overflow-y: auto; position: relative; transform: translateY(-20px) scale(0.98); transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; }
+.modal-overlay.active .modal-content { transform: translateY(0) scale(1); opacity: 1; }
+.modal-close-button { position: absolute; top: 0.5rem; right: 0.75rem; background: none; border: none; font-size: 1.75rem; font-weight: bold; color: var(--text-muted-light); cursor: pointer; padding: 0.25rem; line-height: 1; }
+.modal-close-button:hover { color: var(--text-color-light); }
+/* Ranking Table */
+.ranking-table { display: none; }
+.ranking-table.active { display: block; }
+/* Multi-select (if used) */
+.multi-select-list { max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color-light); border-radius: 0.375rem; padding: 0.5rem; background-color: #f9fafb; } /* Consider a light variable for bg */
+/* Table Cells */
+td, th { white-space: nowrap; padding-left: 1rem; padding-right: 1rem; padding-top: 0.75rem; padding-bottom: 0.75rem; vertical-align: middle; }
+td { white-space: normal; }
+/* Validation */
+.border-red-500 { border-color: #ef4444; }
+/* Player Modal Edit Mode */
+.modal-editing .editable-field { display: none; }
+.modal-editing .editing-field { display: block; }
+.editing-field { display: none; }
+.modal-editing .edit-mode-controls { display: inline-flex; }
+.edit-mode-controls { display: none; }
+.modal-editing .view-mode-controls { display: none; }
+/* Tournament Detail Section */
+#tournament-detail-section.loading #tournament-detail-content { display: none; }
+#tournament-detail-section.loading #tournament-detail-loading { display: block; }
+#tournament-detail-section:not(.loading) #tournament-detail-loading { display: none; }
+#tournament-detail-section.error #tournament-detail-content { display: none; }
+#tournament-detail-section.error #tournament-detail-error { display: block; }
+#tournament-detail-section:not(.error) #tournament-detail-error { display: none; }
+#tournament-detail-loading, #tournament-detail-error { display: none; }
+
+/* --- Base Element Light Mode Styles (Using Variables) --- */
+nav { /* Default nav style */
+    background-image: none;
+    background-color: var(--accent-bg-light); /* Blue */
+    color: var(--accent-text-light); /* White */
+    /* Add padding, shadow, sticky etc. back if needed, or handle with Tailwind classes */
+    padding: 1.25rem; /* p-5 */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* shadow-lg */
+    position: sticky; top: 0; z-index: 50;
+}
+.bg-white { background-color: var(--card-bg-light); } /* Handles cards etc. */
+h1, h2, h3, .text-gray-900, .text-gray-800 { color: var(--text-color-light); } /* Headings & primary text */
+.text-gray-700, .text-gray-600, .text-gray-500 { color: var(--text-muted-light); } /* Muted text */
+a, .text-blue-600 { color: var(--link-color-light); } /* Links */
+a:hover, .text-blue-600:hover { text-decoration: underline; color: #1e40af; /* Darker blue hover */ }
+.border-blue-200 { border-color: var(--border-color-light); } /* Borders */
+.bg-gray-100 { background-color: #f3f4f6; } /* Light gray background (e.g., table header) - consider removing if theme is pure blue/white */
+.text-indigo-700 { color: var(--link-color-light); } /* Use link color for indigo text */
+footer { color: var(--text-muted-light); }
+
+/* --- Dark Mode Overrides --- */
+body.dark {
+  background-color: var(--bg-color-dark);
+  color: var(--text-color-dark);
+  /* background-image: none; /* Solid background for dark mode */ */
+}
+
+/* Dark Nav */
+body.dark nav {
+    background-image: none;
+    background-color: var(--accent-bg-dark); /* Red */
+    color: var(--accent-text-dark); /* White or Black */
+}
+/* Ensure nav links are readable */
+body.dark nav a {
+     color: var(--accent-text-dark);
+}
+/* Optional: Dark nav link hover */
+body.dark nav a:hover {
+    color: #f3f4f6; /* Example: Light gray hover */
+    text-decoration: none;
+}
+body.dark nav .group .bg-white {
+     background-color: var(--card-bg-dark); /* Use dark card background */
+     /* Optional: Adjust ring/border for better visibility */
+     --tw-ring-opacity: 1;
+     --tw-ring-color: rgba(75, 85, 99, var(--tw-ring-opacity)); /* Example: gray-500 */
+ }
+ /* Style links within the general nav dropdowns */
+ body.dark nav .group .bg-white a {
+     color: var(--text-muted-dark); /* Use muted text color for dark mode */
+ }
+ body.dark nav .group .bg-white a:hover {
+     background-color: #374151; /* Example: Darker gray hover */
+     color: var(--accent-text-dark); /* Use accent text color (white) on hover */
+ }
+
+ /* Target the profile dropdown menu specifically */
+ body.dark #profile-dropdown {
+     background-color: var(--card-bg-dark); /* Use dark card background */
+     /* Optional: Adjust ring/border */
+      --tw-ring-opacity: 1;
+     --tw-ring-color: rgba(75, 85, 99, var(--tw-ring-opacity)); /* Example: gray-500 */
+ }
+  /* Style links within the profile dropdown */
+  body.dark #profile-dropdown a {
+      color: var(--text-muted-dark); /* Use muted text color */
+  }
+  body.dark #profile-dropdown a:hover {
+      background-color: #374151; /* Example: Darker gray hover */
+      color: var(--accent-text-dark); /* Use accent text color (white) */
+  }
+
+body.dark .bg-white { background-color: var(--card-bg-dark); }
+/* Dark Cards / White Backgrounds */
+body.dark .bg-white { background-color: var(--card-bg-dark); }
+/* Dark Headings & Primary Text */
+body.dark h1, body.dark h2, body.dark h3,
+body.dark .text-gray-900, body.dark .text-gray-800 { color: var(--text-color-dark); }
+/* Dark Muted Text */
+body.dark .text-gray-700, body.dark .text-gray-600, body.dark .text-gray-500 { color: var(--text-muted-dark); }
+/* Dark Links */
+body.dark a, body.dark .text-blue-600 { color: var(--link-color-dark); }
+body.dark a:hover, body.dark .text-blue-600:hover { color: #ef4444; /* Medium Red hover */ }
+/* Dark Borders */
+body.dark .border-blue-200 { border-color: var(--border-color-dark); }
+/* Dark Light Gray Background */
+body.dark .bg-gray-100 { background-color: #1f2937; } /* Very Dark Gray */
+/* Dark Indigo Text */
+body.dark .text-indigo-700 { color: var(--link-color-dark); }
+/* Dark Modals */
+body.dark .modal-content { background-color: var(--card-bg-dark); }
+body.dark .modal-close-button { color: var(--text-muted-dark); }
+body.dark .modal-close-button:hover { color: var(--text-color-dark); }
+/* Dark Footer */
+body.dark footer { color: var(--text-muted-dark); }
+
+/* Dark Form Select */
+body.dark select,
+body.dark #rankings-game-filter {
+    background-color: #1f2937; /* Match dark card background */
+    color: #f3f4f6;           /* Light text */
+    border-color: #4b5563;    /* Darker border */
+}
+/* Dark Multi-select list */
+body.dark .multi-select-list {
+    background-color: #111827; /* Even darker background */
+    border-color: #4b5563;
+}
+
+/* Dark Mode Specific Text Colors (from previous overrides) */
+body.dark .text-green-600 { color: #34d399; } /* Keep green for wins? */
+body.dark .text-red-600 { color: #f87171; }   /* Use theme link color? */
+body.dark .text-indigo-600 { color: var(--link-color-dark); } /* Use theme link color */
+
+/* --- Dark Mode Toggle Switch --- */
+input:checked ~ .dot { transform: translateX(100%); background-color: var(--link-color-dark); /* Use Red for "on" in dark mode? */ }
+input:checked ~ .block { background-color: #4b5563; /* Darker track */ }
+/* Label text (already handled by footer rule) */
+/* .dark .dark\:text-gray-300 { color: var(--text-muted-dark); } */

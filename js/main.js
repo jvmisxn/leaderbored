@@ -1,441 +1,542 @@
 // --- main.js ---
 
-// --- Firebase Initialization ---
-let app, db, auth; // Declare Firebase variables globally or within relevant scope
+// Use globals declared in firebase_config.js
+// DO NOT redeclare 'db' or 'auth' here
 
-// IMPORTANT: Keep your actual Firebase configuration secure.
-// Consider environment variables or a separate config file not committed to public repositories.
-const firebaseConfig = {
-    apiKey: "AIzaSyCF3az8WEAMVpAx5cbp917EUhNM5cRzvwA",
-    authDomain: "leaderbored2.firebaseapp.com",
-    projectId: "leaderbored2",
-    storageBucket: "leaderbored2.firebasestorage.app",
-    messagingSenderId: "449176616925",
-    appId: "1:449176616925:web:8149e2e8b43a9a72104034",
-    measurementId: "G-8LRFJGV2XY"
-};
+// --- Placeholder Function Definitions ---
+// Define these BEFORE they are called in DOMContentLoaded if they are in this file,
+// or ensure they are globally available if defined in other files.
 
-try {
-    if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-        console.error("Firebase config is missing critical values (apiKey or projectId).");
-        alert("Firebase configuration is incomplete. Please check the script.");
-    } else {
-        // Initialize Firebase
-        // Ensure 'firebase' object is available (loaded from Firebase SDK script in HTML)
-        if (typeof firebase !== 'undefined') {
-            app = firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-            auth = firebase.auth();
-            console.log("[INIT] Firebase Initialized Successfully with Project ID:", firebaseConfig.projectId);
-        } else {
-            throw new Error("Firebase SDK not loaded. Check your HTML script tags.");
-        }
-    }
-} catch (error) {
-    console.error("[INIT] Error initializing Firebase:", error);
-    alert(`Could not connect to Firebase: ${error.message}`);
-    // Prevent further app execution if Firebase fails to initialize
-    throw new Error("Firebase Initialization Failed");
-}
-
-// --- Dark Mode Toggle Logic ---
-function setupDarkMode() {
-    const darkModeToggle = document.getElementById('dark-mode-toggle');
-    const body = document.body;
-
-    // Function to apply the theme based on toggle state or saved preference
-    const applyTheme = (isDark) => {
-        if (isDark) {
-            body.classList.add('dark');
-            if (darkModeToggle) darkModeToggle.checked = true;
-        } else {
-            body.classList.remove('dark');
-            if (darkModeToggle) darkModeToggle.checked = false;
-        }
-    };
-
-    // Check for saved theme preference in localStorage
-    const savedTheme = localStorage.getItem('theme');
-    // Check system preference if no saved theme
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    // Determine initial theme
-    let initialDarkMode = false;
-    if (savedTheme === 'dark') {
-        initialDarkMode = true;
-    } else if (savedTheme === 'light') {
-        initialDarkMode = false;
-    } else {
-        // If no saved theme, use system preference
-        initialDarkMode = prefersDark;
-    }
-
-    // Apply the initial theme
-    applyTheme(initialDarkMode);
-    console.log(`[Theme] Initial dark mode set to: ${initialDarkMode} (Saved: ${savedTheme}, Prefers: ${prefersDark})`);
-
-
-    // Add event listener to the toggle
-    if (darkModeToggle) {
-        darkModeToggle.addEventListener('change', () => {
-            const isChecked = darkModeToggle.checked;
-            applyTheme(isChecked);
-            // Save the user's preference
-            localStorage.setItem('theme', isChecked ? 'dark' : 'light');
-            console.log(`[Theme] Theme toggled. Dark mode: ${isChecked}. Preference saved.`);
-        });
-    } else {
-        console.warn("[Theme] Dark mode toggle element (#dark-mode-toggle) not found.");
-    }
-
-     // Listen for system theme changes (optional, but good practice)
-     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-        // Only apply system change if no explicit user preference is saved
-        if (!localStorage.getItem('theme')) {
-            console.log("[Theme] System theme changed. Applying system preference.");
-            applyTheme(event.matches);
-        } else {
-            console.log("[Theme] System theme changed, but user preference overrides.");
-        }
-     });
-
-}
-// --- Event Listeners Setup ---
-// This function sets up listeners for static elements and delegates others.
-// Dependencies: Needs access to handler functions defined in other files
-// (e.g., handleNavLinkClick, handlePlayerRegister, openRecordGameModal, etc.)
-// and DOM element variables (e.g., openRecordGameModalBtn, playersGrid etc.) assigned by assignElements.
 function setupEventListeners() {
-    console.log("[LISTENERS] Setting up...");
-
-    // Ensure handler functions are accessible before adding listeners
-    const checkFunc = (funcName) => typeof window[funcName] === 'function'; // Basic check
-
-    // --- Navigation & General Links ---
-    // Handles main nav links AND other links with data-target
-    if (checkFunc('handleNavLinkClick')) {
-        document.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', handleNavLinkClick));
-    } else { console.warn("Listener Setup: handleNavLinkClick not found."); }
-
-    // --- Player Login/Register/Logout/Profile ---
-    if (checkFunc('handlePlayerRegister')) {
-        document.getElementById('register-form')?.addEventListener('submit', handlePlayerRegister);
-    } else { console.warn("Listener Setup: handlePlayerRegister not found."); }
-
-    if (checkFunc('handlePlayerLogin')) {
-        document.getElementById('player-login-form')?.addEventListener('submit', handlePlayerLogin);
-    } else { console.warn("Listener Setup: handlePlayerLogin not found."); }
-
-    if (checkFunc('handleGoogleSignIn')) {
-        document.getElementById('google-signin-button')?.addEventListener('click', handleGoogleSignIn);
-    } else { console.warn("Listener Setup: handleGoogleSignIn not found."); }
-
-    // Profile Dropdown Listeners (Requires currentPlayer, openPlayerModal, handlePlayerLogout from other modules)
-    const profileButton = document.getElementById('profile-photo-button');
-    const profileDropdown = document.getElementById('profile-dropdown');
-    const editProfileLink = document.getElementById('dropdown-edit-profile');
-    const logoutLink = document.getElementById('dropdown-logout');
-
-    profileButton?.addEventListener('click', (event) => {
-        event.stopPropagation();
-        profileDropdown?.classList.toggle('hidden');
-    });
-
-    if (editProfileLink && checkFunc('openPlayerModal')) {
-        editProfileLink.addEventListener('click', (event) => {
-            event.preventDefault();
-            profileDropdown?.classList.add('hidden');
-            // currentPlayer needs to be accessible (likely from auth.js)
-            if (currentPlayer && currentPlayer.id) {
-                openPlayerModal(currentPlayer.id);
-            } else {
-                console.warn("Edit profile clicked, but no current player ID found.");
-                alert("Please log in to edit your profile.");
-                if (checkFunc('showSection')) showSection('player-login-section');
+    console.warn("Placeholder setupEventListeners called. Implement or ensure it's loaded.");
+    // Add basic listeners like nav links if needed here for testing
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', (event) => {
+            const targetId = link.getAttribute('data-target');
+            if (targetId) {
+                // Basic navigation without full history/hash handling for now
+                // showSection(targetId); // Assuming showSection is defined
             }
         });
-    } else { console.warn("Listener Setup: Edit Profile link or openPlayerModal not found."); }
-
-    if (logoutLink && checkFunc('handlePlayerLogout')) {
-        logoutLink.addEventListener('click', (event) => {
-            event.preventDefault();
-            profileDropdown?.classList.add('hidden');
-            handlePlayerLogout();
-        });
-    } else { console.warn("Listener Setup: Logout link or handlePlayerLogout not found."); }
-
-    // Close dropdown on outside click
-    document.addEventListener('click', (event) => {
-        if (!profileButton?.contains(event.target) && !profileDropdown?.contains(event.target)) {
-            profileDropdown?.classList.add('hidden');
-        }
     });
+    // Add dark mode toggle listener if not already present
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    if (darkModeToggle && typeof toggleDarkMode === 'function') { // Check if toggleDarkMode exists
+        darkModeToggle.addEventListener('change', toggleDarkMode);
+    }
+}
 
-    // --- Admin Contextual Buttons (Modal Triggers) ---
-    // Assumes visibility controlled by CSS/admin state handled elsewhere (e.g., onAuthStateChanged)
-    if (openRecordGameModalBtn && checkFunc('openRecordGameModal')) {
-        openRecordGameModalBtn.addEventListener('click', openRecordGameModal);
-    } else { console.warn("Listener Setup: Record Game button or handler not found."); }
+function setupAuthObserver() {
+    console.warn("Placeholder setupAuthObserver called. Implement or ensure auth.js is loaded.");
+    // Basic check if auth object exists
+    if (typeof auth !== 'undefined' && auth) {
+        console.log("[Auth Placeholder] Firebase Auth object seems available.");
+        // Add a dummy listener if needed for testing flow
+        // auth.onAuthStateChanged(user => { console.log("[Auth Placeholder] Auth state changed:", user); });
+    } else {
+        console.error("[Auth Placeholder] Firebase Auth object ('auth') is NOT available.");
+    }
+}
 
-    if (openAddPlayerModalBtn && checkFunc('openAddPlayerModal')) {
-        openAddPlayerModalBtn.addEventListener('click', openAddPlayerModal);
-    } else { console.warn("Listener Setup: Add Player button or handler not found."); }
+function handleHashChange() {
+    console.warn("Placeholder handleHashChange called. Implement navigation logic.");
+    // Basic logic to show default section if needed
+    const hash = window.location.hash.substring(1);
+    const sectionId = hash.split('?')[0] || 'home-section'; // Default to home
+    if (typeof showSection === 'function') { // Check if showSection exists
+        console.log(`[Hash Placeholder] Navigating to section: ${sectionId}`);
+        showSection(sectionId);
+    } else {
+        console.error("[Hash Placeholder] showSection function not found!");
+    }
+}
 
-    if (openCreateTournamentModalBtn && checkFunc('openCreateTournamentModal')) {
-        openCreateTournamentModalBtn.addEventListener('click', openCreateTournamentModal);
-    } else { console.warn("Listener Setup: Create Tournament button or handler not found."); }
-
-    if (openAddGameModalBtn && checkFunc('openAddGameModal')) {
-        openAddGameModalBtn.addEventListener('click', openAddGameModal);
-    } else { console.warn("Listener Setup: Add Game button or handler not found."); }
-
-    if (openAddCourseModalBtn && checkFunc('openAddCourseModal')) {
-        openAddCourseModalBtn.addEventListener('click', openAddCourseModal);
-    } else { console.warn("Listener Setup: Add Course button or handler not found."); }
-
-
-    // --- Modal Overlay Click-to-Close (Generic) ---
-    // Ensure modal element references and closeModal function are accessible
-    const mainModals = [
-        recordGameModal, playerInfoModal, addPlayerModal, createTournamentModal,
-        addGameModal, editTournamentModal, addParticipantsModal, addCourseModal, golfRulesModal
-    ];
-    if (checkFunc('closeModal')) {
-        mainModals.forEach(modal => {
-            modal?.addEventListener('click', (event) => {
-                if (event.target === modal) { // Only close if overlay itself is clicked
-                    console.log(`[MODAL] Closing modal via overlay click: #${modal.id}`);
-                    closeModal(modal);
+// --- Navigation Setup ---
+function setupNavigation() {
+    console.log("[Nav] Setting up navigation listeners.");
+    try {
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', async (event) => {
+                event.preventDefault();
+                const targetSectionId = link.getAttribute('data-target');
+                if (targetSectionId) {
+                    if (typeof showSection === 'function') {
+                        await showSection(targetSectionId);
+                    } else {
+                        console.error("[Nav] showSection function not available!");
+                    }
+                } else {
+                    console.warn("[Nav] Clicked nav link has no data-target:", link);
                 }
             });
         });
-    } else { console.warn("Listener Setup: closeModal function not found for overlay clicks."); }
+        console.log("[Nav] Navigation listeners attached successfully."); // Success log
+    } catch (error) {
+        console.error("[Nav] Error setting up navigation:", error);
+    }
+}
 
-    // --- Rankings Filter Dropdown ---
-    if (rankingsGameFilter && checkFunc('updateRankingsVisibility')) {
-        rankingsGameFilter.addEventListener('change', updateRankingsVisibility);
-    } else { console.warn("Listener Setup: Rankings filter or handler not found."); }
+// --- Initialization ---
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log("[INIT] DOM fully loaded and parsed.");
 
-    // --- Player Info Modal Buttons (Event Delegation inside modal opening function is often cleaner) ---
-    // Keeping structure from original - ensure handlers are accessible
-    const playerModalContent = playerInfoModal?.querySelector('.modal-content');
-    if (playerModalContent && checkFunc('closePlayerModal') && checkFunc('togglePlayerModalEdit') && checkFunc('savePlayerChanges') && checkFunc('deletePlayer')) {
-        playerModalContent.addEventListener('click', (event) => {
-            if (event.target.matches('#close-player-modal-btn')) { closePlayerModal(); }
-            else if (event.target.matches('#edit-player-modal-btn')) { togglePlayerModalEdit(true); }
-            else if (event.target.matches('#save-player-changes-btn')) { savePlayerChanges(); }
-            else if (event.target.matches('#cancel-player-edit-btn')) { togglePlayerModalEdit(false); }
-            else if (event.target.matches('#delete-player-btn')) { deletePlayer(); }
-        });
-    } else { console.warn("Listener Setup: Player modal content or one of its handlers not found."); }
+    // Initialize Firebase first
+    if (typeof initializeFirebase === 'function') {
+        const initSuccess = initializeFirebase();
+        if (!initSuccess) {
+            console.error("[INIT] Firebase initialization failed! Halting setup.");
+            // Display critical error
+            const mainContent = document.getElementById('main-content');
+            if (mainContent) mainContent.innerHTML = '<p class="error-text text-center py-10">Critical Error: Could not connect to Firebase. Please check configuration and network.</p>';
+            return; // Stop
+        }
+        console.log("[INIT] Firebase initialization reported success.");
+    } else {
+        console.error("[INIT] initializeFirebase function not found! Halting setup.");
+        // Display critical error
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) mainContent.innerHTML = '<p class="error-text text-center py-10">Critical Error: Firebase setup function missing. App cannot load.</p>';
+        return; // Stop
+    }
 
-    // --- Players Grid Click (Event Delegation) ---
-    if (playersGrid && checkFunc('openPlayerModal')) {
-        playersGrid.addEventListener('click', (event) => {
-            const playerEntry = event.target.closest('.player-entry');
-            if (playerEntry) {
-                const playerId = playerEntry.getAttribute('data-player-id');
-                if (playerId) {
-                    console.log(`[Player Grid] Clicked player ID: ${playerId}`);
-                    openPlayerModal(playerId);
+    // Verify db is available AFTER initialization attempt
+    if (typeof db === 'undefined' || !db) {
+        console.error("[INIT] Firestore 'db' object not available after initialization attempt.");
+        // Don't return yet, maybe auth observer can still run if auth object exists
+    } else {
+        console.log("[INIT] Firestore 'db' object confirmed available.");
+    }
+
+    // Setup UI listeners (including mobile nav)
+    // These should now be defined above or loaded from other scripts
+    if (typeof setupEventListeners === 'function') {
+        setupEventListeners();
+    } else {
+        console.error("[INIT] setupEventListeners function STILL not found."); // Changed to error
+    }
+    if (typeof setupMobileNavListeners === 'function') {
+        setupMobileNavListeners();
+    } else {
+        console.warn("[INIT] setupMobileNavListeners function not found."); // Keep as warn if less critical
+    }
+
+    // Setup Auth Observer
+    if (typeof setupAuthObserver === 'function') {
+        setupAuthObserver();
+    } else {
+        console.error("[INIT] setupAuthObserver function STILL not found."); // Changed to error
+    }
+
+    // Pre-fetch player cache only if db is available
+    if (typeof db !== 'undefined' && db) {
+        if (typeof fetchAllPlayersForCache === 'function') {
+            console.log("[INIT] Pre-fetching player cache...");
+            await fetchAllPlayersForCache(); // This might still fail if offline
+        } else {
+            console.warn("[INIT] fetchAllPlayersForCache function not found.");
+        }
+    } else {
+        console.warn("[INIT] Skipping player cache pre-fetch because db is not available.");
+    }
+
+    // Handle initial section display based on hash or default
+    // This should now be defined above
+    if (typeof handleHashChange === 'function') {
+        handleHashChange();
+    } else {
+        console.error("[INIT] handleHashChange function STILL not found."); // Changed to error
+    }
+
+    console.log("[INIT] Initial setup sequence complete (may have errors).");
+
+});
+
+// --- Navigation & Section Handling ---
+/**
+ * Shows a section by ID and handles templates and population logic.
+ * @param {string} sectionId - The ID of the section to show.
+ */
+async function showSection(sectionId, forceLoad = false, queryParams = {}) {
+    const mainContent = document.getElementById('main-content');
+    if (!mainContent) {
+        console.error("[Section] Main content container not found.");
+        return;
+    }
+
+    // Find the template for the section
+    console.log(`[Section Debug] Processing sectionId: '${sectionId}'`); // Log the exact sectionId
+    const templateId = `template-${sectionId}`;
+    console.log(`[Section] Looking for template with ID: #${templateId}`);
+    console.log(`[Section Debug] Document state before getElementById: ${document.readyState}`);
+    const template = document.getElementById(templateId);
+
+    // *** Add check for template existence ***
+    if (!template) {
+        console.error(`[Section] Template NOT FOUND for sectionId: ${sectionId} (Expected ID: #${templateId})`);
+        // Log more of the body to see if templates are present at all
+        console.log("[Section Debug] document.body.innerHTML (start):", document.body.innerHTML.substring(0, 1000) + "...");
+        mainContent.innerHTML = `<p class="error-text text-center py-10">Error: Section content template not found (#${templateId}). Check HTML and template ID.</p>`;
+        currentSectionId = null;
+        return;
+    }
+    // *** End check ***
+
+    mainContent.innerHTML = '';
+    const clone = template.content.cloneNode(true);
+    mainContent.appendChild(clone);
+    currentSectionId = sectionId;
+    window.location.hash = sectionId;
+
+    console.log(`[Section] Displayed section: ${sectionId}. Populating data...`);
+
+    // --- NEW DEBUG LOG ---
+    console.log(`[Section Debug] Before switch: typeof populateTournamentsList = ${typeof populateTournamentsList}`);
+    // --- END NEW DEBUG LOG ---
+
+    // Call data population functions based on the section ID
+    try {
+        switch (sectionId) {
+            case 'players-section':
+                if (typeof populatePlayersList === 'function') {
+                    console.log(`[Section] Calling populatePlayersList for ${sectionId}.`);
+                    await populatePlayersList();
+                } else {
+                    console.error(`[Section] populatePlayersList function not found for ${sectionId}.`);
                 }
+                document.getElementById('add-player-btn')?.addEventListener('click', openAddPlayerModal);
+                break;
+            case 'rankings-section':
+                console.log("[Section] Rankings section shown. Calling setup functions..."); // <-- Add Log
+                if (typeof populateRankingsFilter === 'function') {
+                    console.log("[Section] Calling populateRankingsFilter..."); // <-- Add Log
+                    await populateRankingsFilter();
+                    console.log("[Section] populateRankingsFilter call finished."); // <-- Add Log
+                } else {
+                    console.error("[Section] populateRankingsFilter function not found.");
+                }
+                if (typeof updateRankingsVisibility === 'function') {
+                    console.log("[Section] Calling updateRankingsVisibility..."); // <-- Add Log
+                    await updateRankingsVisibility();
+                    console.log("[Section] updateRankingsVisibility call finished."); // <-- Add Log
+                } else {
+                    console.error("[Section] updateRankingsVisibility function not found.");
+                }
+                // Add listener for filter change *after* population
+                document.getElementById('rankings-game-filter')?.addEventListener('change', updateRankingsVisibility);
+                break;
+            case 'results-section':
+                console.log("[Section] Results section shown. Calling setup functions..."); // <-- Add Log
+                if (typeof populateResultsFilter === 'function') {
+                    console.log("[Section] Calling populateResultsFilter..."); // <-- Add Log
+                    await populateResultsFilter();
+                    console.log("[Section] populateResultsFilter call finished."); // <-- Add Log
+                } else {
+                    console.error("[Section] populateResultsFilter function not found.");
+                }
+                if (typeof populateResultsTable === 'function') {
+                    console.log("[Section] Calling initial populateResultsTable..."); // <-- Add Log
+                    await populateResultsTable(); // Initial load with 'all' games
+                    console.log("[Section] Initial populateResultsTable call finished."); // <-- Add Log
+                } else {
+                    console.error("[Section] populateResultsTable function not found.");
+                }
+                // Add listener for filter change *after* population
+                const resultsFilter = document.getElementById('results-game-filter');
+                if (resultsFilter) {
+                    resultsFilter.addEventListener('change', async (event) => {
+                        const selectedGame = event.target.value;
+                        console.log(`[RESULTS FILTER] Filter changed to: ${selectedGame}. Reloading table...`);
+                        if (typeof populateResultsTable === 'function') {
+                            await populateResultsTable(selectedGame); // Pass selected game key
+                        }
+                    });
+                } else {
+                     console.warn("[Section] Results filter dropdown (#results-game-filter) not found for listener attachment.");
+                }
+                break;
+            case 'tournaments-section':
+                if (typeof populateTournamentsList === 'function') {
+                    console.log('[Section] Populating tournaments list with 20 items...');
+                    const hash = window.location.hash;
+                    const params = new URLSearchParams(hash.split('?')[1] || '');
+                    const filter = params.get('filter') || 'upcoming';
+                    await populateTournamentsList('tournaments-list-full', 20, filter);
+                    console.log('[Section] Tournament list population complete.');
+                } else {
+                    console.error('[Section] populateTournamentsList function not found!');
+                }
+                break;
+            default:
+                console.log(`[Section] No specific population logic for ${sectionId}.`);
+        }
+        console.log(`[Section] Data population attempt complete for ${sectionId}.`);
+    } catch (error) {
+        console.error(`[Section] Error populating data for ${sectionId}:`, error);
+        mainContent.innerHTML += `<p class="error-text text-center">Error loading data for this section.</p>`;
+    }
+}
+
+// --- Global Event Listeners ---
+function setupGlobalEventListeners() {
+    const mainContent = document.getElementById('main-content');
+    const body = document.body; // For modals potentially outside main-content
+    const profileButton = document.getElementById('profile-photo-button'); // Profile dropdown toggle
+
+    if (!mainContent) {
+        console.error("Cannot setup global listeners: #main-content not found.");
+        return;
+    }
+    console.log("[Events] Setting up global event listeners on #main-content and body.");
+
+    // --- Main Content Click Delegation ---
+    mainContent.addEventListener('click', async (event) => {
+        // Player Card Click (Players Section)
+        const playerEntry = event.target.closest('.player-entry');
+        if (playerEntry) {
+            console.log("[Event] Click detected inside a .player-entry element."); // <-- Add Log
+            const playerId = playerEntry.getAttribute('data-player-id');
+            console.log(`[Event] Player entry clicked. ID: ${playerId}`); // <-- Add Log
+            if (playerId && typeof openPlayerModal === 'function') {
+                console.log(`[Event] Calling openPlayerModal for ID: ${playerId}`); // <-- Add Log
+                await openPlayerModal(playerId);
+            } else if (!playerId) {
+                console.warn("[Event] Player entry clicked, but no data-player-id found.");
+            } else {
+                console.error("[Event] openPlayerModal function not found!");
             }
-        });
-    } else { console.warn("Listener Setup: Players grid or openPlayerModal handler not found."); }
+            return; // Stop further processing if it was a player card click
+        }
 
-    // --- Results Table Gear Icon Click (Event Delegation for Edit/Delete) ---
-    // Assumes admin-only visibility handled by CSS
-    if (resultsTableBody && checkFunc('handleEditGame')) {
-        resultsTableBody.addEventListener('click', (event) => {
-            const targetButton = event.target.closest('.edit-delete-game-btn');
-            if (!targetButton) return;
-            const gameId = targetButton.getAttribute('data-game-id');
-            if (!gameId) { console.error("Gear button clicked, but no game-id found."); return; }
-            console.log(`[Results Table] Edit/Delete gear clicked for game: ${gameId}`);
-            handleEditGame(gameId); // Function should open the Edit Game Modal
-        });
-    } else { console.warn("Listener Setup: Results table body or handleEditGame handler not found."); }
+        // ... existing tournament link click ...
+        // ... existing game link click ...
 
+    }); // End mainContent click listener
 
-    // --- Body-Level Event Delegation (Dynamically added content) ---
-    // Ensure handlers like populateTournamentDetails, openPlayerModal, updateRankingsVisibility, showSection, openAddParticipantsModal, openModal, closeModal are accessible
-    document.body.addEventListener('click', async (event) => {
-        if (!event || !event.target) return;
-
-        // Handle "View Details" links for tournaments
-        const tournamentLink = event.target.closest('.view-tournament-details-link');
-        if (tournamentLink && checkFunc('populateTournamentDetails')) {
-            event.preventDefault();
-            const tournamentId = tournamentLink.getAttribute('data-tournament-id');
-            if (tournamentId) {
-                console.log(`[NAV Delegation] Viewing tournament details for: ${tournamentId}`);
-                await populateTournamentDetails(tournamentId); // Fetch and display details
-            } else { console.warn("Clicked view details link without a tournament ID."); }
+    // --- Body Click Delegation (Modals, Dropdowns) ---
+    body.addEventListener('click', (event) => {
+        // Close Modal Buttons
+        if (event.target.matches('.modal-close-button') || event.target.matches('.modal-cancel-button')) {
+            const modal = event.target.closest('.modal-container');
+            if (modal && typeof closeModal === 'function') {
+                console.log(`[Event] Close button clicked for modal: #${modal.id}`); // <-- Add Log
+                closeModal(modal);
+            } else if (modal) {
+                console.error("[Event] closeModal function not found!");
+            }
             return;
         }
 
-        // Handle clicks on player names (e.g., in tournament participant lists)
-        const playerLink = event.target.closest('.player-link');
-        if (playerLink && checkFunc('openPlayerModal')) {
-            event.preventDefault();
-            const playerId = playerLink.getAttribute('data-player-id');
-            if (playerId) {
-                console.log(`[PLAYER LINK Delegation] Clicked for player ID: ${playerId}`);
-                openPlayerModal(playerId);
-            } else { console.warn("Clicked player link without a player ID."); }
+        // Close modal by clicking background (optional)
+        if (event.target.matches('.modal-container')) {
+            if (typeof closeModal === 'function') {
+                console.log(`[Event] Modal background clicked for modal: #${event.target.id}`); // <-- Add Log
+                closeModal(event.target);
+            } else {
+                 console.error("[Event] closeModal function not found!");
+            }
             return;
         }
 
-        // Handle "View Details" buttons in the Sports Gallery
-        const sportDetailsButton = event.target.closest('.view-sport-details-btn');
-        if (sportDetailsButton && checkFunc('showSection') && checkFunc('populateGolfCourses') && checkFunc('updateRankingsVisibility')) {
-            event.preventDefault();
-            const sportKey = sportDetailsButton.getAttribute('data-sport');
-            const sportsGallery = document.getElementById('sports-gallery');
-            const golfDetailsView = document.getElementById('golf-details-view');
-            console.log(`[SPORTS Delegation] Clicked details for sport: ${sportKey}`);
-
-            if (sportKey === 'golf' && sportsGallery && golfDetailsView) {
-                sportsGallery.classList.add('hidden');
-                golfDetailsView.classList.remove('hidden');
-                window.scrollTo(0, 0);
-                await populateGolfCourses(); // Populate Golf Data when view is shown
-            } else if (['overall', 'pool', 'chess', 'board_game'].includes(sportKey)) { // Example keys
-                console.log(`Navigating to main section for ${sportKey}`);
-                await showSection('rankings-section'); // Navigate to rankings
-                 if (rankingsGameFilter) { // Pre-select filter
-                     rankingsGameFilter.value = sportKey;
-                     await updateRankingsVisibility();
-                 }
-            } else { console.warn(`Unhandled sport key clicked: ${sportKey}`); }
+        // Profile Dropdown Toggle
+        if (profileButton && profileButton.contains(event.target)) {
+            if (typeof toggleProfileDropdown === 'function') {
+                toggleProfileDropdown();
+            } else {
+                console.error("[Event] toggleProfileDropdown function not found!");
+            }
             return;
         }
 
-        // Handle "Back to Sports Gallery" button
-        const backToGalleryButton = event.target.closest('#back-to-sports-gallery-btn');
-        if (backToGalleryButton) {
-            event.preventDefault();
-            document.getElementById('golf-details-view')?.classList.add('hidden');
-            document.getElementById('sports-gallery')?.classList.remove('hidden');
-            window.scrollTo(0, 0);
-            console.log("[SPORTS Delegation] Clicking back to gallery.");
-            return;
-        }
-
-        // Handle "View Official Rules" button (Golf Page)
-        const rulesBtn = event.target.closest('#show-golf-rules-btn');
-        if (rulesBtn && golfRulesModal && checkFunc('openModal')) {
-            console.log("[MODAL] Opening golf rules modal.");
-            const rulesIframe = document.getElementById('golf-rules-iframe');
-            if (rulesIframe) {
-                // Set src only when opening, avoid reloading if already open
-                if (rulesIframe.src === 'about:blank' || !rulesIframe.src) {
-                    rulesIframe.src = 'https://www.randa.org/en/rog/the-rules-of-golf';
-                }
-                openModal(golfRulesModal);
-            } else { console.error("Could not find golf rules iframe element."); }
-            return;
-        }
-
-        // Handle closing the Golf Rules modal via its specific close button
-        const closeRulesBtn = event.target.closest('#close-golf-rules-modal-btn');
-        if (closeRulesBtn && golfRulesModal && checkFunc('closeModal')) {
-            console.log("[MODAL] Closing golf rules modal via button.");
-            closeModal(golfRulesModal);
-            return;
-        }
-
-        // Handle '+' button in tournament details to add participants
-        const addParticipantsButton = event.target.closest('#add-participant-plus-btn');
-        if (addParticipantsButton && checkFunc('openAddParticipantsModal')) {
-             const tournamentId = addParticipantsButton.closest('section')?.querySelector('#tournament-detail-content h2')?.getAttribute('data-tournament-id'); // Example way to find ID if not on button
-             // Better: Ensure button has data-tournament-id attribute set in populateTournamentDetails
-             // const tournamentId = addParticipantsButton.getAttribute('data-tournament-id');
-             if (tournamentId) {
-                 openAddParticipantsModal(tournamentId);
-             } else { console.warn("Add participants button clicked without tournament ID."); }
+        // Close profile dropdown if clicking outside
+        const profileDropdown = document.getElementById('profile-dropdown');
+        if (profileDropdown && !profileDropdown.classList.contains('hidden') && !profileDropdown.contains(event.target) && !profileButton.contains(event.target)) {
+             if (typeof toggleProfileDropdown === 'function') { // Use toggle to ensure consistent state handling
+                 toggleProfileDropdown(); // This will hide it
+             } else {
+                 console.error("[Event] toggleProfileDropdown function not found!");
+             }
              return;
         }
 
-        // Add other body-level delegated listeners here...
-
-    }); // End of body click listener
-
-    console.log("[LISTENERS] Setup complete.");
-} // End setupEventListeners
-
-
-// --- Application Initialization ---
-// Dependencies: Needs access to assignElements, fetchAllPlayersForCache, updateGameTypeDropdowns,
-// setupEventListeners, setupLiveGameSection, setupDarkMode, showSection, and the auth.onAuthStateChanged listener logic.
-async function initializeApp() {
-    try {
-        console.log("[INIT] Initializing App...");
-        // Ensure utility functions are available
-        if (typeof assignElements !== 'function' || typeof fetchAllPlayersForCache !== 'function' || typeof setupDarkMode !== 'function' || typeof updateGameTypeDropdowns !== 'function' || typeof setupEventListeners !== 'function' || typeof setupLiveGameSection !== 'function' || typeof showSection !== 'function') {
-            throw new Error("Core UI or setup functions are missing.");
-        }
-
-        assignElements(); // Assign DOM elements to variables
-        if (!db || !auth) { throw new Error("Firebase DB or Auth connection failed."); }
-
-        await fetchAllPlayersForCache(); // Populate player cache first
-
-        setupDarkMode(); // Setup dark mode toggle and initial theme
-        updateGameTypeDropdowns(); // Populate dropdowns with initial game types
-        setupEventListeners(); // Setup general listeners
-        setupLiveGameSection(); // Setup listeners specific to live game section
-
-        // --- Auth Listener (defined in auth.js, but potentially invoked here or after SDK load) ---
-        // Ensure the auth.onAuthStateChanged listener is set up correctly, possibly by calling a function
-        // defined in auth.js or having its setup logic here if preferred (less modular).
-        // Example: if (typeof setupAuthListener === 'function') setupAuthListener();
-
-        // Handle initial page load based on hash/query params
-        // Separate hash and query parameters
-        const hash = window.location.hash.split('?')[0];
-        const initialHash = hash || '#home-section';
-        let initialSectionId = 'home-section';
-
-        if (initialHash && initialHash !== '#') {
-            const targetIdFromHash = initialHash.substring(1);
-            // Verify the hash corresponds to a valid section ID
-            const targetSection = document.getElementById(targetIdFromHash);
-            if (targetSection?.classList.contains('page-section')) {
-                initialSectionId = targetIdFromHash;
-            } else {
-                console.warn(`[INIT] Hash '#${targetIdFromHash}' does not correspond to a valid section. Defaulting to home.`);
+        // Player Info Modal Actions (Edit/Cancel/Save/Delete)
+        const playerModal = document.getElementById('player-info-modal');
+        if (playerModal && playerModal.contains(event.target)) {
+            const targetId = event.target.id;
+            console.log(`[Event] Click inside player modal. Target ID: ${targetId}`); // <-- Add Log
+            switch (targetId) {
+                case 'modal-edit-player-btn':
+                    if (typeof togglePlayerModalEdit === 'function') togglePlayerModalEdit(true);
+                    else console.error("[Event] togglePlayerModalEdit function not found!");
+                    break;
+                case 'modal-cancel-edit-player-btn':
+                    if (typeof togglePlayerModalEdit === 'function') togglePlayerModalEdit(false);
+                    else console.error("[Event] togglePlayerModalEdit function not found!");
+                    break;
+                case 'modal-save-player-btn':
+                    if (typeof savePlayerChanges === 'function') savePlayerChanges();
+                    else console.error("[Event] savePlayerChanges function not found!");
+                    break;
+                case 'modal-delete-player-btn':
+                    if (typeof deletePlayer === 'function') deletePlayer();
+                    else console.error("[Event] deletePlayer function not found!");
+                    break;
             }
+            // Don't return here, allow other potential listeners within the modal
         }
 
-        // Show the initial section AFTER setting up listeners
-        await showSection(initialSectionId);
+        // Logout Link
+        if (event.target.id === 'dropdown-logout') {
+            event.preventDefault();
+            if (typeof logoutUser === 'function') {
+                logoutUser();
+            } else {
+                console.error("[Event] logoutUser function not found!");
+            }
+            return;
+        }
 
-        console.log("[INIT] App Initialized Successfully.");
+        // Add other global interactions here (e.g., specific button clicks not tied to a section)
 
-    } catch (error) {
-        console.error("Error during app initialization:", error);
-        // Display a user-friendly error message on the page using CSS classes
-        document.body.innerHTML = `<div class="app-error-container p-4 border rounded">
-            <h2 class="text-xl font-semibold error-title">Application Error</h2>
-            <p class="error-text">Could not initialize the application: ${error.message}</p>
-            <p class="error-text text-sm">Please check the console for details and ensure Firebase is configured correctly.</p>
-        </div>`;
-        // Add styles for .app-error-container, .error-title, .error-text in styles.css
-    }
-} // End initializeApp
+    }); // End body click listener
 
-
-// --- Run Initialization on DOM Load ---
-// Ensure this runs only once and after all scripts are potentially loaded if using modules
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeApp);
-} else {
-    // DOMContentLoaded has already fired
-    initializeApp();
+    console.log("[Events] Global event listeners setup complete.");
 }
 
-// Note: This file coordinates the startup sequence. It relies heavily on functions
-// defined in the other .js files (auth.js, players.js, ui_utils.js, etc.).
-// Ensure those files are loaded correctly in your HTML before this script runs,
-// or use JavaScript modules (import/export) for better dependency management.
+// --- Attach Section Listeners ---
+/**
+ * Handles clicks within the tournament lists using event delegation.
+ * Navigates to the tournament detail page if a 'View Details' link is clicked.
+ * Handles clicks on 'Opt-In' buttons.
+ * @param {Event} event - The click event object.
+ */
+function handleTournamentListClick(event) {
+    // Find the closest ancestor anchor tag with the specific class
+    const detailsLink = event.target.closest('a.view-tournament-details-link');
+    const optInButton = event.target.closest('button.opt-in-tournament-btn');
+
+    if (detailsLink) {
+        event.preventDefault(); // Prevent default anchor behavior
+        const tournamentId = detailsLink.getAttribute('data-tournament-id');
+        console.log(`[Nav] Tournament details link clicked. ID: ${tournamentId}`);
+        if (tournamentId) {
+            const targetHash = `#tournament-detail-section?tournamentId=${tournamentId}`;
+            console.log(`[Nav] Navigating to hash: ${targetHash}`);
+            window.location.hash = targetHash; // Change the hash to trigger navigation
+        } else {
+            console.warn("[Nav] Clicked tournament details link, but data-tournament-id attribute was missing or empty.");
+        }
+    } else if (optInButton) {
+        event.preventDefault();
+        const tournamentId = optInButton.getAttribute('data-tournament-id');
+        console.log(`[Tournament Opt-In] Opt-In button clicked. ID: ${tournamentId}`);
+        if (tournamentId && typeof optIntoTournament === 'function') {
+            optIntoTournament(tournamentId, optInButton); // Pass button for UI feedback
+        } else {
+            console.warn("[Tournament Opt-In] Clicked opt-in button, but ID or function was missing.");
+            alert("Could not process opt-in request.");
+        }
+    }
+} // End handleTournamentListClick
+
+/**
+ * Attaches necessary event listeners after a section's content is loaded into the DOM.
+ * Also triggers data population for the section.
+ * @param {string} sectionId - The ID of the section that was just loaded.
+ */
+async function attachSectionListeners(sectionId) {
+    console.log(`[Listeners] Attaching listeners and populating data for: ${sectionId}`);
+
+    const hash = window.location.hash;
+    const hashParts = hash.split('?');
+    const params = new URLSearchParams(hashParts[1] || '');
+
+    try {
+        switch (sectionId) {
+            // ... existing cases for home, live-game, submit-past-game, players, rankings, results, sports, player-login ...
+
+            case 'tournaments-section':
+                // Remove this section as we're now handling population in showSection
+                break;
+
+            case 'tournament-detail-section':
+                const tournamentId = params.get('tournamentId'); // Get ID from params
+                console.log(`[Listeners] Current hash for tournament detail: ${hash}`);
+                console.log(`[Listeners] Extracted tournamentId from URL params: ${tournamentId}`);
+
+                if (tournamentId && typeof populateTournamentDetails === 'function') {
+                    console.log(`[Listeners] Calling populateTournamentDetails with ID: ${tournamentId}`);
+                    await populateTournamentDetails(tournamentId);
+                } else if (!tournamentId) {
+                    console.warn("[Listeners] No tournamentId found or extracted from URL for tournament-detail-section");
+                    document.getElementById('tournament-detail-content').innerHTML = '<p class="error-text">No tournament ID specified in the URL.</p>';
+                    document.getElementById('tournament-detail-name').textContent = 'Error';
+                } else {
+                     console.error("[Listeners] populateTournamentDetails function not found!");
+                }
+                // Add listener for edit button
+                const editBtn = document.getElementById('edit-tournament-btn');
+                if (editBtn) {
+                    editBtn.style.display = isAdmin ? 'inline-block' : 'none'; // Show only for admin
+                    editBtn.removeEventListener('click', handleEditTournamentClick); // Use a wrapper if needed
+                    editBtn.addEventListener('click', handleEditTournamentClick); // Add listener
+                }
+                break;
+
+            case 'game-info-section':
+                const params = new URLSearchParams(window.location.hash.split('?')[1]);
+                const gameId = params.get('gameId');
+                if (gameId && typeof populateGameInfoScreen === 'function') {
+                    await populateGameInfoScreen(gameId);
+                } else {
+                    console.warn("[Listeners] No gameId found in URL for game-info-section");
+                    document.getElementById('game-info-content').innerHTML = '<p class="error-text">No game ID specified.</p>';
+                }
+                if (typeof setupGameInfoListeners === 'function') setupGameInfoListeners();
+                break;
+
+            default:
+                console.log(`[Listeners] No specific listeners or population needed for ${sectionId}`);
+        }
+    } catch (error) {
+        console.error(`[Listeners] Error during setup for section ${sectionId}:`, error);
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) mainContent.innerHTML = `<p class="error-text text-center py-10">Error loading section: ${error.message}</p>`;
+    }
+
+    // Re-apply visibility based on auth state after loading new content
+    if (typeof handleAuthChange === 'function' && typeof firebase !== 'undefined' && firebase.auth) {
+        handleAuthChange(firebase.auth().currentUser);
+    } else {
+        console.warn("[Listeners] handleAuthChange or firebase.auth not available for visibility update.");
+    }
+
+} // End attachSectionListeners
+
+// Helper function to handle edit button click (to avoid recreating anonymous function)
+function handleEditTournamentClick() {
+    const hash = window.location.hash;
+    const hashParts = hash.split('?');
+    const params = new URLSearchParams(hashParts[1] || '');
+    const tournamentId = params.get('tournamentId');
+    if (tournamentId && typeof openEditTournamentModal === 'function') {
+        openEditTournamentModal(tournamentId);
+    } else {
+        alert("Cannot edit: Tournament ID is missing or function unavailable.");
+    }
+}
+
+// ... Auth Callbacks ...
+function handleUserLogin(user, playerProfile) {
+    // ...existing code...
+}
+
+function handleUserLogout() {
+    // ...existing code...
+}
+
+// ... Utility ...
+function debounce(func, wait) {
+    // ...existing code...
+};
+
+console.log("[Main] main.js loaded.");

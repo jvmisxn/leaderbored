@@ -77,9 +77,15 @@ function populatePlayerDropdown(selectElement, playersArray, prompt = 'Select Pl
 // --- Player List Display ---
 
 async function populatePlayersList() {
-     // Ensure playersGrid is accessible (defined in assignElements or passed)
-     if (!playersGrid) { console.warn("Player grid container (#players-grid) not found."); return; }
-     playersGrid.innerHTML = '<p class="text-gray-500 col-span-full text-center">Loading players...</p>';
+     // Find the grid element *inside* this function call
+     const playersGrid = document.getElementById('players-grid');
+     if (!playersGrid) {
+         console.warn("[Player List] Player grid container (#players-grid) not found in current DOM.");
+         // Don't try to update if the element isn't there (e.g., on a different page)
+         return;
+     }
+     console.log("[Player List] Populating #players-grid..."); // Log start
+     playersGrid.innerHTML = '<p class="loading-text col-span-full text-center">Loading players...</p>';
      try {
          if (!db) throw new Error("Firestore database (db) is not initialized.");
          // Use cached data if available and populated, otherwise fetch directly
@@ -93,7 +99,7 @@ async function populatePlayersList() {
          }
 
          if (!playersToDisplay || playersToDisplay.length === 0) {
-             playersGrid.innerHTML = '<p class="text-gray-500 col-span-full text-center">No players found. Add players via Admin Login or Register.</p>';
+             playersGrid.innerHTML = '<p class="muted-text col-span-full text-center">No players found. Add players via Admin Login or Register.</p>'; // Use muted-text
              return;
          }
 
@@ -108,11 +114,25 @@ async function populatePlayersList() {
                  <img src="${iconUrl}" alt="Icon ${player.name || ''}" class="w-12 h-12 rounded-full flex-shrink-0 object-cover bg-gray-200" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=?&background=cccccc&color=ffffff&size=48';">
                  <span class="font-medium text-lg text-gray-800 dark:text-gray-200 truncate">${player.name || 'Unnamed Player'}</span> `; // Added dark mode class
              playersGrid.appendChild(div);
+
+             // Add event listener for opening player modal
+             div.addEventListener('click', () => {
+                 console.log(`[Player List] Clicked on player: ${player.name} (ID: ${player.id})`);
+                 if (typeof openPlayerModal === 'function') {
+                     openPlayerModal(player.id);
+                 } else {
+                     console.error("openPlayerModal function is not defined or accessible.");
+                     alert("Error: Cannot open player details.");
+                 }
+             });
          });
-         console.log(`[Player List] Displayed ${playersToDisplay.length} players.`);
+         console.log(`[Player List] Displayed ${playersToDisplay.length} players in #players-grid.`);
      } catch (error) {
          console.error("Error populating players list:", error);
-         playersGrid.innerHTML = `<p class="text-red-500 col-span-full text-center">Error loading players: ${error.message}</p>`;
+         // Ensure grid element exists before trying to update it with error
+         if (playersGrid) {
+            playersGrid.innerHTML = `<p class="error-text col-span-full text-center">Error loading players: ${error.message}</p>`;
+         }
      }
 }
 
@@ -234,13 +254,13 @@ async function handleAddPlayerSubmit(event) {
 // --- Player Info Modal Functions ---
 
 async function openPlayerModal(playerId) {
-    // Ensure playerInfoModal and db are accessible
+    console.log(`[PLAYER MODAL] Entered openPlayerModal function for ID: ${playerId}`); // <-- Add Log
     const modalElement = document.getElementById('player-info-modal');
-    if (!modalElement) { console.error("Player modal element (#player-info-modal) not found."); return; }
-    if (!db) { console.error("Player modal: DB not ready."); return; }
+    if (!modalElement) { console.error("[PLAYER MODAL] Player modal element (#player-info-modal) not found."); return; }
+    if (!db) { console.error("[PLAYER MODAL] DB not ready."); return; }
 
     const modalContent = modalElement.querySelector('.modal-content');
-     if (!modalContent) { console.error("Player modal content div (.modal-content) not found."); return; }
+    if (!modalContent) { console.error("[PLAYER MODAL] Player modal content div (.modal-content) not found."); return; }
 
     console.log(`[PLAYER MODAL] Opening modal for player ID: ${playerId}`);
 
@@ -253,7 +273,7 @@ async function openPlayerModal(playerId) {
     const iconInputEl = modalContent.querySelector('#modal-edit-player-icon-input');
     const overallStatsEl = modalContent.querySelector('#modal-player-overall-stats');
     const playerEditControls = modalContent.querySelector('.player-edit-controls');
-    const adminControls = modalContent.querySelector('.admin-controls'); // Might need this if admin delete is separate
+    const adminControls = modalContent.querySelector('.admin-controls');
 
     // Reset content
     if (nameEl) nameEl.textContent = 'Loading...';
@@ -270,86 +290,134 @@ async function openPlayerModal(playerId) {
     modalElement.removeAttribute('data-current-player-id');
     // --- End Reset ---
 
-    // Ensure openModal is accessible
-    openModal(modalElement); // Open modal overlay
+    // Open modal overlay FIRST
+    console.log("[PLAYER MODAL] About to call generic openModal function."); // <-- Add Log
+    if (typeof openModal === 'function') {
+        openModal(modalElement); // This should make the modal visible
+    } else {
+        console.error("[PLAYER MODAL] openModal function not found!");
+        alert("UI Error: Cannot display modal.");
+        return; // Stop if we can't open the modal
+    }
+
+    // *** Log before data population ***
+    console.log(`[PLAYER MODAL ${playerId}] BEFORE fetching/populating data.`);
 
     // Fetch and Populate data
     try {
-         const playerDocRef = db.collection('players').doc(playerId);
-         const docSnap = await playerDocRef.get();
-         if (!docSnap.exists) { throw new Error(`Player document not found for ID: ${playerId}`); }
-         const details = { id: docSnap.id, ...docSnap.data() };
-         console.log(`[PLAYER MODAL] Player data fetched:`, details);
-         modalElement.setAttribute('data-current-player-id', playerId); // Store ID
+        const playerDocRef = db.collection('players').doc(playerId);
+        const docSnap = await playerDocRef.get();
+        if (!docSnap.exists) { throw new Error(`Player document not found for ID: ${playerId}`); }
+        const details = { id: docSnap.id, ...docSnap.data() };
+        console.log(`[PLAYER MODAL] Player data fetched:`, details);
+        modalElement.setAttribute('data-current-player-id', playerId);
 
-         // Populate Basic Details
-         const iconSrc = details.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(details.name || '?')}&background=E0E7FF&color=4F46E5&size=80`;
-         if(iconEl) { iconEl.src = iconSrc; iconEl.alt = `Icon ${details.name || ''}`; }
-         if(nameEl) nameEl.textContent = details.name || 'Unnamed Player';
-         if(nameInputEl) nameInputEl.value = details.name || '';
-         if(iconInputEl) iconInputEl.value = details.iconUrl || '';
+        // Populate Basic Details
+        const iconSrc = details.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(details.name || '?')}&background=E0E7FF&color=4F46E5&size=80`;
+        if(iconEl) { iconEl.src = iconSrc; iconEl.alt = `Icon ${details.name || ''}`; }
+        if(nameEl) nameEl.textContent = details.name || 'Unnamed Player';
+        if(nameInputEl) nameInputEl.value = details.name || '';
+        if(iconInputEl) iconInputEl.value = details.iconUrl || '';
 
-         // Populate Overall Stats
-         if (overallStatsEl) {
-             // Ensure DEFAULT_ELO is accessible
-             const wins = details.wins || 0; const losses = details.losses || 0; const draws = details.draws || 0; const played = details.games_played || 0;
-             overallStatsEl.innerHTML = `Overall: <span class="font-medium text-green-600">${wins}W</span>/<span class="font-medium text-red-600">${losses}L</span>/<span class="font-medium text-gray-600">${draws}D</span> (${played} Played) | Elo: <span class="font-medium">${Math.round(details.elo_overall || DEFAULT_ELO)}</span>`;
-         }
+        // Populate Overall Stats
+        if (overallStatsEl) {
+            const wins = details.wins || 0; const losses = details.losses || 0; const draws = details.draws || 0; const played = details.games_played || 0;
+            overallStatsEl.innerHTML = `Overall: <span class="font-medium text-green-600">${wins}W</span>/<span class="font-medium text-red-600">${losses}L</span>/<span class="font-medium text-gray-600">${draws}D</span> (${played} Played) | Elo: <span class="font-medium">${Math.round(details.elo_overall || DEFAULT_ELO)}</span>`;
+        }
 
-         // Populate game-specific stats
-         if (statsEl) {
-            console.log(`[PLAYER MODAL DEBUG] Populating game stats for ${details.name}`);
+        // Populate game-specific stats
+        if (statsEl) {
             statsEl.innerHTML = '';
-            // Ensure gameTypesConfig and DEFAULT_ELO are accessible
             const elos = details.elos || {}; let statsHtml = '';
             Object.entries(gameTypesConfig).forEach(([gameKey, gameName]) => {
                 let ratingDisplay = '';
                 if (gameKey === 'golf') {
                     const handicapValue = details.golf_handicap;
                     ratingDisplay = (typeof handicapValue === 'number') ? `${handicapValue.toFixed(1)} Hcp` : 'Not Rated';
-                    statsHtml += `<div class="font-medium text-gray-900 dark:text-gray-300">${gameName}:</div><div class="text-blue-600 dark:text-blue-400 font-semibold">${ratingDisplay}</div>`;
+                    statsHtml += `<div class="font-medium !text-gray-900 dark:text-gray-300">${gameName}:</div><div class="text-blue-600 dark:text-blue-400 font-semibold">${ratingDisplay}</div>`;
                 } else {
                     const rating = Math.round(elos[gameKey] || DEFAULT_ELO);
                     ratingDisplay = `${rating} Elo`;
-                    statsHtml += `<div class="font-medium text-gray-900 dark:text-gray-300">${gameName}:</div><div class="text-indigo-600 dark:text-indigo-400">${ratingDisplay}</div>`;
+                    statsHtml += `<div class="font-medium !text-gray-900 dark:text-gray-300">${gameName}:</div><div class="text-indigo-600 dark:text-indigo-400">${ratingDisplay}</div>`;
                 }
             });
             if (!statsHtml) { statsHtml = '<p class="text-gray-500 dark:text-gray-400 col-span-2 italic">No specific game stats found.</p>'; }
             statsEl.innerHTML = statsHtml;
-            console.log(`[PLAYER MODAL DEBUG] Updated #modal-player-game-stats.`);
-         } else { console.error("[PLAYER MODAL DEBUG] #modal-player-game-stats element not found!"); }
+        }
 
-         // Control Edit/Delete Visibility
-         if (playerEditControls) {
-             // Show controls if logged-in player matches profile (check currentPlayer from auth.js)
-             if (currentPlayer && details.authUid && currentPlayer.authUid === details.authUid) {
-                 console.log("[PLAYER MODAL] Current user matches profile. Showing player edit controls.");
-                 playerEditControls.style.display = 'block'; // Or 'inline-flex'
-             } else {
-                 console.log("[PLAYER MODAL] Current user does not match profile. Hiding player edit controls.");
-                 playerEditControls.style.display = 'none';
-             }
-         } else { console.warn("[PLAYER MODAL] '.player-edit-controls' container not found."); }
-         // Admin controls visibility handled by CSS via 'body.admin-logged-in'
+        // Control Edit/Delete Visibility
+        if (playerEditControls) {
+            if (currentPlayer && details.authUid && currentPlayer.authUid === details.authUid) {
+                playerEditControls.style.display = 'block'; // Or 'inline-flex'
+            } else {
+                playerEditControls.style.display = 'none';
+            }
+        }
 
-         // Populate Recent Activity (ensure populatePlayerRecentActivity is accessible)
-         if (activityEl) {
+        // Populate Recent Activity
+        if (activityEl) {
             if (!playersCachePopulated) await fetchAllPlayersForCache(); // Ensure cache for names
             await populatePlayerRecentActivity(activityEl, playerId, 5);
-         } else { console.error("[PLAYER MODAL] Recent activity element (#modal-player-recent-activity) not found."); }
+        }
 
-     } catch (error) {
-          console.error("[PLAYER MODAL] Error fetching or populating data:", error);
-          alert(`Error loading player details: ${error.message}`);
-          closePlayerModal(); // Close on critical error
-     }
+        // --- Attach/Verify Modal Button Listeners ---
+        console.log("[PLAYER MODAL] Attaching/Verifying modal action button listeners...");
+
+        // Remove existing listeners to prevent duplicates if modal is reopened
+        const editBtn = modalContent.querySelector('#modal-edit-player-btn');
+        const cancelEditBtn = modalContent.querySelector('#modal-cancel-edit-player-btn');
+        const saveBtn = modalContent.querySelector('#modal-save-player-btn');
+        const deleteBtn = modalContent.querySelector('#modal-delete-player-btn');
+        const closeBtn = modalContent.querySelector('.modal-cancel-button'); // Generic close
+
+        // It's safer to remove and re-add listeners each time the modal opens
+        editBtn?.removeEventListener('click', handleEditClick);
+        cancelEditBtn?.removeEventListener('click', handleCancelEditClick);
+        saveBtn?.removeEventListener('click', savePlayerChanges);
+        deleteBtn?.removeEventListener('click', deletePlayer);
+        closeBtn?.removeEventListener('click', closePlayerModal);
+
+        // Add listeners
+        editBtn?.addEventListener('click', handleEditClick);
+        cancelEditBtn?.addEventListener('click', handleCancelEditClick);
+        saveBtn?.addEventListener('click', savePlayerChanges);
+        deleteBtn?.addEventListener('click', deletePlayer);
+        closeBtn?.addEventListener('click', closePlayerModal);
+
+        console.log("[PLAYER MODAL] Listeners attached/verified.");
+        // --- End Listener Attachment ---
+
+        // *** Log after successful data population and listener attachment ***
+        console.log(`[PLAYER MODAL ${playerId}] AFTER successful data population and listener setup.`);
+
+    } catch (error) {
+        console.error(`[PLAYER MODAL ${playerId}] Error during fetching or populating data:`, error); // <-- Log specific error
+        alert(`Error loading player details: ${error.message}`);
+        closePlayerModal(); // Close on critical error
+    }
+
+    // *** Log at the very end of the function ***
+    console.log(`[PLAYER MODAL ${playerId}] Reached end of openPlayerModal function.`);
+}
+
+// Helper function to handle the edit button click
+function handleEditClick() {
+    togglePlayerModalEdit(true);
+}
+// Helper function to handle the cancel edit button click
+function handleCancelEditClick() {
+    togglePlayerModalEdit(false);
 }
 
 function closePlayerModal() {
     const modalElement = document.getElementById('player-info-modal');
     if (!modalElement) return;
-    // Ensure closeModal is accessible
-    closeModal(modalElement); // Generic close handles hiding, scroll, and resetting specific attributes/classes
+    if (typeof closeModal === 'function') {
+        closeModal(modalElement); // Generic close handles hiding, scroll, etc.
+    } else {
+        console.error("[PLAYER MODAL] closeModal function not found!");
+        modalElement.style.display = 'none';
+    }
 }
 
 // --- Player Modal Recent Activity ---
@@ -361,9 +429,7 @@ async function populatePlayerRecentActivity(activityElement, playerId, limit = 5
          return;
     }
 
-    // Ensure global player cache is populated (fetchAllPlayersForCache should be accessible)
     if (!playersCachePopulated) {
-        console.warn("[Player Activity] Player cache not populated. Activity may lack names. Attempting fetch...");
         await fetchAllPlayersForCache();
         if (!playersCachePopulated) {
             activityElement.innerHTML = '<li class="text-orange-500">Error loading player data for activity.</li>';
@@ -372,7 +438,6 @@ async function populatePlayerRecentActivity(activityElement, playerId, limit = 5
     }
     activityElement.innerHTML = '<li class="text-gray-500 dark:text-gray-400">Loading activity...</li>';
 
-    // Optional: Course Par Cache (Specific to this function's context)
     const courseParCacheActivity = {};
     const getCourseParActivity = async (courseId) => {
          if (!courseId) return null;
@@ -388,7 +453,6 @@ async function populatePlayerRecentActivity(activityElement, playerId, limit = 5
     };
 
     try {
-        // Index Required: games: participants (Array), date_played (Descending)
         const gamesQuery = db.collection('games')
                             .where('participants', 'array-contains', playerId)
                             .orderBy('date_played', 'desc')
@@ -407,11 +471,9 @@ async function populatePlayerRecentActivity(activityElement, playerId, limit = 5
              const game = { id: doc.id, ...doc.data() };
              let description = "";
              const gameDate = game.date_played?.toDate ? game.date_played.toDate().toLocaleDateString() : 'Unknown Date';
-             // Ensure gameTypesConfig is accessible
              const gameType = gameTypesConfig[game.game_type] || game.game_type || 'Unknown Game';
              const participants = game.participants || [];
 
-             // Build Description (Golf vs Non-Golf)
              if (game.game_type === 'golf') {
                  description = `Played ${gameType}`;
                  if (typeof game.score === 'number') {
@@ -429,7 +491,7 @@ async function populatePlayerRecentActivity(activityElement, playerId, limit = 5
                          } else { description += ` (${game.score} on unknown course)`; }
                      } else { description += ` (${game.score}, no course info)`; }
                  } else { description += ` (score not recorded)`; }
-             } else { // Non-Golf
+             } else {
                  const participantNames = participants.map(id => globalPlayerCache[id]?.name || 'Unknown Player');
                  if (game.outcome === 'Win/Loss' && participantNames.length >= 2) {
                     const winnerName = participantNames[0]; const loserName = participantNames[1];
@@ -447,11 +509,10 @@ async function populatePlayerRecentActivity(activityElement, playerId, limit = 5
              }
 
             const li = document.createElement('li');
-            // Add dark mode classes
-            li.className = 'text-gray-800 dark:text-gray-200';
+            li.className = '!text-gray-800 dark:text-gray-200';
             li.innerHTML = `<span class="text-gray-500 dark:text-gray-400 text-xs mr-2">[${gameDate}]</span> ${description}`;
             activityElement.appendChild(li);
-        } // End loop
+        }
 
     } catch (error) {
         console.error(`Error fetching recent activity for player ${playerId}:`, error);
@@ -475,7 +536,6 @@ function togglePlayerModalEdit(editMode) {
          modalElement.querySelector('#modal-edit-player-name-input')?.focus(); // Focus name input
     } else {
          modalElement.classList.remove('modal-editing');
-         // Reset input fields to original values (fetch if needed or store temp)
          const playerId = modalElement.getAttribute('data-current-player-id');
          if (playerId && globalPlayerCache[playerId]) {
              const originalData = globalPlayerCache[playerId];
@@ -494,7 +554,7 @@ async function savePlayerChanges() {
     const nameInput = modalElement.querySelector('#modal-edit-player-name-input');
     const iconInput = modalElement.querySelector('#modal-edit-player-icon-input');
     const newName = nameInput?.value.trim();
-    const newIconUrl = iconInput?.value.trim() || null; // Store null if empty
+    const newIconUrl = iconInput?.value.trim() || null;
 
     if (!newName) { alert("Player name cannot be empty."); nameInput?.focus(); return; }
 
@@ -504,24 +564,20 @@ async function savePlayerChanges() {
          await db.collection('players').doc(playerId).update(updatedData);
          alert("Player details updated successfully!");
 
-         // Update cache
          if (globalPlayerCache[playerId]) {
             globalPlayerCache[playerId].name = newName;
             globalPlayerCache[playerId].iconUrl = newIconUrl;
          } else {
-             playersCachePopulated = false; // Invalidate if player wasn't in cache
+             playersCachePopulated = false;
          }
 
-         togglePlayerModalEdit(false); // Switch back to view mode
+         togglePlayerModalEdit(false);
 
-         // Update UI immediately
          modalElement.querySelector('#modal-player-name').textContent = newName;
          const iconSrc = newIconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(newName || '?')}&background=E0E7FF&color=4F46E5&size=80`;
          modalElement.querySelector('#modal-player-icon').src = iconSrc;
 
-         // Refresh player grid (ensure populatePlayersList is accessible)
          if (typeof populatePlayersList === 'function') await populatePlayersList();
-         // Potentially refresh other areas if name is displayed (e.g., results, rankings) - requires more state awareness
 
     } catch (error) {
         console.error(`Error updating player ${playerId}:`, error);
@@ -541,13 +597,11 @@ async function deletePlayer() {
              await db.collection('players').doc(playerId).delete();
              alert(`${playerName} deleted successfully!`);
 
-             // Remove from cache and mark as not populated
              delete globalPlayerCache[playerId];
-             playersCachePopulated = false; // Force refresh on next load
+             playersCachePopulated = false;
 
-             closePlayerModal(); // Close the modal
+             closePlayerModal();
 
-             // Refresh relevant UI sections (ensure functions are accessible)
              if (typeof populatePlayersList === 'function') await populatePlayersList();
              if (typeof populateDashboard === 'function') await populateDashboard();
              if (typeof populateResultsTable === 'function') await populateResultsTable();
@@ -563,6 +617,6 @@ async function deletePlayer() {
 }
 
 // Note: This file assumes that 'firebase', 'db', 'openModal', 'closeModal', 'gameTypesConfig',
-// 'DEFAULT_ELO', 'ELO_GAME_KEYS', 'playersGrid', 'currentPlayer', 'populateDashboard',
+// 'DEFAULT_ELO', 'ELO_GAME_KEYS', 'currentPlayer', 'populateDashboard',
 // 'populateResultsTable', 'updateRankingsVisibility' are initialized and accessible
-// from the global scope or imported/passed appropriately.
+// from the global scope or imported/passed appropriately

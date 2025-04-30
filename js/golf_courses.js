@@ -128,10 +128,17 @@ async function handleAddCourseSubmit(event) {
 // --- Populate Golf Courses List (Sports Section) ---
 
 async function populateGolfCourses() {
-    // Ensure db is accessible
-    const listElement = document.getElementById('golf-courses-list'); //
-    if (!listElement) { console.error("[SPORTS/GOLF] Golf courses list element (#golf-courses-list) not found."); return; } //
-    if (!db) { console.error("[SPORTS/GOLF] Firestore DB not initialized."); listElement.innerHTML = '<p class="text-red-500 p-2">Error: Database connection failed.</p>'; return; } //
+    // Find element within the function
+    const listElement = document.getElementById('golf-courses-list');
+    if (!listElement) {
+        console.warn("[SPORTS/GOLF] Golf courses list element (#golf-courses-list) not found in current DOM.");
+        return; // Exit if element isn't present
+    }
+    if (!db) {
+        console.error("[SPORTS/GOLF] Firestore DB not initialized.");
+        listElement.innerHTML = '<p class="error-text p-2">Error: Database connection failed.</p>';
+        return;
+    }
 
     console.log("[SPORTS/GOLF] Populating golf courses list..."); //
     listElement.innerHTML = '<p class="text-gray-500 dark:text-gray-400 p-2">Loading courses...</p>'; // Loading state (with dark mode class)

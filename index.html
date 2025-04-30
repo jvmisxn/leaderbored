@@ -9,183 +9,266 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+html {
+    height: 100%; /* Ensure the root element takes full height */
+}
 
-        body.admin-logged-in #tournament-detail-content .admin-only { display: inline-block; } /* Or inline-flex if you prefer */
-        /* Basic styles */
-        body { font-family: 'Inter', sans-serif; }
-        a, button, .player-entry { transition: all 0.2s ease-in-out; }
-
-        /* --- Admin visibility control --- */
-        .admin-only { display: none; }
-        body.admin-logged-in td .admin-only { display: inline-flex; gap: 0.5rem; vertical-align: middle; }
-        body.admin-logged-in #player-info-modal .admin-only { display: block; }
-        body.admin-logged-in .contextual-admin-button-container .admin-only { display: inline-flex; }
-        body.admin-logged-in .public-only { display: none; }
-        /* --- End Admin visibility control --- */
-        /* Basic dropdown visibility controlled by JS adding/removing 'hidden' class */
-        #profile-dropdown {
-            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-            }
-        #profile-dropdown.hidden {
-            opacity: 0;
-            transform: translateY(-10px);
-            pointer-events: none; /* Prevent interaction when hidden */
-            }
-        /* Modal styles */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
-        .modal-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
-        .modal-content { background-color: white; padding: 1.5rem 2rem 2rem 2rem; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); max-width: 95%; width: 550px; max-height: 90vh; overflow-y: auto; position: relative; transform: translateY(-20px) scale(0.98); transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; }
-        .modal-overlay.active .modal-content { transform: translateY(0) scale(1); opacity: 1; }
-        .modal-close-button { position: absolute; top: 0.5rem; right: 0.75rem; background: none; border: none; font-size: 1.75rem; font-weight: bold; color: #6b7280; cursor: pointer; padding: 0.25rem; line-height: 1; }
-        .modal-close-button:hover { color: #1f2937; }
-
-        /* Ranking table visibility */
-        .ranking-table { display: none; }
-        .ranking-table.active { display: block; }
-
-        /* Multi-select styling (if used) */
-        .multi-select-list { max-height: 150px; overflow-y: auto; border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.5rem; background-color: #f9fafb; }
-
-        /* Table cell padding and wrapping */
-        td, th { white-space: nowrap; padding-left: 1rem; padding-right: 1rem; padding-top: 0.75rem; padding-bottom: 0.75rem; vertical-align: middle; }
-        td { white-space: normal; }
-
-        /* Validation */
-        .border-red-500 { border-color: #ef4444; }
-
-        /* Player Modal Edit Mode */
-        .modal-editing .editable-field { display: none; }
-        .modal-editing .editing-field { display: block; }
-        .editing-field { display: none; }
-        .modal-editing .edit-mode-controls { display: inline-flex; }
-        .edit-mode-controls { display: none; }
-        .modal-editing .view-mode-controls { display: none; }
-
-        /* Tournament Detail Section */
-        #tournament-detail-section.loading #tournament-detail-content { display: none; }
-        #tournament-detail-section.loading #tournament-detail-loading { display: block; }
-        #tournament-detail-section:not(.loading) #tournament-detail-loading { display: none; }
-        #tournament-detail-section.error #tournament-detail-content { display: none; }
-        #tournament-detail-section.error #tournament-detail-error { display: block; }
-        #tournament-detail-section:not(.error) #tournament-detail-error { display: none; }
-        #tournament-detail-loading, #tournament-detail-error { display: none; } /* Hide initially */
-        /* Player visibility control */
-        .player-only { display: none; }
-        .player-public-only { display: inline-flex; } /* Or block */
-        body.player-logged-in .player-only { display: inline-flex; } /* Or block */
-        body.player-logged-in .player-public-only { display: none; }
-
-        /* Hide admin login if player is logged in, and vice-versa */
-        body.player-logged-in .admin-public-only { display: none; }
-        body.admin-logged-in .player-public-only { display: none; }
-
-        /* --- Dark Mode Base Variables --- */
+/* --- Theme Color Variables --- */
 :root {
-  --bg-color-light: #f9fafb; /* Light background - Adjust as needed */
-  --text-color-light: #1f2937; /* Light text - Adjust as needed */
-  --bg-gradient-start-light: #f3f4f6; /* Example light gradient start */
-  --bg-gradient-end-light: #e5e7eb; /* Example light gradient end */
-  --card-bg-light: #ffffff; /* Card background */
-  --text-muted-light: #6b7280; /* Muted text */
-  --primary-text-light: #111827; /* Primary text */
-  --link-color-light: #2563eb; /* Link color */
+  /* --- Light Mode: Blue & White --- */
+  --bg-color-light: #f3f4f6;           /* White background */
+  --text-color-light: #1e40af;         /* Dark Blue text (like Tailwind blue-800) */
+  --accent-bg-light: #2563eb;        /* Medium Blue accent background (like blue-600) */
+  --accent-text-light: #ffffff;       /* White text on blue accents */
+  --card-bg-light: #ffffff;           /* White card background */
+  --text-muted-light: #6b7280;       /* Gray for muted text */
+  --link-color-light: #1d4ed8;         /* Medium-Dark Blue links (like blue-700) */
+  --border-color-light: #dbeafe;       /* Light Blue border (like blue-200) */
 
-  --bg-color-dark: #1f2937; /* Dark background */
-  --text-color-dark: #f3f4f6; /* Dark text */
-  --bg-gradient-start-dark: #111827; /* Example dark gradient start */
-  --bg-gradient-end-dark: #374151; /* Example dark gradient end */
-  --card-bg-dark: #374151; /* Card background */
-  --text-muted-dark: #9ca3af; /* Muted text */
-  --primary-text-dark: #e5e7eb; /* Primary text */
-  --link-color-dark: #60a5fa; /* Link color */
+  /* --- Dark Mode: Red & Black --- */
+  --bg-color-dark: #111827;           /* Black background */
+  --text-color-dark: #ef4444;         /* Medium Red text (like red-500) */
+  --accent-bg-dark: #dc2626;        /* Medium-Dark Red accent background (like red-600) */
+  --accent-text-dark: #ffffff;       /* White text on red accents (Adjust if contrast needed) */
+  --card-bg-dark: #1f2937;           /* Very Dark Gray/Off-black card background */
+  --text-muted-dark: #9ca3af;       /* Light gray for muted text */
+  --link-color-dark: #f87171;         /* Lighter Red links (like red-400) */
+  --border-color-dark: #7f1d1d;       /* Dark Red border (like red-900) */
 }
 
-/* --- Apply Light Mode by Default --- */
+/* --- Base Body Styles --- */
 body {
-  background-color: var(--bg-color-light);
-  color: var(--text-color-light);
-  /* Apply the gradient using CSS variables */
-  background-image: linear-gradient(to bottom right, var(--bg-gradient-start-light), var(--bg-gradient-end-light));
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh; /* Full viewport height */
+    background-color: var(--bg-color-light);
+    color: var(--text-color-light);
+    /* Removed gradient, using solid color */
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
-.bg-white { background-color: var(--card-bg-light); }
-.text-gray-800 { color: var(--text-color-light); } /* Or map to a primary text var */
-.text-gray-900 { color: var(--primary-text-light); }
-.text-gray-700 { color: var(--text-muted-light); } /* Adjust mapping as needed */
-.text-gray-600 { color: var(--text-muted-light); }
-.text-gray-500 { color: var(--text-muted-light); }
-.text-blue-600 { color: var(--link-color-light); }
-.border-blue-200 { border-color: #bfdbfe; } /* Keep specific or create variables */
-.bg-gray-100 { background-color: #f3f4f6; } /* Keep specific or create variables */
-.text-indigo-700 { color: #4338ca; } /* Keep specific or create variables */
+a, button, .player-entry { transition: all 0.2s ease-in-out; }
 
-/* --- Dark Mode Styles (Applied when body has .dark- class) --- */
+/* --- Visibility Control --- */
+/* Admin */
+.admin-only { display: none; }
+body.admin-logged-in #tournament-detail-content .admin-only { display: inline-block; }
+body.admin-logged-in td .admin-only { display: inline-flex; gap: 0.5rem; vertical-align: middle; }
+body.admin-logged-in #player-info-modal .admin-only { display: block; }
+body.admin-logged-in .contextual-admin-button-container .admin-only { display: inline-flex; }
+body.admin-logged-in .public-only { display: none; }
+/* Player */
+.player-only { display: none; }
+.player-public-only { display: inline-flex; }
+body.player-logged-in .player-only { display: inline-flex; }
+body.player-logged-in .player-public-only { display: none; }
+/* Combined Logins */
+body.player-logged-in .admin-public-only { display: none; }
+body.admin-logged-in .player-public-only { display: none; }
+
+/* --- Layout & Components --- */
+/* Dropdown */
+#profile-dropdown { transition: opacity 0.2s ease-out, transform 0.2s ease-out; }
+#profile-dropdown.hidden { opacity: 0; transform: translateY(-10px); pointer-events: none; }
+/* Modals */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
+.modal-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
+.modal-content { background-color: var(--card-bg-light); padding: 1.5rem 2rem 2rem 2rem; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); max-width: 95%; width: 550px; max-height: 90vh; overflow-y: auto; position: relative; transform: translateY(-20px) scale(0.98); transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; }
+.modal-overlay.active .modal-content { transform: translateY(0) scale(1); opacity: 1; }
+.modal-close-button { position: absolute; top: 0.5rem; right: 0.75rem; background: none; border: none; font-size: 1.75rem; font-weight: bold; color: var(--text-muted-light); cursor: pointer; padding: 0.25rem; line-height: 1; }
+.modal-close-button:hover { color: var(--text-color-light); }
+/* Ranking Table */
+.ranking-table { display: none; }
+.ranking-table.active { display: block; }
+/* Multi-select (if used) */
+.multi-select-list { max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color-light); border-radius: 0.375rem; padding: 0.5rem; background-color: #f9fafb; } /* Consider a light variable for bg */
+/* Table Cells */
+td, th { white-space: nowrap; padding-left: 1rem; padding-right: 1rem; padding-top: 0.75rem; padding-bottom: 0.75rem; vertical-align: middle; }
+td { white-space: normal; }
+/* Validation */
+.border-red-500 { border-color: #ef4444; }
+/* Player Modal Edit Mode */
+.modal-editing .editable-field { display: none; }
+.modal-editing .editing-field { display: block; }
+.editing-field { display: none; }
+.modal-editing .edit-mode-controls { display: inline-flex; }
+.edit-mode-controls { display: none; }
+.modal-editing .view-mode-controls { display: none; }
+/* Tournament Detail Section */
+#tournament-detail-section.loading #tournament-detail-content { display: none; }
+#tournament-detail-section.loading #tournament-detail-loading { display: block; }
+#tournament-detail-section:not(.loading) #tournament-detail-loading { display: none; }
+#tournament-detail-section.error #tournament-detail-content { display: none; }
+#tournament-detail-section.error #tournament-detail-error { display: block; }
+#tournament-detail-section:not(.error) #tournament-detail-error { display: none; }
+#tournament-detail-loading, #tournament-detail-error { display: none; }
+
+/* --- Base Element Light Mode Styles (Using Variables) --- */
+nav { /* Default nav style */
+    background-image: none;
+    background-color: var(--accent-bg-light); /* Blue */
+    color: var(--accent-text-light); /* White */
+    /* Add padding, shadow, sticky etc. back if needed, or handle with Tailwind classes */
+    padding: 1.25rem; /* p-5 */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* shadow-lg */
+    position: sticky; top: 0; z-index: 50;
+}
+.bg-white { background-color: var(--card-bg-light); } /* Handles cards etc. */
+h1, h2, h3, .text-gray-900, .text-gray-800 { color: var(--text-color-light); } /* Headings & primary text */
+.text-gray-700, .text-gray-600, .text-gray-500 { color: var(--text-muted-light); } /* Muted text */
+a, .text-blue-600 { color: var(--link-color-light); } /* Links */
+a:hover, .text-blue-600:hover { text-decoration: underline; color: #1e40af; /* Darker blue hover */ }
+.border-blue-200 { border-color: var(--border-color-light); } /* Borders */
+.bg-gray-100 { background-color: #f3f4f6; } /* Light gray background (e.g., table header) - consider removing if theme is pure blue/white */
+.text-indigo-700 { color: var(--link-color-light); } /* Use link color for indigo text */
+footer { color: var(--text-muted-light); }
+
+/* --- Dark Mode Overrides --- */
 body.dark {
   background-color: var(--bg-color-dark);
   color: var(--text-color-dark);
-  background-image: linear-gradient(to bottom right, var(--bg-gradient-start-dark), var(--bg-gradient-end-dark));
+  /* background-image: none; /* Solid background for dark mode */ */
 }
-body.dark .bg-white { background-color: var(--card-bg-dark); }
-body.dark .text-gray-800 { color: var(--text-color-dark); }
-body.dark .text-gray-900 { color: var(--primary-text-dark); }
-body.dark .text-gray-700 { color: var(--text-muted-dark); }
-body.dark .text-gray-600 { color: var(--text-muted-dark); }
-body.dark .text-gray-500 { color: var(--text-muted-dark); }
-body.dark .text-blue-600 { color: var(--link-color-dark); }
-body.dark .border-blue-200 { border-color: #374151; } /* Dark border example */
-body.dark .bg-gray-100 { background-color: #374151; } /* Dark header example */
-body.dark .text-indigo-700 { color: #a5b4fc; } /* Dark indigo example */
-body.dark .modal-content { background-color: var(--card-bg-dark); /* Dark modals */}
 
-/* Adjust other specific colors for dark mode as needed... */
- body.dark .text-green-600 { color: #34d399; }
- body.dark .text-red-600 { color: #f87171; }
- body.dark .text-indigo-600 { color: #818cf8; }
- body.dark .bg-gradient-to-br { /* Override existing gradient */
-    background-image: linear-gradient(to bottom right, var(--bg-gradient-start-dark), var(--bg-gradient-end-dark));
+/* Dark Nav */
+body.dark nav {
+    background-image: none;
+    background-color: var(--accent-bg-dark); /* Red */
+    color: var(--accent-text-dark); /* White or Black */
+}
+/* Ensure nav links are readable */
+body.dark nav a {
+     color: var(--accent-text-dark);
+}
+/* Optional: Dark nav link hover */
+body.dark nav a:hover {
+    color: #f3f4f6; /* Example: Light gray hover */
+    text-decoration: none;
+}
+body.dark nav .group .bg-white {
+     background-color: var(--card-bg-dark); /* Use dark card background */
+     /* Optional: Adjust ring/border for better visibility */
+     --tw-ring-opacity: 1;
+     --tw-ring-color: rgba(75, 85, 99, var(--tw-ring-opacity)); /* Example: gray-500 */
  }
-/* You'll need to add more specific dark mode overrides for elements
-   that don't use the general text/bg variables, like buttons, specific borders etc. */
+ /* Style links within the general nav dropdowns */
+ body.dark nav .group .bg-white a {
+     color: var(--text-muted-dark); /* Use muted text color for dark mode */
+ }
+ body.dark nav .group .bg-white a:hover {
+     background-color: #374151; /* Example: Darker gray hover */
+     color: var(--accent-text-dark); /* Use accent text color (white) on hover */
+ }
 
+ /* Target the profile dropdown menu specifically */
+ body.dark #profile-dropdown {
+     background-color: var(--card-bg-dark); /* Use dark card background */
+     /* Optional: Adjust ring/border */
+      --tw-ring-opacity: 1;
+     --tw-ring-color: rgba(75, 85, 99, var(--tw-ring-opacity)); /* Example: gray-500 */
+ }
+  /* Style links within the profile dropdown */
+  body.dark #profile-dropdown a {
+      color: var(--text-muted-dark); /* Use muted text color */
+  }
+  body.dark #profile-dropdown a:hover {
+      background-color: #374151; /* Example: Darker gray hover */
+      color: var(--accent-text-dark); /* Use accent text color (white) */
+  }
 
-/* --- Toggle Switch Styles --- */
-/* Move the dot when the checkbox is checked */
-input:checked ~ .dot {
-  transform: translateX(100%);
-  background-color: #48bb78; /* Green when on */
+body.dark .bg-white { background-color: var(--card-bg-dark); }
+/* Dark Cards / White Backgrounds */
+body.dark .bg-white { background-color: var(--card-bg-dark); }
+/* Dark Headings & Primary Text */
+body.dark h1, body.dark h2, body.dark h3,
+body.dark .text-gray-900, body.dark .text-gray-800 { color: var(--text-color-dark); }
+/* Dark Muted Text */
+body.dark .text-gray-700, body.dark .text-gray-600, body.dark .text-gray-500 { color: var(--text-muted-dark); }
+/* Dark Links */
+body.dark a, body.dark .text-blue-600 { color: var(--link-color-dark); }
+body.dark a:hover, body.dark .text-blue-600:hover { color: #ef4444; /* Medium Red hover */ }
+/* Dark Borders */
+body.dark .border-blue-200 { border-color: var(--border-color-dark); }
+/* Dark Light Gray Background */
+body.dark .bg-gray-100 { background-color: #1f2937; } /* Very Dark Gray */
+/* Dark Indigo Text */
+body.dark .text-indigo-700 { color: var(--link-color-dark); }
+/* Dark Modals */
+body.dark .modal-content { background-color: var(--card-bg-dark); }
+body.dark .modal-close-button { color: var(--text-muted-dark); }
+body.dark .modal-close-button:hover { color: var(--text-color-dark); }
+/* Dark Footer */
+body.dark footer { color: var(--text-muted-dark); }
+
+/* Dark Form Select */
+body.dark select,
+body.dark #rankings-game-filter {
+    background-color: #1f2937; /* Match dark card background */
+    color: #f3f4f6;           /* Light text */
+    border-color: #4b5563;    /* Darker border */
 }
-/* Optional: change the background of the switch bar when checked */
-input:checked ~ .block {
-  background-color: #a0aec0;
+/* Dark Multi-select list */
+body.dark .multi-select-list {
+    background-color: #111827; /* Even darker background */
+    border-color: #4b5563;
 }
-/* Style for the label text in dark mode */
-.dark .dark\:text-gray-300 {
-   color: #d1d5db; /* text-gray-300 */
-}
+
+/* Dark Mode Specific Text Colors (from previous overrides) */
+body.dark .text-green-600 { color: #34d399; } /* Keep green for wins? */
+body.dark .text-red-600 { color: #f87171; }   /* Use theme link color? */
+body.dark .text-indigo-600 { color: var(--link-color-dark); } /* Use theme link color */
+
+/* --- Dark Mode Toggle Switch --- */
+input:checked ~ .dot { transform: translateX(100%); background-color: var(--link-color-dark); /* Use Red for "on" in dark mode? */ }
+input:checked ~ .block { background-color: #4b5563; /* Darker track */ }
+/* Label text (already handled by footer rule) */
+/* .dark .dark\:text-gray-300 { color: var(--text-muted-dark); } */
 
     </style>
 </head>
 <body>
-    <nav class="bg-gradient-to-r from-cyan-600 to-blue-700 text-white p-5 shadow-lg sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="#home" class="text-3xl font-bold hover:text-blue-100 nav-link" data-target="home-section">🏆 LeaderBored</a>
+    <nav class="bg-gradient-to-r from-cyan-600 to-blue-700 text-white p-5 shadow-lg sticky top-0 z-50 flex items-center justify-between">
 
-            <div class="flex items-center space-x-5">  <a href="#home" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="home-section">Home</a>
-                <a href="#rankings" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="rankings-section">Rankings</a>
-                <a href="#results" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="results-section">Results</a>
-                <a href="#players" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="players-section">Players</a>
-                <a href="#tournaments" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="tournaments-section">Tournaments</a>
-
-                <a href="#player-login-section" id="player-login-link" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow hover:shadow-md public-only player-public-only nav-link" data-target="player-login-section">Login</a>
-
-                <div id="profile-section" class="relative player-only"> <button id="profile-photo-button" class="block h-10 w-10 rounded-full overflow-hidden border-2 border-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-700 focus:ring-white">
-                        <img id="profile-photo-img" src="https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40" alt="My Profile" class="h-full w-full object-cover">
-                    </button> <div id="profile-dropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden" role="menu" aria-orientation="vertical" aria-labelledby="profile-photo-button">
-                        <a href="#" id="dropdown-edit-profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Edit Profile</a>
-                        <a href="#" id="dropdown-settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Settings</a>
-                        <a href="#" id="dropdown-logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Logout</a>
-                    </div>
+        <a href="#home-section" class="text-xl font-bold nav-link flex-shrink-0" data-target="home-section">🏆 LeaderBored</a> <div class="flex items-center space-x-4"> 
+            <a href="#play-section" class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium nav-link" data-target="play-section">PLAY</a>
+            
+            <div class="relative group">
+                <button class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium focus:outline-none flex items-center">
+                    INFO <svg class="w-4 h-4 ml-1 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                </button>
+                <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <a href="#players-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="players-section" role="menuitem">PLAYERS</a>
+                    <a href="#rankings-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="rankings-section" role="menuitem">RANKINGS</a>
+                    <a href="#results-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="results-section" role="menuitem">GAMES</a>
+                    <a href="#sports-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="sports-section" role="menuitem">SPORTS</a> 
                 </div>
-                </div> </div>
+            </div>
+    
+            <div class="relative group">
+                <button class="hover:text-blue-100 px-3 py-2 rounded-md text-base font-medium focus:outline-none flex items-center">
+                    TOURNAMENTS <svg class="w-4 h-4 ml-1 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                </button>
+                <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <a href="#tournaments-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="tournaments-section" role="menuitem">HISTORY</a> 
+                    <a href="#tournaments-section" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 nav-link" data-target="tournaments-section" role="menuitem">UPCOMING</a> 
+                </div>
+            </div>
+        </div>
+    
+        <div class="flex items-center space-x-4 flex-shrink-0"> <a href="#player-login-section" id="player-login-link" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow hover:shadow-md public-only player-public-only nav-link" data-target="player-login-section">Login</a>
+            
+            <div id="profile-section" class="relative player-only">
+                <button id="profile-photo-button" class="block h-10 w-10 rounded-full overflow-hidden border-2 border-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-700 focus:ring-white">
+                    <img id="profile-photo-img" src="https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40" alt="My Profile" class="h-full w-full object-cover">
+                </button>
+                <div id="profile-dropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden" role="menu" aria-orientation="vertical" aria-labelledby="profile-photo-button">
+                    <a href="#" id="dropdown-edit-profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Edit Profile</a>
+                    <a href="#" id="dropdown-settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Settings</a>
+                    <a href="#" id="dropdown-logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Logout</a>
+                </div>
+            </div>
+        </div>
+    
     </nav>
 
     <div class="container mx-auto mt-8 p-6">
@@ -257,7 +340,73 @@ input:checked ~ .block {
                  </div>
                  </div>
         </section>
-
+        <section id="sports-section" class="page-section hidden space-y-8">
+            <h1 class="text-4xl font-bold text-gray-900 border-b-2 border-blue-200 pb-3 mb-6">Sports Overview</h1>
+ 
+            <div id="sports-gallery" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <h2 class="text-2xl font-semibold mb-3 text-indigo-700">Golf</h2>
+                    <p class="text-sm text-gray-600 mb-4">Track scores, handicaps, and course performance.</p>
+                    <button data-sport="golf" class="view-sport-details-btn text-blue-600 hover:underline font-medium">View Details & Courses</button>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                     <h2 class="text-2xl font-semibold mb-3 text-indigo-700">Pool</h2>
+                     <p class="text-sm text-gray-600 mb-4">View player rankings and recent match results.</p>
+                     <button data-sport="pool" class="view-sport-details-btn text-blue-600 hover:underline font-medium">View Rankings</button> </div>
+                 <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                     <h2 class="text-2xl font-semibold mb-3 text-indigo-700">Overall</h2>
+                     <p class="text-sm text-gray-600 mb-4">See combined 1v1 and 2v2 rankings.</p>
+                     <button data-sport="overall" class="view-sport-details-btn text-blue-600 hover:underline font-medium">View Rankings</button> </div>
+                <div class="col-span-full text-center text-gray-500 p-4">
+                     </div>
+            </div>
+ 
+            <div id="golf-details-view" class="hidden space-y-6 mt-10">
+                <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
+                    <h2 class="text-3xl font-bold text-gray-900">Golf Details</h2>
+                     <button id="back-to-sports-gallery-btn" class="text-blue-600 hover:underline">&larr; Back to Sports Overview</button>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
+                    <h3 class="text-xl font-semibold mb-2 text-indigo-600">About Golf</h3>
+                    <p class="text-gray-700 mb-4 text-sm">
+                        Golf is a club-and-ball sport in which players use clubs to hit balls into a series of holes on a course in as few strokes as possible. It requires precision, strategy, and mental focus. Players navigate varied terrain, manage different club selections, and adhere to a comprehensive set of rules governing play.
+                    </p>
+                    <button id="show-golf-rules-btn" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none">
+                        View Official Rules
+                    </button>
+                </div>
+                <div class="text-right contextual-admin-button-container">
+                     <button id="open-add-course-modal-btn" class="admin-only bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                         ⛳ Add New Course
+                     </button>
+                </div>
+                <div id="golf-rules-modal" class="modal-overlay">
+                    <div class="modal-content" style="width: 90%; max-width: 1000px;"> <button id="close-golf-rules-modal-btn" class="modal-close-button">&times;</button>
+                        <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Official Rules of Golf (The R&A)</h2>
+                        <div class="border rounded-lg overflow-hidden">
+                          <iframe id="golf-rules-iframe" src="about:blank" width="100%" height="70vh" frameborder="0" title="Official Rules of Golf">
+                              Loading Rules...
+                          </iframe>
+                        </div>
+                         <p class="text-xs text-gray-500 mt-2">Rules provided by <a href="https://www.randa.org/en/rog/the-rules-of-golf" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">The R&A</a>.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-indigo-600">Courses</h3>
+                    <div id="golf-courses-list" class="space-y-4">
+                        <p class="text-gray-500">Loading courses...</p>
+                    </div>
+                </div>
+ 
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-indigo-600">Recent Golf Scores</h3>
+                    <div id="golf-results-list" class="space-y-2">
+                         <p class="text-gray-500">Loading results...</p>
+                    </div>
+                 </div>
+            </div>
+ 
+       </section>
         <section id="results-section" class="page-section hidden space-y-8">
             <div class="flex justify-between items-center border-b-2 border-blue-200 pb-3 mb-6">
                  <h1 class="text-4xl font-bold text-gray-900">All Game Results</h1>
@@ -471,7 +620,10 @@ input:checked ~ .block {
     <div id="add-game-modal" class="modal-overlay"> </div>
     <div id="edit-tournament-modal" class="modal-overlay">
     </div> <div id="add-participants-modal" class="modal-overlay"></div>
-    <footer class="text-center text-gray-600 text-base mt-12 mb-6"> &copy; 2025 LeaderBored. Keep it friendly!
+    <div id="add-course-modal" class="modal-overlay">
+    </div>
+
+    <footer class="fixed bottom-5 left-0 right-0 text-center text-gray-600 dark:text-gray-400 text-sm z-40"> &copy; 2025 LeaderBored. Keep it friendly!
     </footer>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
@@ -755,6 +907,157 @@ async function handlePlayerRegister(event) {
         errorDiv.textContent = `Registration failed: ${error.message}`;
         errorDiv.classList.remove('hidden');
     }
+}
+
+// --- Add Course Modal Functions ---
+function openAddCourseModal() {
+    // Get the specific modal container element
+    const modalElement = document.getElementById('add-course-modal');
+    if (!modalElement) {
+        console.error("Add Course modal element (#add-course-modal) not found.");
+        alert("Error: Cannot open Add Course form.");
+        return;
+    }
+    // Check for Firestore connection (important for saving)
+    if (!db) {
+        console.error("Add Course modal: DB not ready.");
+        alert("Error: Cannot open Add Course form. Database connection failed.");
+        return;
+    }
+
+    // 1. Define and Inject the specific HTML content for this modal
+    const modalContentHTML = `
+        <div class="modal-content">
+            <button id="close-add-course-modal-btn" class="modal-close-button">&times;</button>
+            <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Add New Golf Course</h2>
+            <form id="add-course-form">
+                <div class="mb-4">
+                    <label for="course-name" class="block text-gray-700 text-sm font-bold mb-2">Course Name:</label>
+                    <input type="text" id="course-name" name="course-name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="course-location" class="block text-gray-700 text-sm font-bold mb-2">Location (Optional):</label>
+                    <input type="text" id="course-location" name="course-location" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., City, State">
+                </div>
+                <div class="mb-5">
+                    <label for="course-par" class="block text-gray-700 text-sm font-bold mb-2">Total Par (18 Holes):</label>
+                    <input type="number" id="course-par" name="course-par" min="50" max="80" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required placeholder="e.g., 72">
+                     <p class="text-xs text-gray-500 mt-1">Enter the standard 18-hole par for the course.</p>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" id="cancel-add-course-modal-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-5 rounded-lg">Cancel</button>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg">Add Course</button>
+                </div>
+            </form>
+        </div>`;
+    modalElement.innerHTML = modalContentHTML;
+
+    // 2. Get references to elements *inside* the newly added modal content
+    const closeButton = modalElement.querySelector('#close-add-course-modal-btn');
+    const cancelButton = modalElement.querySelector('#cancel-add-course-modal-btn');
+    const modalForm = modalElement.querySelector('#add-course-form');
+
+    // 3. Add event listeners for the modal's internal controls
+    if (closeButton) closeButton.addEventListener('click', closeAddCourseModal);
+    if (cancelButton) cancelButton.addEventListener('click', closeAddCourseModal);
+    if (modalForm) modalForm.addEventListener('submit', handleAddCourseSubmit); // Make sure handleAddCourseSubmit exists
+
+    // 4. Call the generic openModal function
+    openModal(modalElement);
+}
+// --- End Add Course Modal Functions ---
+
+
+
+function closeAddCourseModal() {
+    const modalElement = document.getElementById('add-course-modal');
+    // Call the generic closeModal function, which handles hiding,
+    // restoring scroll, and clearing content for this modal ID.
+    closeModal(modalElement);
+}
+
+// Handles submission of the Add Course modal form
+async function handleAddCourseSubmit(event) {
+    event.preventDefault(); // Prevent default form submission
+    const form = event.target; // Get the form element
+    if (!db) { alert("Database connection error. Cannot add course."); return; }
+
+    // --- Basic Form Validation ---
+    let isValid = true;
+    form.querySelectorAll('input[required]').forEach(field => {
+        field.classList.remove('border-red-500');
+        if (!field.value.trim()) { isValid = false; field.classList.add('border-red-500'); }
+    });
+    const courseParInput = form.querySelector('#course-par');
+    const coursePar = parseInt(courseParInput?.value, 10);
+    if (courseParInput && (isNaN(coursePar) || coursePar < 50 || coursePar > 80)) { // Basic par validation
+        courseParInput.classList.add('border-red-500');
+        isValid = false;
+        alert("Please enter a valid Total Par (usually between 50 and 80).");
+    }
+    if (!isValid) { alert("Please fill out all required fields correctly."); return; }
+    // --- End Validation ---
+
+    const formData = new FormData(form);
+    const courseName = formData.get('course-name')?.trim();
+    const courseLocation = formData.get('course-location')?.trim() || null; // Store null if empty
+
+    if (!courseName) { console.error("[ADD COURSE] Course name is empty after trim."); return; }
+    console.log(`[ADD COURSE] Attempting to add course: ${courseName}`);
+
+    try {
+        const courseData = {
+            name: courseName,
+            location: courseLocation,
+            total_par: coursePar, // Already parsed and validated
+            date_created: firebase.firestore.FieldValue.serverTimestamp()
+            // Add other fields like slope, rating here if you added them to the form
+        };
+
+        // Add the new course document to the 'golf_courses' collection
+        const docRef = await db.collection('golf_courses').add(courseData);
+        console.log(`[FIRESTORE] Course "${courseName}" added successfully with ID: ${docRef.id}`);
+        alert(`Course "${courseName}" added successfully!`);
+        closeAddCourseModal();
+
+        // Refresh the courses list if the golf details view is currently visible
+        const golfDetailsView = document.getElementById('golf-details-view');
+        if (golfDetailsView && !golfDetailsView.classList.contains('hidden')) {
+            await populateGolfCourses();
+        }
+        // Also refresh the course dropdown in the Record Game modal if it exists dynamically
+        // (More complex, might require re-opening or specific update logic)
+
+
+    } catch (error) {
+        console.error("Error adding course:", error);
+        alert(`Failed to add course: ${error.message}`);
+    }
+}
+
+
+function handleNavLinkClick(event) {
+    // Ensure it's a valid click event on an element
+    if (!event || !event.target) return;
+
+    // Find the closest ancestor element that has the 'data-target' attribute
+    // This handles cases where the click might be on an icon inside the link
+    const linkElement = event.target.closest('[data-target]');
+
+    if (linkElement) {
+        // Prevent default link behavior (like jumping to #hash)
+        event.preventDefault();
+
+        const targetId = linkElement.getAttribute('data-target');
+        if (targetId) {
+            console.log(`[NAV Link Click] Target section: ${targetId}`);
+            // Call showSection to display the target section
+            showSection(targetId);
+        } else {
+            console.warn("[NAV Link Click] Clicked link has no data-target attribute:", linkElement);
+        }
+    }
+    // If the clicked element or its ancestors don't have 'data-target', do nothing special.
 }
 
 async function handlePlayerLogin(event) {
@@ -3157,6 +3460,67 @@ async function getPlayerProfileByAuthId(authUid) {
             }
         }
 
+// --- NEW: Populate Golf Courses List in Sports Section ---
+async function populateGolfCourses() {
+    const listElement = document.getElementById('golf-courses-list');
+    if (!listElement) {
+        console.error("[SPORTS/GOLF] Golf courses list element (#golf-courses-list) not found.");
+        return;
+    }
+    if (!db) {
+        console.error("[SPORTS/GOLF] Firestore DB not initialized.");
+        listElement.innerHTML = '<p class="text-red-500 p-2">Error: Database connection failed.</p>';
+        return;
+    }
+
+    console.log("[SPORTS/GOLF] Populating golf courses list...");
+    listElement.innerHTML = '<p class="text-gray-500 p-2">Loading courses...</p>'; // Show loading state
+
+    try {
+        // Query the 'golf_courses' collection, order by name
+        // Requires Firestore index: golf_courses: name (asc)
+        const snapshot = await db.collection('golf_courses').orderBy('name').get();
+
+        if (snapshot.empty) {
+            listElement.innerHTML = '<p class="text-gray-500 p-2 italic">No golf courses found in the database. Use the "Add New Course" button to add one.</p>';
+            return;
+        }
+
+        listElement.innerHTML = ''; // Clear loading message
+
+        // Iterate through the courses and create list items
+        snapshot.forEach(doc => {
+            const course = { id: doc.id, ...doc.data() };
+            const courseDiv = document.createElement('div');
+            courseDiv.className = 'border-b border-gray-200 pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0';
+
+            // Basic course display - adapt structure as needed
+            courseDiv.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <h4 class="text-lg font-semibold text-gray-800">${course.name || 'Unnamed Course'}</h4>
+                    <span class="text-sm font-medium text-gray-600">Par: ${course.total_par || 'N/A'}</span>
+                </div>
+                ${course.location ? `<p class="text-xs text-gray-500">${course.location}</p>` : ''}
+                `;
+            listElement.appendChild(courseDiv);
+        });
+
+        console.log(`[SPORTS/GOLF] Populated ${snapshot.size} golf courses.`);
+
+    } catch (error) {
+        console.error("[SPORTS/GOLF] Error fetching golf courses:", error);
+        if (error.code === 'failed-precondition') {
+             listElement.innerHTML = '<p class="text-red-500 p-2">Error: Firestore index missing for sorting courses by name. Please check the console.</p>';
+             console.error("Firestore index required: 'golf_courses' collection, 'name' field (ascending). Please create this index in your Firebase console.");
+        } else {
+            listElement.innerHTML = `<p class="text-red-500 p-2">Error loading courses: ${error.message}</p>`;
+        }
+    }
+}
+
+
+
+
 // --- Add/Edit Tournament Participants Modal Functions ---
 async function openAddParticipantsModal(tournamentId) {
             // Get the specific modal container element
@@ -3509,8 +3873,6 @@ async function populateGameRankings(gameKey) {
         }
 
 
-        // --- Event Listeners Setup ---
-        // --- Event Listeners Setup ---
 // --- Event Listeners Setup ---
 function setupEventListeners() {
     console.log("[LISTENERS] Setting up...");
@@ -3523,8 +3885,6 @@ function setupEventListeners() {
     document.getElementById('register-form')?.addEventListener('submit', handlePlayerRegister);
     document.getElementById('player-login-form')?.addEventListener('submit', handlePlayerLogin);
     document.getElementById('google-signin-button')?.addEventListener('click', handleGoogleSignIn);
-    // Note: The old player logout button (#player-logout-button) and My Profile link (#my-profile-link)
-    // were removed from HTML as they are replaced by the dropdown.
 
     // --- New Profile Dropdown Listeners ---
     const profileButton = document.getElementById('profile-photo-button');
@@ -3532,11 +3892,13 @@ function setupEventListeners() {
     const editProfileLink = document.getElementById('dropdown-edit-profile');
     const logoutLink = document.getElementById('dropdown-logout');
 
+    // Listener for the profile button to toggle the dropdown
     profileButton?.addEventListener('click', (event) => {
         event.stopPropagation(); // Prevent click from bubbling to document
         profileDropdown?.classList.toggle('hidden');
     });
 
+    // Listener for the "Edit Profile" link in the dropdown
     editProfileLink?.addEventListener('click', (event) => {
         event.preventDefault();
         profileDropdown?.classList.add('hidden'); // Hide dropdown
@@ -3544,33 +3906,36 @@ function setupEventListeners() {
             openPlayerModal(currentPlayer.id); // Open profile modal
         } else {
             console.warn("Edit profile clicked, but no current player ID found.");
-            // Optionally redirect to login or show message
             alert("Please log in to edit your profile.");
             showSection('player-login-section');
         }
     });
 
+    // Listener for the "Logout" link in the dropdown
     logoutLink?.addEventListener('click', (event) => {
         event.preventDefault();
         profileDropdown?.classList.add('hidden'); // Hide dropdown
-        handlePlayerLogout(); // Call existing player logout function (which uses auth.signOut())
+        handlePlayerLogout(); // Call existing player logout function
     });
 
-    // Optional: Close dropdown if clicking outside
+    // Optional: Close dropdown if clicking anywhere else on the document
     document.addEventListener('click', (event) => {
+        // Check if the click target is NOT the profile button AND NOT inside the dropdown
         if (!profileButton?.contains(event.target) && !profileDropdown?.contains(event.target)) {
-            profileDropdown?.classList.add('hidden');
+            profileDropdown?.classList.add('hidden'); // Hide the dropdown
         }
     });
     // --- End New Profile Dropdown Listeners ---
 
 
     // --- Admin Contextual Buttons (Modal Triggers - Visibility controlled by CSS/isAdmin flag) ---
+    // These buttons likely exist only when an admin is logged in
     openRecordGameModalBtn?.addEventListener('click', openRecordGameModal);
     openAddPlayerModalBtn?.addEventListener('click', openAddPlayerModal);
     openCreateTournamentModalBtn?.addEventListener('click', openCreateTournamentModal);
     openAddGameModalBtn?.addEventListener('click', openAddGameModal);
-    // Note: Edit/Delete buttons for tournaments/games are handled via event delegation or within modals
+    // Listener for the admin button to add a new golf course
+    document.getElementById('open-add-course-modal-btn')?.addEventListener('click', openAddCourseModal); // Make sure openAddCourseModal exists
 
 
     // --- Modal Overlay Click-to-Close (Generic for main modals) ---
@@ -3581,9 +3946,12 @@ function setupEventListeners() {
         document.getElementById('create-tournament-modal'),
         document.getElementById('add-game-modal'),
         document.getElementById('edit-tournament-modal'),
-        document.getElementById('add-participants-modal')
+        document.getElementById('add-participants-modal'),
+        document.getElementById('add-course-modal'), // Add the new course modal here
+        document.getElementById('golf-rules-modal')  // Add the golf rules modal here
     ];
     mainModals.forEach(modal => {
+        // Add listener only if the modal element actually exists
         modal?.addEventListener('click', (event) => {
             // Only close if the overlay background itself is clicked, not content inside
             if (event.target === modal) {
@@ -3602,16 +3970,13 @@ function setupEventListeners() {
         if (event.target.matches('#close-player-modal-btn')) {
             closePlayerModal();
         } else if (event.target.matches('#edit-player-modal-btn')) {
-            // This button might be within admin-only or player-only controls,
-            // the visibility logic handles who sees it.
             togglePlayerModalEdit(true);
         } else if (event.target.matches('#save-player-changes-btn')) {
-            savePlayerChanges(); // This function should verify user permissions if needed
+            savePlayerChanges();
         } else if (event.target.matches('#cancel-player-edit-btn')) {
             togglePlayerModalEdit(false);
         } else if (event.target.matches('#delete-player-btn')) {
-            // This button might be admin-only depending on your HTML structure/CSS
-            deletePlayer(); // This function should verify permissions if needed
+            deletePlayer();
         }
     });
 
@@ -3639,14 +4004,20 @@ function setupEventListeners() {
             console.error("Gear button clicked, but no game-id found on the button.");
             return;
         }
-        // Assumes visibility is handled by '.admin-only' class controlled by isAdmin flag check
+        // Assumes visibility is handled by '.admin-only' class
         console.log(`[Results Table] Edit/Delete gear clicked for game: ${gameId}`);
         handleEditGame(gameId); // Function opens the Edit Game Modal
     });
 
 
-    // --- Body-Level Event Delegation (for dynamically added content like tournament links, player links) ---
-    document.body.addEventListener('click', (event) => {
+    // --- Body-Level Event Delegation (for dynamically added content like tournament links, player links, sports details) ---
+    document.body.addEventListener('click', async (event) => {
+
+        // Ensure event and event.target exist before proceeding
+        if (!event || !event.target) {
+            // console.warn("Body click listener called without valid event or target."); // Optional log
+            return; // Exit if event or target is missing
+        }
 
         // Handle "View Details" links for tournaments
         const tournamentLink = event.target.closest('.view-tournament-details-link');
@@ -3655,15 +4026,15 @@ function setupEventListeners() {
             const tournamentId = tournamentLink.getAttribute('data-tournament-id');
             if (tournamentId) {
                 console.log(`[NAV Delegation] Viewing tournament details for: ${tournamentId}`);
-                showSection('tournament-detail-section'); // Navigate to the detail section
-                populateTournamentDetails(tournamentId); // Fetch and display details *after* showing section
+                populateTournamentDetails(tournamentId); // Fetch and display details
             } else {
                 console.warn("Clicked view details link without a tournament ID.");
             }
+            return; // Stop further processing for this click
         }
 
         // Handle clicks on player names (e.g., in tournament participant lists)
-        const playerLink = event.target.closest('.player-link'); // Find the closest parent with the class
+        const playerLink = event.target.closest('.player-link');
         if (playerLink) {
             event.preventDefault(); // Prevent default if it's an actual <a> tag
             const playerId = playerLink.getAttribute('data-player-id');
@@ -3673,63 +4044,109 @@ function setupEventListeners() {
             } else {
                 console.warn("Clicked player link without a player ID.");
             }
+            return; // Stop further processing for this click
+        }
+
+        // Handle "View Details" buttons in the Sports Gallery
+        const sportDetailsButton = event.target.closest('.view-sport-details-btn');
+        if (sportDetailsButton) {
+            event.preventDefault(); // Good practice even for buttons
+            const sportKey = sportDetailsButton.getAttribute('data-sport');
+            const sportsGallery = document.getElementById('sports-gallery');
+            const golfDetailsView = document.getElementById('golf-details-view');
+
+            console.log(`[SPORTS Delegation] Clicked details for sport: ${sportKey}`);
+
+            if (sportKey === 'golf' && sportsGallery && golfDetailsView) {
+                // Show Golf Specific View
+                sportsGallery.classList.add('hidden');
+                golfDetailsView.classList.remove('hidden');
+                window.scrollTo(0, 0); // Scroll to top
+
+                // Populate Golf Data when view is shown
+                // Ensure these functions exist and handle loading states
+                populateGolfCourses();
+                // populateGolfResults(); // Add this function if you need to show recent golf results here
+
+            } else if (sportKey === 'overall' || sportKey === 'pool' /* Add other non-golf keys */) {
+                // Navigate to the relevant main section (e.g., Rankings)
+                console.log(`Navigating to main section for ${sportKey}`);
+                showSection('rankings-section'); // Adjust target section as needed
+                 // Optionally pre-select the filter if needed
+                 if (rankingsGameFilter) {
+                     rankingsGameFilter.value = sportKey; // Set filter value
+                     await updateRankingsVisibility(); // Update view based on filter
+                 }
+            } else {
+                console.warn(`Unhandled sport key clicked: ${sportKey}`);
+            }
+            return; // Stop further processing
+        }
+
+        // Handle "Back to Sports Gallery" button
+        const backToGalleryButton = event.target.closest('#back-to-sports-gallery-btn');
+        if (backToGalleryButton) {
+            event.preventDefault();
+            const sportsGallery = document.getElementById('sports-gallery');
+            const golfDetailsView = document.getElementById('golf-details-view');
+
+            if (sportsGallery && golfDetailsView) {
+                console.log("[SPORTS Delegation] Clicking back to gallery.");
+                golfDetailsView.classList.add('hidden');
+                sportsGallery.classList.remove('hidden');
+                window.scrollTo(0, 0); // Scroll to top
+            }
+            return; // Stop further processing
+        }
+
+        // Handle "View Official Rules" button (Golf Page)
+        const rulesBtn = event.target.closest('#show-golf-rules-btn');
+        if (rulesBtn) {
+            console.log("[MODAL] Opening golf rules modal.");
+            const rulesModal = document.getElementById('golf-rules-modal');
+            const rulesIframe = document.getElementById('golf-rules-iframe');
+            if (rulesModal && rulesIframe) {
+                // Set the iframe src only when opening the modal the first time
+                if (rulesIframe.src === 'about:blank') {
+                    rulesIframe.src = 'https://www.randa.org/en/rog/the-rules-of-golf'; // Official Rules URL
+                }
+                openModal(rulesModal); // Use your existing openModal function
+            } else {
+                console.error("Could not find golf rules modal or iframe elements.");
+            }
+            return; // Stop further processing
+        }
+
+        // Handle closing the Golf Rules modal via its specific close button
+        const closeRulesBtn = event.target.closest('#close-golf-rules-modal-btn');
+        if (closeRulesBtn) {
+            console.log("[MODAL] Closing golf rules modal via button.");
+            const rulesModal = document.getElementById('golf-rules-modal');
+            if (rulesModal) {
+                closeModal(rulesModal); // Use your existing closeModal function
+            }
+            return; // Stop further processing
         }
 
         // Add other body-level delegated listeners here if needed...
+        // Example: Listener for '+' button in tournament details to add participants
+        const addParticipantsButton = event.target.closest('#add-participant-plus-btn');
+        if (addParticipantsButton) {
+             const tournamentId = addParticipantsButton.getAttribute('data-tournament-id'); // Ensure button has this attribute
+             if (tournamentId) {
+                 openAddParticipantsModal(tournamentId);
+             } else {
+                 console.warn("Add participants button clicked without tournament ID.");
+             }
+             return;
+        }
 
-    });
+
+    }); // End of body click listener
 
     console.log("[LISTENERS] Setup complete.");
-}
-        // --- Specific Event Handlers ---
-        function handleNavLinkClick(event) {
-            // Handles clicks on main navigation links AND other links with data-target
-            const targetId = event.currentTarget.getAttribute('data-target');
-            if (targetId) {
-                event.preventDefault(); // Prevent default anchor jump
-                showSection(targetId); // Show the target section
-            }
-        }
-        function handleLoginFormSubmit(event) {
-            event.preventDefault(); // Prevent form submission reload
-            const passwordInput = document.getElementById('password');
-            if (passwordInput) login(passwordInput.value); // Attempt login
-        }
+} // End of setupEventListeners function
 
-        // --- Admin Login/Logout Logic ---
-        function checkLoginState() {
-             // Checks sessionStorage to see if admin is logged in
-             const isLoggedIn = sessionStorage.getItem('isAdminLoggedIn') === 'true';
-             if (isLoggedIn) {
-                 document.body.classList.add('admin-logged-in'); // Add class to show admin elements
-             } else {
-                 document.body.classList.remove('admin-logged-in'); // Remove class to hide admin elements
-             }
-             return isLoggedIn;
-        }
-        function login(password) {
-            // Simple password check (replace with secure auth in production)
-            if (password === ADMIN_PASSWORD) {
-                sessionStorage.setItem('isAdminLoggedIn', 'true'); // Store login state
-                checkLoginState(); // Update UI immediately
-                showSection('home-section'); // Navigate to home after login
-                loginError?.classList.add('hidden'); // Hide error message
-                const passwordInput = document.getElementById('password');
-                if(passwordInput) passwordInput.value = ''; // Clear password field
-            } else {
-                loginError?.classList.remove('hidden'); // Show error message
-            }
-        }
-        function logout() {
-            sessionStorage.removeItem('isAdminLoggedIn'); // Clear login state
-            checkLoginState(); // Update UI
-            showSection('home-section'); // Navigate to home on logout
-        }
-
-        // --- Form Submission Handlers (Triggered from Modals) ---
-
-        // Handles submission of the Add Player modal form
-       // Handles submission of the Add Player modal form
 // Handles submission of the Add Player modal form
 async function handleAddPlayerSubmit(event) {
             event.preventDefault(); // Prevent default form submission (page reload)
@@ -4583,11 +5000,9 @@ async function handleEditTournamentDetail(tournamentId) {
         }
         // --- End Elo Functions ---
 
-        // --- Initialization Function ---
-// --- Initialization Function (Refactored) ---
 // --- Initialization Function ---
 async function initializeApp() { // Added async
-     try {
+    try {
         console.log("[INIT] Initializing App...");
         assignElements(); // Get references to DOM elements
         if (!db || !auth) { // Check auth too
@@ -4600,86 +5015,85 @@ async function initializeApp() { // Added async
         await fetchAllPlayersForCache(); // Wait for cache to populate
 
         updateGameTypeDropdowns(); // Initial population of game type dropdowns
-        checkLoginState(); // Check if admin state needs UI update (for admin-only content)
+        // checkLoginState(); // <<< THIS LINE IS REMOVED
         setupEventListeners(); // Set up all event listeners
 
         // --- MOVE AUTH LISTENER HERE ---
         auth.onAuthStateChanged(async (user) => {
-     const loginButton = document.getElementById('player-login-link');
-     const profileSection = document.getElementById('profile-section');
-     const profileImg = document.getElementById('profile-photo-img');
+            const loginButton = document.getElementById('player-login-link');
+            const profileSection = document.getElementById('profile-section');
+            const profileImg = document.getElementById('profile-photo-img');
 
-     // Clear admin state first
-     document.body.classList.remove('player-logged-in');
-     document.body.classList.remove('admin-logged-in'); // Remove admin class initially
-     currentPlayer = null; // Reset current player
+            // Clear admin state first
+            document.body.classList.remove('player-logged-in');
+            document.body.classList.remove('admin-logged-in'); // Remove admin class initially
+            currentPlayer = null; // Reset current player
 
-     if (user) {
-         // Player is signed in.
-         console.log("Auth State Changed: User is logged in", user.uid);
-         document.body.classList.add('player-logged-in'); // Mark as player logged in
+            if (user) {
+                // Player is signed in.
+                console.log("Auth State Changed: User is logged in", user.uid);
+                document.body.classList.add('player-logged-in'); // Mark as player logged in
 
-         currentPlayer = await getPlayerProfileByAuthId(user.uid);
+                currentPlayer = await getPlayerProfileByAuthId(user.uid);
 
-         if (currentPlayer) {
-             console.log("Current player data:", currentPlayer);
+                if (currentPlayer) {
+                    console.log("Current player data:", currentPlayer);
 
-             // ---> CHECK FOR ADMIN <---
-             if (currentPlayer.isAdmin === true) {
-                 console.log("User is an Admin.");
-                 document.body.classList.add('admin-logged-in'); // Add admin class to body
-             } else {
-                  console.log("User is NOT an Admin.");
-                  // No need to remove admin-logged-in here, it was removed initially
-             }
-             // ---> END CHECK <---
+                    // ---> CHECK FOR ADMIN <---
+                    if (currentPlayer.isAdmin === true) {
+                        console.log("User is an Admin.");
+                        document.body.classList.add('admin-logged-in'); // Add admin class to body
+                    } else {
+                        console.log("User is NOT an Admin.");
+                        // No need to remove admin-logged-in here, it was removed initially
+                    }
+                    // ---> END CHECK <---
 
-             // Update profile photo
-             const photoURL = currentPlayer.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentPlayer.name || '?')}&background=E0E7FF&color=4F46E5&size=40`;
-             if (profileImg) profileImg.src = photoURL;
+                    // Update profile photo
+                    const photoURL = currentPlayer.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentPlayer.name || '?')}&background=E0E7FF&color=4F46E5&size=40`;
+                    if (profileImg) profileImg.src = photoURL;
 
-         } else {
-             console.warn("Logged in user has no associated player profile!", user.uid);
-             if (profileImg) profileImg.src = 'https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40'; // Default icon
-             currentPlayer = { authUid: user.uid, email: user.email, name: "Profile Needed", isAdmin: false }; // Assume not admin
-         }
+                } else {
+                    console.warn("Logged in user has no associated player profile!", user.uid);
+                    if (profileImg) profileImg.src = 'https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40'; // Default icon
+                    currentPlayer = { authUid: user.uid, email: user.email, name: "Profile Needed", isAdmin: false }; // Assume not admin
+                }
 
-         // Navigate away from login/register if needed
-         if (window.location.hash === '#player-login-section' || window.location.hash === '#register-section') {
-             await showSection('home-section');
-         }
+                // Navigate away from login/register if needed
+                if (window.location.hash === '#player-login-section' || window.location.hash === '#register-section') {
+                    await showSection('home-section');
+                }
 
-     } else {
-         // Player is signed out.
-         console.log("Auth State Changed: User is logged out");
-         // Body classes 'player-logged-in' and 'admin-logged-in' were already removed above.
-         document.getElementById('profile-dropdown')?.classList.add('hidden'); // Ensure dropdown is hidden
-     }
-             // Let CSS handle visibility based on body class, no need to add/remove 'player-only' here.
+            } else {
+                // Player is signed out.
+                console.log("Auth State Changed: User is logged out");
+                // Body classes 'player-logged-in' and 'admin-logged-in' were already removed above.
+                document.getElementById('profile-dropdown')?.classList.add('hidden'); // Ensure dropdown is hidden
+            }
+            // Let CSS handle visibility based on body class, no need to add/remove 'player-only' here.
         });
         // --- END AUTH LISTENER ---
-
 
         // Handle initial page load based on URL hash or default to home
         const initialHash = window.location.hash;
         let initialSectionId = 'home-section'; // Default section
         if (initialHash && initialHash !== '#') {
-             const targetIdFromHash = initialHash.substring(1);
-             const targetSection = document.getElementById(targetIdFromHash);
-             if (targetSection?.classList.contains('page-section')) {
-                  initialSectionId = targetIdFromHash;
-             } else {
-                 console.warn(`[INIT] Hash '#${targetIdFromHash}' does not correspond to a valid section. Defaulting to home.`);
-             }
+            const targetIdFromHash = initialHash.substring(1);
+            const targetSection = document.getElementById(targetIdFromHash);
+            if (targetSection?.classList.contains('page-section')) {
+                initialSectionId = targetIdFromHash;
+            } else {
+                console.warn(`[INIT] Hash '#${targetIdFromHash}' does not correspond to a valid section. Defaulting to home.`);
+            }
         }
         // Show the initial section AFTER setting up the auth listener
         await showSection(initialSectionId);
 
         console.log("[INIT] App Initialized Successfully.");
-     } catch (error) {
-         console.error("Error during app initialization:", error);
-         alert(`An error occurred while initializing the application: ${error.message}. Please check the console.`);
-     }
+    } catch (error) {
+        console.error("Error during app initialization:", error);
+        alert(`An error occurred while initializing the application: ${error.message}. Please check the console.`);
+    }
 }
 
 // --- Run Initialization on DOM Load ---

@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
 
-body.admin-logged-in #tournament-detail-content .admin-only { display: block; } /* Or inline-flex if you prefer */
+body.admin-logged-in #tournament-detail-content .admin-only { display: inline-block; } /* Or inline-flex if you prefer */
         /* Basic styles */
         body { font-family: 'Inter', sans-serif; }
         a, button, .player-entry { transition: all 0.2s ease-in-out; }
@@ -236,14 +236,10 @@ body.admin-logged-in #tournament-detail-content .admin-only { display: block; } 
                         <p class="text-lg mb-1"><strong>Format:</strong> <span id="tournament-detail-format">[Format]</span></p>
                         <p class="text-lg mb-4"><strong>Status:</strong> <span id="tournament-detail-status" class="font-medium">[Status]</span></p>
     
-                        <div class="mt-6 mb-3"> {/* Removed flex container */}
+                        <div class="mt-6 mb-3">
                             <h3 class="text-xl font-semibold text-indigo-600 inline-block mr-2">Participants</h3>
-                             {/* Admin-only container for the '+' button */}
-                            <div class="admin-only inline-block">
-                                 <button id="add-participant-plus-btn" title="Add Participants" class="text-green-600 hover:text-green-800 text-xl font-bold leading-none align-middle focus:outline-none">
-                                     +
-                                 </button>
-                             </div>
+                             
+
                         </div>
                        <div id="tournament-detail-participants" class="space-y-2">
                            <p class="text-gray-500 italic">Loading participants...</p>
@@ -258,7 +254,7 @@ body.admin-logged-in #tournament-detail-content .admin-only { display: block; } 
                         <div class="admin-only mt-6">
                             <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
                                 Report Match Result </button>
-                             {/* TODO: Add functionality to this button later */}
+                             
                         </div>
                     </div>
                  </div>
@@ -325,7 +321,7 @@ body.admin-logged-in #tournament-detail-content .admin-only { display: block; } 
     <div id="create-tournament-modal" class="modal-overlay"> </div>
     <div id="add-game-modal" class="modal-overlay"> </div>
     <div id="edit-tournament-modal" class="modal-overlay">
-
+    </div> <div id="add-participants-modal" class="modal-overlay"></div>
     <footer class="text-center text-gray-600 text-base mt-12 mb-6"> &copy; 2025 LeaderBored. Keep it friendly!
     </footer>
 
@@ -444,6 +440,8 @@ let playersCachePopulated = false; // Flag to track if initial population happen
             openCreateTournamentModalBtn = document.getElementById('open-create-tournament-modal-btn');
             addGameModal = document.getElementById('add-game-modal');
             openAddGameModalBtn = document.getElementById('open-add-game-modal-btn');
+            addParticipantsModal = document.getElementById('add-participants-modal'); // <<< ADD THIS LINE
+
             // Other elements
             rankingsGameFilter = document.getElementById('rankings-game-filter');
             rankingTablesContainer = document.getElementById('ranking-tables-container');
@@ -1135,21 +1133,21 @@ async function openRecordGameModal() { // Make the function async
                             <label for="game-type-select-modal" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label>
                             <select id="game-type-select-modal" name="game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
                                 <option value="">Select Game Type</option>
-                                {/* Options populated by JS */}
+                                
                             </select>
                         </div>
 
-                        {/* --- Standard Game Fields (Initially hidden/managed by JS) --- */}
+                        
                         <div class="mb-4 standard-game-field" style="display: none;">
                             <label for="winner_player" class="block text-gray-700 text-sm font-bold mb-2">Winner:</label>
                             <select id="winner_player" name="winner_player" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700">
-                                {/* Options populated by JS using populatePlayerDropdown */}
+                                
                             </select>
                         </div>
                         <div class="mb-4 standard-game-field" style="display: none;">
                             <label for="loser_player" class="block text-gray-700 text-sm font-bold mb-2">Loser:</label>
                             <select id="loser_player" name="loser_player" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700">
-                                {/* Options populated by JS using populatePlayerDropdown */}
+                                
                             </select>
                         </div>
                         <div class="mb-4 standard-game-field" style="display: none;">
@@ -1158,10 +1156,10 @@ async function openRecordGameModal() { // Make the function async
                                 <span class="ml-2 text-gray-700">Record as a Draw?</span>
                              </label>
                          </div>
-                        {/* --- End Standard Game Fields --- */}
+                       
 
 
-                        {/* --- Golf Specific Fields Placeholder (Initially empty) --- */}
+                        
                         <div id="golf-specific-options" class="golf-specific" style="display: none;">
                              <div class="mb-4 border border-gray-200 p-4 rounded-lg bg-gray-50">
                                 <div class="mb-3">
@@ -1189,27 +1187,27 @@ async function openRecordGameModal() { // Make the function async
                                 </div>
                              </div>
 
-                             {/* Fields previously added dynamically (Player, Course) will be added here by JS */}
+                            
                              <div id="golf-player-select-container" class="mb-4"></div>
                              <div id="golf-course-select-container" class="mb-4"></div>
 
-                             {/* Placeholder for hole score inputs */}
+                             
                              <div id="golf-hole-scores-section" class="mt-4 pt-4 border-t" style="display: none;">
                                  <h3 class="text-lg font-semibold mb-3 text-indigo-600">Enter Hole Scores:</h3>
                                  <div id="golf-hole-inputs-container" class="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                                     {/* Hole inputs will be generated here */}
+                                    
                                  </div>
                              </div>
                         </div>
-                        {/* --- End Golf Specific Fields --- */}
+                       
 
 
-                        {/* --- Shared Score Field --- */}
+                       
                         <div class="mb-4">
                             <label for="score" class="block text-gray-700 text-sm font-bold mb-2">Score:</label>
                             <input type="text" id="score" name="score" placeholder="Calculated or Enter Total" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700">
                         </div>
-                        {/* --- End Shared Score Field --- */}
+                     
 
                         <div class="mt-6 flex justify-end space-x-3">
                             <button type="button" id="cancel-record-game-modal-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-5 rounded-lg">Cancel</button>
@@ -1327,7 +1325,7 @@ async function openRecordGameModal() { // Make the function async
                          golfPlayerContainer.innerHTML = `
                             <label for="golf_player" class="block text-gray-700 text-sm font-bold mb-2">Player:*</label>
                             <select id="golf_player" name="golf_player" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
-                                {/* Options populated below */}
+                                
                             </select>`;
                          // Populate Player Dropdown using the fetched list
                          const golfPlayerSelect = golfPlayerContainer.querySelector('#golf_player');
@@ -1341,7 +1339,7 @@ async function openRecordGameModal() { // Make the function async
                             <label for="golf_course" class="block text-gray-700 text-sm font-bold mb-2">Course Played:*</label>
                             <select id="golf_course" name="golf_course" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
                                 <option value="">Loading Courses...</option>
-                                {/* Options populated below */}
+                               
                             </select>`;
                         // Populate Course Dropdown (This still needs its own fetch logic)
                          const golfCourseSelect = golfCourseContainer.querySelector('#golf_course');
@@ -1592,7 +1590,7 @@ function openAddPlayerModal() {
                          <label for="tournament-game-type-select" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label>
                          <select id="tournament-game-type-select" name="tournament-game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
                              <option value="">Select Type</option>
-                             {/* Options populated by JS */}
+                            
                          </select>
                      </div>
                      <div class="mb-5">
@@ -1611,7 +1609,7 @@ function openAddPlayerModal() {
                      <div class="mb-5">
                          <label class="block text-gray-700 text-sm font-bold mb-2">Participants:</label>
                          <div id="tournament-participants-list" class="h-40 border rounded-lg p-3 overflow-y-auto bg-gray-50 space-y-2">
-                             {/* Checkboxes populated by JS using populateParticipantChecklist */}
+                            
                              <p class="text-gray-500 p-2">Loading participants...</p>
                          </div>
                          <p class="text-xs text-gray-500 mt-1">Select participants. Seeding may be based on current rankings for the selected game type.</p>
@@ -2053,19 +2051,19 @@ async function openEditGameModal(gameData) { // Make the function async
                             <label for="edit-game-type-select-modal" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label>
                             <select id="edit-game-type-select-modal" name="game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
                                 <option value="">Select Game Type</option>
-                                {/* Options populated by JS */}
+                                
                             </select>
                         </div>
                         <div class="mb-4">
                             <label for="edit-player1" class="block text-gray-700 text-sm font-bold mb-2">${isDraw ? 'Player 1:' : 'Winner:'}</label>
                             <select id="edit-player1" name="player1" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
-                                {/* Options populated by JS using populatePlayerDropdown */}
+                                
                             </select>
                         </div>
                         <div class="mb-4">
                             <label for="edit-player2" class="block text-gray-700 text-sm font-bold mb-2">${isDraw ? 'Player 2:' : 'Loser:'}</label>
                             <select id="edit-player2" name="player2" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700" required>
-                                {/* Options populated by JS using populatePlayerDropdown */}
+                                
                             </select>
                         </div>
                         <div class="mb-4">
@@ -2083,11 +2081,11 @@ async function openEditGameModal(gameData) { // Make the function async
                              </label>
                          </div>
 
-                        {/* Button container with Delete, Cancel, Save */}
+                        
                         <div class="mt-6 flex justify-between items-center">
-                            {/* Delete button on the left */}
+                            
                             <button type="button" id="modal-delete-game-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-lg shadow hover:shadow-md">Delete</button>
-                            {/* Save and Cancel on the right */}
+                            
                             <div class="space-x-3">
                                 <button type="button" id="cancel-edit-game-modal-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-5 rounded-lg">Cancel</button>
                                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-lg">Save Changes</button>
@@ -2653,7 +2651,7 @@ function closeEditGameModal() {
             tournamentDetailSection.classList.add('loading'); tournamentDetailSection.classList.remove('error'); container.style.display = 'none'; // Hide content while loading
 
         // Inside the function where you add listeners for #edit-tournament-detail-btn etc.
-        const addParticipantsButton = container.querySelector('#open-add-participants-modal-btn');
+        const addParticipantsButton = container.querySelector('#add-participant-plus-btn'); // <<< CORRECT ID
         if (addParticipantsButton) {
             const listener = () => openAddParticipantsModal(tournamentId); // Pass tournament ID
             addParticipantsButton.addEventListener('click', listener);
@@ -2721,7 +2719,145 @@ function closeEditGameModal() {
             }
         }
 
+// --- Add/Edit Tournament Participants Modal Functions ---
+async function openAddParticipantsModal(tournamentId) {
+            // Get the specific modal container element
+            const modalElement = document.getElementById('add-participants-modal');
+            if (!modalElement) {
+                console.error("Add Participants modal container (#add-participants-modal) not found.");
+                alert("Error: Cannot open Add Participants form.");
+                return;
+            }
+            if (!db) {
+                console.error("Add Participants modal: DB not ready.");
+                alert("Error: Cannot open Add Participants form. Database might not be connected.");
+                return;
+            }
 
+            console.log(`[MODAL Add Participants] Opening for tournament ${tournamentId}`);
+            modalElement.innerHTML = '<div class="modal-content"><p>Loading...</p></div>'; // Basic loading state
+            openModal(modalElement); // Open the modal overlay quickly
+
+            let currentParticipants = [];
+            let tournamentName = 'Tournament';
+
+            try {
+                // 1. Fetch current tournament data (to get existing participants)
+                const tournamentDoc = await db.collection('tournaments').doc(tournamentId).get();
+                if (!tournamentDoc.exists) {
+                    throw new Error("Tournament data not found.");
+                }
+                const tournamentData = tournamentDoc.data();
+                currentParticipants = tournamentData.participants || [];
+                tournamentName = tournamentData.name || tournamentName;
+
+                // 2. Fetch all players (reuse global cache if populated, otherwise fetch)
+                if (!playersCachePopulated) {
+                    console.warn("[MODAL Add Participants] Player cache not populated, fetching...");
+                    await fetchAllPlayersForCache();
+                }
+                // Convert cache object back to array for easier use here
+                const allPlayersArray = Object.values(globalPlayerCache || {});
+                if (allPlayersArray.length === 0 && !playersCachePopulated) {
+                    // Check again if cache failed
+                    throw new Error("Failed to load player list.");
+                }
+
+                // 3. Define and Inject the specific HTML content for this modal
+                const modalContentHTML = `
+                    <div class="modal-content">
+                        <button id="close-add-participants-modal-btn" class="modal-close-button">&times;</button>
+                        <h2 class="text-2xl font-semibold mb-5 text-indigo-700">Add/Remove Participants</h2>
+                        <h3 class="text-lg font-medium mb-4 text-gray-600">${tournamentName}</h3>
+                        <form id="add-participants-form" data-tournament-id="${tournamentId}">
+                            <div class="mb-5">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Select Players:</label>
+                                <div id="add-participants-checklist" class="h-60 border rounded-lg p-3 overflow-y-auto bg-gray-50 space-y-2">
+                                    <p class="text-gray-500 p-2">Loading checklist...</p>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Check players to include them in the tournament.</p>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-3">
+                                <button type="button" id="cancel-add-participants-modal-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-5 rounded-lg">Cancel</button>
+                                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md">Update Participants</button>
+                            </div>
+                        </form>
+                    </div>`;
+                modalElement.innerHTML = modalContentHTML; // Inject full HTML
+
+                // 4. Populate the checklist
+                const participantsChecklistContainer = modalElement.querySelector('#add-participants-checklist');
+                if (participantsChecklistContainer) {
+                    // Use the helper function to populate, passing current participants
+                    populateParticipantChecklist(participantsChecklistContainer, allPlayersArray, currentParticipants);
+                } else {
+                    console.error("Participant checklist container not found in Add Participants modal.");
+                }
+
+                // 5. Attach Event Listeners for elements INSIDE the modal
+                const closeButton = modalElement.querySelector('#close-add-participants-modal-btn');
+                const cancelButton = modalElement.querySelector('#cancel-add-participants-modal-btn');
+                const modalForm = modalElement.querySelector('#add-participants-form');
+
+                if (closeButton) closeButton.addEventListener('click', closeAddParticipantsModal);
+                if (cancelButton) cancelButton.addEventListener('click', closeAddParticipantsModal);
+                if (modalForm) modalForm.addEventListener('submit', handleAddParticipantsSubmit);
+
+            } catch (error) {
+                console.error("[MODAL Add Participants] Error:", error);
+                alert(`Error opening participants modal: ${error.message}`);
+                // Inject error message into modal and close if necessary
+                modalElement.innerHTML = `<div class="modal-content"><p class="text-red-500">Error loading participant data: ${error.message}</p><button id="close-add-participants-error-btn" class="modal-close-button">&times;</button></div>`;
+                modalElement.querySelector('#close-add-participants-error-btn')?.addEventListener('click', () => closeModal(modalElement));
+                // Don't call openModal again, it's already open
+            }
+        }
+
+        function closeAddParticipantsModal() {
+            const modalElement = document.getElementById('add-participants-modal');
+            // Call the generic closeModal function
+            closeModal(modalElement);
+        }
+
+        async function handleAddParticipantsSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const tournamentId = form.getAttribute('data-tournament-id');
+            if (!db || !tournamentId) { alert("Error: DB or Tournament ID missing."); return; }
+
+            const selectedParticipants = []; // Get newly selected participant IDs
+            form.querySelectorAll('input[name="participants"]:checked').forEach(checkbox => {
+                selectedParticipants.push(checkbox.value);
+            });
+
+            // Basic validation (e.g., need at least 2 for non-FFA formats - could fetch format if needed)
+            if (selectedParticipants.length < 1) { // Allow 1 participant maybe? Adjust as needed.
+                 alert("Please select at least one participant.");
+                 return;
+            }
+
+            console.log(`[UPDATE PARTICIPANTS] Updating tournament ${tournamentId} with:`, selectedParticipants);
+
+            try {
+                const tournamentRef = db.collection('tournaments').doc(tournamentId);
+                // Update only the participants array and add a timestamp
+                await tournamentRef.update({
+                    participants: selectedParticipants,
+                    last_updated: firebase.firestore.FieldValue.serverTimestamp()
+                 });
+
+                alert("Tournament participants updated successfully!");
+                closeAddParticipantsModal(); // Close the modal
+
+                // Refresh the tournament details view to show the updated list
+                await populateTournamentDetails(tournamentId);
+
+            } catch (error) {
+                 console.error("Error updating tournament participants:", error);
+                 alert(`Failed to update participants: ${error.message}`);
+            }
+        }
+        // --- End Add/Edit Tournament Participants Modal Functions ---
         // --- Rankings Page Population ---
         async function updateRankingsVisibility() {
             // Ensure necessary elements and DB connection are available
@@ -2769,11 +2905,11 @@ function closeEditGameModal() {
                                  <tr class="bg-gray-100">
                                      <th class="px-4 py-3">Rank</th>
                                      <th class="px-4 py-3">Player</th>
-                                     <th class="px-4 py-3">${ratingHeader}</th> {/* Dynamic Header */}
+                                     <th class="px-4 py-3">${ratingHeader}</th> 
                                  </tr>
                              </thead>
                              <tbody id="${selectedGame}-rankings-body">
-                                 {/* Loading state added by populate function */}
+                                
                                  <tr><td colspan="3" class="text-center py-4 text-gray-500">Initializing...</td></tr>
                              </tbody>
                          </table>
@@ -3669,6 +3805,8 @@ async function updateGolfHandicap(playerId, scoresToConsider = 10) {
                // --- Tournament Edit Modal Functions (Refactored for Generic Modal) ---
        let currentTournamentData = null; // Store data for edit modal
 
+
+
 function openEditTournamentModal(tournamentData) {
     // Get the specific modal container element
     const modalElement = document.getElementById('edit-tournament-modal');
@@ -3710,7 +3848,7 @@ function openEditTournamentModal(tournamentData) {
                      <label for="edit-tournament-game-type" class="block text-gray-700 text-sm font-bold mb-2">Game Type:</label>
                      <select id="edit-tournament-game-type" name="tournament-game-type" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700 bg-gray-100" disabled>
                          <option value="">Loading...</option>
-                         {/* Populated by JS - Disabled as changing game type post-creation is complex */}
+                         
                      </select>
                      <p class="text-xs text-gray-500 mt-1">Game type cannot be changed after creation.</p>
                  </div>
@@ -3735,11 +3873,19 @@ function openEditTournamentModal(tournamentData) {
                          <option value="Completed">Completed</option>
                      </select>
                  </div>
-                 {/* Note: Editing participants here is complex - omitted for simplicity */}
+                 
 
-                 <div class="mt-6 flex justify-end space-x-3">
-                     <button type="button" id="cancel-edit-tournament-modal-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-5 rounded-lg">Cancel</button>
-                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md">Save Changes</button>
+                 <div class="mt-6 flex justify-between items-center"> 
+                     
+                     <button type="button" id="modal-add-participants-btn" title="Add/Remove Participants" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow hover:shadow-md text-lg leading-tight">
+                         + Participants
+                     </button>
+
+                     
+                     <div class="space-x-3">
+                        <button type="button" id="cancel-edit-tournament-modal-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-5 rounded-lg">Cancel</button>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg shadow hover:shadow-md">Save Changes</button>
+                    </div>
                  </div>
              </form>
         </div>`;
@@ -3762,12 +3908,23 @@ function openEditTournamentModal(tournamentData) {
     const closeButton = modalElement.querySelector('#close-edit-tournament-modal-btn');
     const cancelButton = modalElement.querySelector('#cancel-edit-tournament-modal-btn');
     const modalForm = modalElement.querySelector('#edit-tournament-form');
+    const addParticipantsBtn = modalElement.querySelector('#modal-add-participants-btn'); // <-- Get reference to the new button
 
     // Use the *specific* close function which now calls the generic one
     if(closeButton) closeButton.addEventListener('click', closeEditTournamentModal);
     if(cancelButton) cancelButton.addEventListener('click', closeEditTournamentModal);
     // Form submission handler remains specific
     if(modalForm) modalForm.addEventListener('submit', handleEditTournamentSubmit);
+
+    // Add listener for the new Add Participants button <-- ADD THIS
+    if (addParticipantsBtn) {
+        addParticipantsBtn.addEventListener('click', () => {
+            // Call the function that opens the separate modal for managing participants
+            openAddParticipantsModal(tournamentData.id);
+            // Optionally close the edit modal first if you don't want both open
+            // closeEditTournamentModal();
+        });
+    }
 
     // Call the generic openModal function to show the modal
     openModal(modalElement);

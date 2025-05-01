@@ -128,11 +128,10 @@ async function handleAddCourseSubmit(event) {
 // --- Populate Golf Courses List (Sports Section) ---
 
 async function populateGolfCourses() {
-    // Find element within the function
     const listElement = document.getElementById('golf-courses-list');
     if (!listElement) {
         console.warn("[SPORTS/GOLF] Golf courses list element (#golf-courses-list) not found in current DOM.");
-        return; // Exit if element isn't present
+        return;
     }
     if (!db) {
         console.error("[SPORTS/GOLF] Firestore DB not initialized.");
@@ -140,51 +139,283 @@ async function populateGolfCourses() {
         return;
     }
 
-    console.log("[SPORTS/GOLF] Populating golf courses list..."); //
-    listElement.innerHTML = '<p class="text-gray-500 dark:text-gray-400 p-2">Loading courses...</p>'; // Loading state (with dark mode class)
+    console.log("[SPORTS/GOLF] Populating golf courses list...");
+    listElement.innerHTML = '<p class="text-gray-500 dark:text-gray-400 p-2">Loading courses...</p>';
 
     try {
-        // Query the 'golf_courses' collection, order by name
-        // Requires Firestore index: golf_courses: name (asc)
-        const snapshot = await db.collection('golf_courses').orderBy('name').get(); //
+        const snapshot = await db.collection('golf_courses').orderBy('name').get();
 
         if (snapshot.empty) {
-            listElement.innerHTML = '<p class="text-gray-500 dark:text-gray-400 p-2 italic">No golf courses found. Use the "Add New Course" button.</p>'; // Added dark mode class
+            listElement.innerHTML = '<p class="text-gray-500 dark:text-gray-400 p-2 italic">No golf courses found. Use the "Add New Course" button.</p>';
             return;
         }
 
-        listElement.innerHTML = ''; // Clear loading message
+        // Table for courses
+        let html = `
+            <table class="min-w-full text-sm border-collapse border border-gray-300 dark:border-gray-600 mb-4">
+                <thead>
+                    <tr class="bg-gray-100 dark:bg-gray-700">
+                        <th class="p-2 border">Course Name</th>
+                        <th class="p-2 border">Location</th>
+                        <th class="p-2 border">Par</th>
+                        <th class="p-2 border admin-only">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
 
-        // Iterate through the courses and create list items
         snapshot.forEach(doc => {
-            const course = { id: doc.id, ...doc.data() }; //
-            const courseDiv = document.createElement('div'); //
-            // Added dark mode classes
-            courseDiv.className = 'border-b border-gray-200 dark:border-gray-700 pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0'; //
-
-            // Basic course display
-            courseDiv.innerHTML = `
-                <div class="flex justify-between items-center">
-                    <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">${course.name || 'Unnamed Course'}</h4>
-                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Par: ${course.total_par || 'N/A'}</span>
-                </div>
-                ${course.location ? `<p class="text-xs text-gray-500 dark:text-gray-400">${course.location}</p>` : ''}
-                `; //
-            listElement.appendChild(courseDiv); //
+            const course = { id: doc.id, ...doc.data() };
+            html += `
+                <tr>
+                    <td class="p-2 border">${course.name || 'Unnamed Course'}</td>
+                    <td class="p-2 border">${course.location || '-'}</td>
+                    <td class="p-2 border">${course.total_par || '-'}</td>
+                    <td class="p-2 border admin-only">
+                        <button class="edit-course-btn button button-xs button-secondary" data-course-id="${course.id}">Edit</button>
+                    </td>
+                </tr>
+            `;
         });
 
-        console.log(`[SPORTS/GOLF] Populated ${snapshot.size} golf courses.`); //
+        html += '</tbody></table>';
+        listElement.innerHTML = html;
+
+        // Attach edit button listeners (admin only)
+        listElement.querySelectorAll('.edit-course-btn').forEach(btn => {
+            // Ensure listener is only added once or remove previous if re-populating
+            btn.removeEventListener('click', handleEditCourseButtonClick); // Prevent duplicates
+            btn.addEventListener('click', handleEditCourseButtonClick);
+        });
 
     } catch (error) {
-        console.error("[SPORTS/GOLF] Error fetching golf courses:", error); //
-        if (error.code === 'failed-precondition') {
-             listElement.innerHTML = '<p class="text-red-500 p-2">Error: Firestore index missing for sorting courses by name. Check console.</p>'; //
-             console.error("Firestore index required: 'golf_courses' collection, 'name' field (ascending)."); //
-        } else {
-            listElement.innerHTML = `<p class="text-red-500 p-2">Error loading courses: ${error.message}</p>`; //
-        }
+        console.error("[SPORTS/GOLF] Error fetching golf courses:", error);
+        listElement.innerHTML = `<p class="text-red-500 p-2">Error loading courses: ${error.message}</p>`;
     }
-} // End populateGolfCourses
+}
+
+// Helper function to handle the click event, extracting the ID
+function handleEditCourseButtonClick(event) {
+    const courseId = event.target.getAttribute('data-course-id');
+    if (courseId) {
+        openEditCourseModal(courseId);
+    } else {
+        console.error("Edit button clicked but no course ID found.");
+    }
+}
+
+// --- Edit Course Modal Functions ---
+
+/**
+ * Fetches course data and opens the modal for editing.
+ * @param {string} courseId - The ID of the course to edit.
+ */
+async function openEditCourseModal(courseId) {
+    const modalElement = document.getElementById('edit-course-modal');
+    if (!modalElement) { console.error("Edit Course modal element not found."); return; }
+    if (!db) { console.error("Edit Course modal: DB not ready."); alert("Database connection failed."); return; }
+
+    modalElement.innerHTML = '<div class="modal-content"><p class="loading-text p-5">Loading course data for editing...</p></div>';
+    openModal(modalElement); // Open modal with loading state
+
+    try {
+        const docRef = db.collection('golf_courses').doc(courseId);
+        const docSnap = await docRef.get();
+
+        if (!docSnap.exists) {
+            throw new Error("Golf course not found.");
+        }
+
+        const course = { id: docSnap.id, ...docSnap.data() };
+
+        // Build HTML for the modal form
+        const modalContentHTML = `
+            <div class="modal-content">
+                <button id="close-edit-course-modal-btn" class="modal-close-button">&times;</button>
+                <h2 class="text-2xl font-semibold mb-5 text-indigo-700 dark:text-indigo-400">Edit Golf Course</h2>
+                <form id="edit-course-form" data-course-id="${course.id}">
+                    <div class="mb-4">
+                        <label for="edit-course-name" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Course Name:</label>
+                        <input type="text" id="edit-course-name" name="course-name" value="${course.name || ''}" class="input-field" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="edit-course-location" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Location (Optional):</label>
+                        <input type="text" id="edit-course-location" name="course-location" value="${course.location || ''}" class="input-field" placeholder="e.g., City, State">
+                    </div>
+                    <div class="mb-5">
+                        <label for="edit-course-par" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Total Par (18 Holes):</label>
+                        <input type="number" id="edit-course-par" name="course-par" value="${course.total_par || ''}" min="50" max="80" class="input-field" required placeholder="e.g., 72">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Enter the standard 18-hole par for the course.</p>
+                    </div>
+                    <!-- Add fields for slope, rating if needed -->
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button type="button" id="cancel-edit-course-modal-btn" class="button button-secondary">Cancel</button>
+                        <button type="submit" class="button button-primary">Save Changes</button>
+                    </div>
+                    <p id="edit-course-error" class="text-red-500 text-sm mt-2 h-4"></p>
+                </form>
+            </div>`;
+
+        modalElement.innerHTML = modalContentHTML;
+
+        // Attach listeners within the modal
+        modalElement.querySelector('#close-edit-course-modal-btn')?.addEventListener('click', closeEditCourseModal);
+        modalElement.querySelector('#cancel-edit-course-modal-btn')?.addEventListener('click', closeEditCourseModal);
+        modalElement.querySelector('#edit-course-form')?.addEventListener('submit', handleEditCourseSubmit);
+
+    } catch (error) {
+        console.error(`Error loading course ${courseId} for editing:`, error);
+        modalElement.innerHTML = `<div class="modal-content"><button class="modal-close-button" onclick="closeEditCourseModal()">&times;</button><p class="error-text p-5">Error loading course data: ${error.message}</p></div>`;
+    }
+}
+
+/**
+ * Closes the Edit Course modal.
+ */
+function closeEditCourseModal() {
+    const modalElement = document.getElementById('edit-course-modal');
+    if (modalElement) closeModal(modalElement);
+}
+
+/**
+ * Handles the submission of the Edit Course form.
+ * @param {Event} event - The form submission event.
+ */
+async function handleEditCourseSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const courseId = form.getAttribute('data-course-id');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const errorMsgElement = form.querySelector('#edit-course-error');
+
+    if (!courseId) { console.error("Edit submit: Missing course ID."); return; }
+    if (!db || !firebase || !firebase.firestore) { console.error("Edit submit: DB not ready."); alert("Database connection error."); return; }
+
+    submitButton.disabled = true;
+    if (errorMsgElement) errorMsgElement.textContent = '';
+
+    // Basic Form Validation
+    let isValid = true;
+    form.querySelectorAll('input[required]').forEach(field => {
+        field.classList.remove('border-red-500');
+        if (!field.value.trim()) { isValid = false; field.classList.add('border-red-500'); }
+    });
+    const courseParInput = form.querySelector('#edit-course-par');
+    const coursePar = parseInt(courseParInput?.value, 10);
+    courseParInput?.classList.remove('border-red-500');
+    if (courseParInput && (isNaN(coursePar) || coursePar < 50 || coursePar > 80)) {
+        courseParInput.classList.add('border-red-500');
+        isValid = false;
+        if (errorMsgElement) errorMsgElement.textContent = "Please enter a valid Total Par (usually 50-80).";
+    }
+    if (!isValid) {
+        if (errorMsgElement && !errorMsgElement.textContent) errorMsgElement.textContent = "Please fill out required fields correctly.";
+        submitButton.disabled = false;
+        return;
+    }
+    // --- End Validation ---
+
+    const formData = new FormData(form);
+    const updatedData = {
+        name: formData.get('course-name')?.trim(),
+        location: formData.get('course-location')?.trim() || null, // Store null if empty
+        total_par: coursePar,
+        // Add slope, rating if implemented
+        last_updated: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    console.log(`[COURSE EDIT SUBMIT] Updating course ${courseId} with data:`, updatedData);
+
+    try {
+        const docRef = db.collection('golf_courses').doc(courseId);
+        await docRef.update(updatedData);
+
+        console.log(`[COURSE EDIT SUBMIT] Course ${courseId} updated successfully.`);
+        alert("Course updated successfully!");
+        closeEditCourseModal();
+
+        // Refresh relevant UI sections
+        console.log("[COURSE EDIT SUBMIT] Refreshing UI lists...");
+        await populateGolfCourses(); // Refresh the list in the sports section
+
+        // Refresh recent games table in case course name/location changed
+        if (typeof populateRecentGolfGamesTable === 'function') {
+            await populateRecentGolfGamesTable();
+        }
+        // Refresh live game dropdown if it exists and function is available
+        if (typeof populateLiveGolfCourseSelect === 'function') {
+            await populateLiveGolfCourseSelect();
+        }
+        // Refresh submit game dropdown if it exists and function is available
+        if (typeof populateGolfCourseSelectForSubmit === 'function') {
+            await populateGolfCourseSelectForSubmit();
+        }
+
+
+    } catch (error) {
+        console.error(`[COURSE EDIT SUBMIT] Error updating course ${courseId}:`, error);
+        if (errorMsgElement) errorMsgElement.textContent = `Error saving changes: ${error.message}`;
+    } finally {
+        submitButton.disabled = false;
+    }
+}
+
+// --- Populate All Sports List (Sports Section) ---
+
+function populateAllSportsList() {
+    const listElement = document.getElementById('all-sports-list');
+    if (!listElement) {
+        console.warn("[SPORTS/ALL] All sports list element (#all-sports-list) not found in current DOM.");
+        return;
+    }
+    if (typeof gameTypesConfig !== 'object' || gameTypesConfig === null) {
+        console.error("[SPORTS/ALL] gameTypesConfig is not available or not an object.");
+        listElement.innerHTML = '<p class="error-text col-span-full">Error loading activities configuration.</p>';
+        return;
+    }
+
+    console.log("[SPORTS/ALL] Populating all sports list...");
+    listElement.innerHTML = ''; // Clear loading message
+
+    const sortedGames = Object.entries(gameTypesConfig).sort(([, nameA], [, nameB]) => nameA.localeCompare(nameB));
+
+    if (sortedGames.length === 0) {
+        listElement.innerHTML = '<p class="muted-text italic col-span-full">No activities configured.</p>';
+        return;
+    }
+
+    sortedGames.forEach(([key, name]) => {
+        const sportDiv = document.createElement('div');
+        // Link to the new sport details section
+        sportDiv.className = 'bg-gray-100 dark:bg-gray-700 p-3 rounded-lg text-center shadow hover:shadow-md transition-shadow';
+        sportDiv.innerHTML = `
+            <a href="#sport-details-section?sport=${key}" class="nav-link font-medium text-indigo-700 dark:text-indigo-400 hover:underline" data-target="sport-details-section">
+                ${name}
+            </a>
+        `;
+        // Add listener to handle navigation via showSection
+        const link = sportDiv.querySelector('a');
+        if (link) {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Use showSection to navigate, passing the sport key
+                if (typeof showSection === 'function') {
+                    showSection('sport-details-section', true, { sport: key });
+                } else {
+                    console.error("showSection function not found for sport link navigation.");
+                    // Fallback to direct hash change if showSection is missing
+                    window.location.hash = `#sport-details-section?sport=${key}`;
+                }
+            });
+        }
+        listElement.appendChild(sportDiv);
+    });
+
+    console.log(`[SPORTS/ALL] Populated ${sortedGames.length} activities.`);
+}
+
 
 // Note: This file assumes that 'db', 'firebase', 'openModal', 'closeModal',
-// 'populateLiveGolfCourseSelect' (potentially) are initialized and accessible globally or imported.
+// 'populateLiveGolfCourseSelect', 'populateGolfCourseSelectForSubmit', 'populateRecentGolfGamesTable',
+// 'gameTypesConfig', 'showSection'
+// are initialized and accessible globally or imported.

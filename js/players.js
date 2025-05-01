@@ -57,11 +57,13 @@ async function getAllPlayers(orderBy = 'name') {
 }
 
 // Populates a single select element with player options from an array
-function populatePlayerDropdown(selectElement, playersArray, prompt = 'Select Player', selectedValue = null) {
+async function populatePlayerDropdown(selectElement, playersArray, prompt = 'Select Player', selectedValue = null) {
     if (!selectElement) {
         console.warn("populatePlayerDropdown: Provided selectElement is null or undefined.");
         return;
     }
+    // Ensure player cache is ready
+    if (!playersCachePopulated) await fetchAllPlayersForCache();
     selectElement.innerHTML = `<option value="">${prompt}</option>`; // Clear existing options and add prompt
     playersArray.forEach(player => {
         const option = new Option(player.name || 'Unnamed Player', player.id);
@@ -251,177 +253,284 @@ async function handleAddPlayerSubmit(event) {
 }
 
 
-// --- Player Info Modal Functions ---
+// --- Player Profile Page ---
 
-async function openPlayerModal(playerId) {
-    console.log(`[PLAYER MODAL] Entered openPlayerModal function for ID: ${playerId}`); // <-- Add Log
-    const modalElement = document.getElementById('player-info-modal');
-    if (!modalElement) { console.error("[PLAYER MODAL] Player modal element (#player-info-modal) not found."); return; }
-    if (!db) { console.error("[PLAYER MODAL] DB not ready."); return; }
+/**
+ * Fetches and populates the player profile page.
+ * @param {string} playerId - The ID of the player to display.
+ */
+async function populatePlayerProfilePage(playerId) {
+    console.log(`[Player Profile] Populating page for player ID: ${playerId}`);
+    // Ensure elements exist
+    const nameEl = document.getElementById('player-profile-name');
+    const imageEl = document.getElementById('player-profile-image');
+    const eloEl = document.getElementById('player-profile-elo-ratings');
+    const gamesPlayedEl = document.getElementById('player-profile-games-played');
+    const recentGamesEl = document.getElementById('player-profile-recent-games');
+    // Add elements for new sections
+    const playedWithEl = document.getElementById('player-profile-played-with'); // Needs to be added to HTML template
+    const playedAgainstEl = document.getElementById('player-profile-played-against'); // Needs to be added to HTML template
 
-    const modalContent = modalElement.querySelector('.modal-content');
-    if (!modalContent) { console.error("[PLAYER MODAL] Player modal content div (.modal-content) not found."); return; }
-
-    console.log(`[PLAYER MODAL] Opening modal for player ID: ${playerId}`);
-
-    // --- References & Reset Content ---
-    const nameEl = modalContent.querySelector('#modal-player-name');
-    const statsEl = modalContent.querySelector('#modal-player-game-stats');
-    const activityEl = modalContent.querySelector('#modal-player-recent-activity');
-    const iconEl = modalContent.querySelector('#modal-player-icon');
-    const nameInputEl = modalContent.querySelector('#modal-edit-player-name-input');
-    const iconInputEl = modalContent.querySelector('#modal-edit-player-icon-input');
-    const overallStatsEl = modalContent.querySelector('#modal-player-overall-stats');
-    const playerEditControls = modalContent.querySelector('.player-edit-controls');
-    const adminControls = modalContent.querySelector('.admin-controls');
-
-    // Reset content
-    if (nameEl) nameEl.textContent = 'Loading...';
-    if (statsEl) statsEl.innerHTML = '<p class="text-gray-500 col-span-2">Loading ratings...</p>';
-    if (activityEl) activityEl.innerHTML = '<li class="text-gray-500">Loading activity...</li>';
-    if (iconEl) iconEl.src = 'https://placehold.co/80x80/cccccc/ffffff?text=?';
-    if (nameInputEl) nameInputEl.value = '';
-    if (iconInputEl) iconInputEl.value = '';
-    if (overallStatsEl) overallStatsEl.innerHTML = 'Loading stats...';
-    if (playerEditControls) playerEditControls.style.display = 'none'; // Hide player controls initially
-    if (adminControls) adminControls.style.display = 'none'; // Hide admin controls initially (let CSS handle final visibility)
-
-    modalElement.classList.remove('modal-editing');
-    modalElement.removeAttribute('data-current-player-id');
-    // --- End Reset ---
-
-    // Open modal overlay FIRST
-    console.log("[PLAYER MODAL] About to call generic openModal function."); // <-- Add Log
-    if (typeof openModal === 'function') {
-        openModal(modalElement); // This should make the modal visible
-    } else {
-        console.error("[PLAYER MODAL] openModal function not found!");
-        alert("UI Error: Cannot display modal.");
-        return; // Stop if we can't open the modal
+    if (!nameEl || !imageEl || !eloEl || !gamesPlayedEl || !recentGamesEl) {
+        console.error("[Player Profile] One or more required profile elements not found.");
+        // Maybe display an error in the main content area if critical elements are missing
+        const profileContent = document.getElementById('player-profile-content');
+        if (profileContent) profileContent.innerHTML = '<p class="error-text">Error loading profile page structure.</p>';
+        return;
+    }
+    // Add checks for new elements
+    if (!playedWithEl || !playedAgainstEl) {
+         console.warn("[Player Profile] 'Played With' or 'Played Against' elements not found. These sections will be skipped.");
     }
 
-    // *** Log before data population ***
-    console.log(`[PLAYER MODAL ${playerId}] BEFORE fetching/populating data.`);
 
-    // Fetch and Populate data
+    // Set loading states
+    nameEl.textContent = 'Loading...';
+    imageEl.src = `https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=128`;
+    eloEl.innerHTML = '<p class="loading-text">Loading ratings...</p>';
+    gamesPlayedEl.innerHTML = '<p class="loading-text">Loading stats...</p>';
+    recentGamesEl.innerHTML = '<p class="loading-text">Loading recent games...</p>';
+    if (playedWithEl) playedWithEl.innerHTML = '<p class="loading-text">Loading teammate stats...</p>';
+    if (playedAgainstEl) playedAgainstEl.innerHTML = '<p class="loading-text">Loading opponent stats...</p>';
+
+
+    if (!db) { console.error("[Player Profile] DB not available."); return; }
+    if (!playersCachePopulated) await fetchAllPlayersForCache(); // Ensure cache is ready
+
     try {
-        const playerDocRef = db.collection('players').doc(playerId);
-        const docSnap = await playerDocRef.get();
-        if (!docSnap.exists) { throw new Error(`Player document not found for ID: ${playerId}`); }
-        const details = { id: docSnap.id, ...docSnap.data() };
-        console.log(`[PLAYER MODAL] Player data fetched:`, details);
-        modalElement.setAttribute('data-current-player-id', playerId);
+        const player = globalPlayerCache[playerId]; // Get player data from cache first
 
-        // Populate Basic Details
-        const iconSrc = details.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(details.name || '?')}&background=E0E7FF&color=4F46E5&size=80`;
-        if(iconEl) { iconEl.src = iconSrc; iconEl.alt = `Icon ${details.name || ''}`; }
-        if(nameEl) nameEl.textContent = details.name || 'Unnamed Player';
-        if(nameInputEl) nameInputEl.value = details.name || '';
-        if(iconInputEl) iconInputEl.value = details.iconUrl || '';
-
-        // Populate Overall Stats
-        if (overallStatsEl) {
-            const wins = details.wins || 0; const losses = details.losses || 0; const draws = details.draws || 0; const played = details.games_played || 0;
-            overallStatsEl.innerHTML = `Overall: <span class="font-medium text-green-600">${wins}W</span>/<span class="font-medium text-red-600">${losses}L</span>/<span class="font-medium text-gray-600">${draws}D</span> (${played} Played) | Elo: <span class="font-medium">${Math.round(details.elo_overall || DEFAULT_ELO)}</span>`;
+        if (!player) {
+            // Optionally try fetching directly if not in cache (though cache should be pre-fetched)
+            const playerDoc = await db.collection('players').doc(playerId).get();
+            if (!playerDoc.exists) {
+                throw new Error(`Player not found with ID: ${playerId}`);
+            }
+            // Add to cache if fetched directly (though ideally handled by fetchAllPlayersForCache)
+            globalPlayerCache[playerId] = { id: playerDoc.id, ...playerDoc.data() };
+            player = globalPlayerCache[playerId];
         }
 
-        // Populate game-specific stats
-        if (statsEl) {
-            statsEl.innerHTML = '';
-            const elos = details.elos || {}; let statsHtml = '';
-            Object.entries(gameTypesConfig).forEach(([gameKey, gameName]) => {
-                let ratingDisplay = '';
-                if (gameKey === 'golf') {
-                    const handicapValue = details.golf_handicap;
-                    ratingDisplay = (typeof handicapValue === 'number') ? `${handicapValue.toFixed(1)} Hcp` : 'Not Rated';
-                    statsHtml += `<div class="font-medium !text-gray-900 dark:text-gray-300">${gameName}:</div><div class="text-blue-600 dark:text-blue-400 font-semibold">${ratingDisplay}</div>`;
-                } else {
-                    const rating = Math.round(elos[gameKey] || DEFAULT_ELO);
-                    ratingDisplay = `${rating} Elo`;
-                    statsHtml += `<div class="font-medium !text-gray-900 dark:text-gray-300">${gameName}:</div><div class="text-indigo-600 dark:text-indigo-400">${ratingDisplay}</div>`;
-                }
+        // --- Populate Basic Info ---
+        nameEl.textContent = player.name || 'Unnamed Player';
+        imageEl.src = player.profile_image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name || '?')}&background=random&color=fff&size=128`;
+        imageEl.alt = player.name || 'Player Profile';
+
+        // --- Populate Elo Ratings ---
+        let eloHtml = '<ul class="space-y-1 text-sm">';
+        const overallElo = Math.round(player.elo_overall || DEFAULT_ELO);
+        eloHtml += `<li class="flex justify-between"><span>Overall:</span> <strong class="font-semibold">${overallElo}</strong></li>`;
+        if (player.elos && Object.keys(player.elos).length > 0) {
+            // Sort game Elos alphabetically by game name
+            const sortedGameElos = Object.entries(player.elos)
+                .map(([key, rating]) => ({ key, name: gameTypesConfig[key] || key, rating }))
+                .sort((a, b) => a.name.localeCompare(b.name));
+
+            sortedGameElos.forEach(({ key, name, rating }) => {
+                // Only display Elo for games configured for it (optional check)
+                // if (ELO_GAME_KEYS.includes(key)) {
+                    eloHtml += `<li class="flex justify-between"><span>${name}:</span> <strong class="font-semibold">${Math.round(rating)}</strong></li>`;
+                // }
             });
-            if (!statsHtml) { statsHtml = '<p class="text-gray-500 dark:text-gray-400 col-span-2 italic">No specific game stats found.</p>'; }
-            statsEl.innerHTML = statsHtml;
+        }
+        // Display Golf Handicap if available
+        if (typeof player.golf_handicap === 'number') {
+             eloHtml += `<li class="flex justify-between mt-2 pt-2 border-t border-gray-200 dark:border-gray-600"><span>Golf Handicap:</span> <strong class="font-semibold">${player.golf_handicap.toFixed(1)}</strong></li>`;
+        }
+        eloHtml += '</ul>';
+        eloEl.innerHTML = eloHtml;
+
+        // --- Populate Games Played Stats ---
+        let gamesHtml = '<ul class="space-y-1 text-sm">';
+        gamesHtml += `<li class="flex justify-between"><span>Total Played:</span> <strong>${player.games_played || 0}</strong></li>`;
+        gamesHtml += `<li class="flex justify-between"><span>Wins:</span> <strong class="text-green-600 dark:text-green-400">${player.wins || 0}</strong></li>`;
+        gamesHtml += `<li class="flex justify-between"><span>Losses:</span> <strong class="text-red-600 dark:text-red-400">${player.losses || 0}</strong></li>`;
+        gamesHtml += `<li class="flex justify-between"><span>Draws:</span> <strong class="text-gray-600 dark:text-gray-400">${player.draws || 0}</strong></li>`;
+        // Calculate Win Rate (handle division by zero)
+        const totalDecided = (player.wins || 0) + (player.losses || 0);
+        const winRate = totalDecided > 0 ? (((player.wins || 0) / totalDecided) * 100).toFixed(1) : 'N/A';
+        gamesHtml += `<li class="flex justify-between mt-2 pt-2 border-t border-gray-200 dark:border-gray-600"><span>Win Rate:</span> <strong>${winRate}${winRate !== 'N/A' ? '%' : ''}</strong></li>`;
+        gamesHtml += '</ul>';
+        gamesPlayedEl.innerHTML = gamesHtml;
+
+        // --- Populate Recent Games (using existing helper) ---
+        if (typeof populatePlayerRecentActivity === 'function') {
+            await populatePlayerRecentActivity(recentGamesEl, playerId, 10); // Show more games on profile
+        } else {
+            recentGamesEl.innerHTML = '<p class="error-text">Error loading recent activity function.</p>';
         }
 
-        // Control Edit/Delete Visibility
-        if (playerEditControls) {
-            if (currentPlayer && details.authUid && currentPlayer.authUid === details.authUid) {
-                playerEditControls.style.display = 'block'; // Or 'inline-flex'
-            } else {
-                playerEditControls.style.display = 'none';
+        // --- Populate Played With / Played Against (New Logic) ---
+        if (playedWithEl && playedAgainstEl) {
+            await populateTeammateOpponentStats(playedWithEl, playedAgainstEl, playerId);
+        }
+
+
+        // --- Apply Themed Background ---
+        const profileSection = document.getElementById('player-profile-section');
+        if (profileSection) {
+            // Remove previous theme classes
+            profileSection.classList.remove(...Object.keys(gameTypesConfig).map(k => `theme-${k}`));
+            // Add new theme based on most played game (ensure getMostPlayedGameKey exists)
+            if (typeof getMostPlayedGameKey === 'function') {
+                const mostPlayedKey = getMostPlayedGameKey(player);
+                if (mostPlayedKey) {
+                    profileSection.classList.add(`theme-${mostPlayedKey}`);
+                    console.log(`[Player Profile] Applied theme: theme-${mostPlayedKey}`);
+                }
             }
         }
 
-        // Populate Recent Activity
-        if (activityEl) {
-            if (!playersCachePopulated) await fetchAllPlayersForCache(); // Ensure cache for names
-            await populatePlayerRecentActivity(activityEl, playerId, 5);
+    } catch (error) {
+        console.error(`[Player Profile] Error populating profile for ${playerId}:`, error);
+        nameEl.textContent = 'Error';
+        // Display error message in a central part of the profile content
+        const profileContent = document.getElementById('player-profile-content');
+        if (profileContent) profileContent.innerHTML = `<p class="error-text text-center py-10 col-span-full">Could not load player profile: ${error.message}</p>`;
+        else { // Fallback if main content area isn't even there
+             eloEl.innerHTML = `<p class="error-text">${error.message}</p>`;
+             gamesPlayedEl.innerHTML = ''; recentGamesEl.innerHTML = '';
+             if (playedWithEl) playedWithEl.innerHTML = '';
+             if (playedAgainstEl) playedAgainstEl.innerHTML = '';
+        }
+    }
+} // End populatePlayerProfilePage
+
+/**
+ * Fetches game data to calculate and display teammate and opponent statistics.
+ * @param {HTMLElement} playedWithEl - The element to display teammate stats.
+ * @param {HTMLElement} playedAgainstEl - The element to display opponent stats.
+ * @param {string} playerId - The ID of the player whose profile is being viewed.
+ */
+async function populateTeammateOpponentStats(playedWithEl, playedAgainstEl, playerId) {
+    if (!db) {
+        playedWithEl.innerHTML = '<p class="error-text">DB Error</p>';
+        playedAgainstEl.innerHTML = '<p class="error-text">DB Error</p>';
+        return;
+    }
+    if (!playersCachePopulated) await fetchAllPlayersForCache(); // Ensure names are available
+
+    playedWithEl.innerHTML = '<p class="loading-text text-xs">Calculating...</p>';
+    playedAgainstEl.innerHTML = '<p class="loading-text text-xs">Calculating...</p>';
+
+    const teammateCounts = {};
+    const opponentCounts = {};
+
+    try {
+        // Query games where the player was on Team 1
+        const team1Query = db.collection('games')
+                             .where('team1_participants', 'array-contains', playerId);
+        // Query games where the player was on Team 2
+        const team2Query = db.collection('games')
+                             .where('team2_participants', 'array-contains', playerId);
+        // Query 1v1 games involving the player
+        const oneVoneQuery = db.collection('games')
+                               .where('participants', 'array-contains', playerId)
+                               .where('format', '==', '1v1'); // Assuming format field exists
+
+        const [team1Snapshot, team2Snapshot, oneVoneSnapshot] = await Promise.all([
+            team1Query.get(),
+            team2Query.get(),
+            oneVoneQuery.get()
+        ]);
+
+        // Process Team 1 results
+        team1Snapshot.forEach(doc => {
+            const game = doc.data();
+            const team1 = game.team1_participants || [];
+            const team2 = game.team2_participants || [];
+            // Add teammates from Team 1
+            team1.forEach(pId => {
+                if (pId !== playerId) {
+                    teammateCounts[pId] = (teammateCounts[pId] || 0) + 1;
+                }
+            });
+            // Add opponents from Team 2
+            team2.forEach(pId => {
+                opponentCounts[pId] = (opponentCounts[pId] || 0) + 1;
+            });
+        });
+
+        // Process Team 2 results
+        team2Snapshot.forEach(doc => {
+            const game = doc.data();
+            const team1 = game.team1_participants || [];
+            const team2 = game.team2_participants || [];
+            // Add teammates from Team 2
+            team2.forEach(pId => {
+                if (pId !== playerId) {
+                    teammateCounts[pId] = (teammateCounts[pId] || 0) + 1;
+                }
+            });
+            // Add opponents from Team 1
+            team1.forEach(pId => {
+                opponentCounts[pId] = (opponentCounts[pId] || 0) + 1;
+            });
+        });
+
+        // Process 1v1 results
+        oneVoneSnapshot.forEach(doc => {
+             const game = doc.data();
+             const participants = game.participants || [];
+             participants.forEach(pId => {
+                 if (pId !== playerId) {
+                     opponentCounts[pId] = (opponentCounts[pId] || 0) + 1;
+                 }
+             });
+        });
+
+
+        // --- Display Teammate Stats ---
+        const sortedTeammates = Object.entries(teammateCounts).sort(([, countA], [, countB]) => countB - countA);
+        if (sortedTeammates.length > 0) {
+            let teammateHtml = '<ul class="space-y-1 text-xs">';
+            sortedTeammates.slice(0, 5).forEach(([pId, count]) => { // Show top 5
+                const name = globalPlayerCache[pId]?.name || 'Unknown Player';
+                teammateHtml += `<li class="flex justify-between"><span>${name}</span> <strong>${count} games</strong></li>`;
+            });
+            teammateHtml += '</ul>';
+            playedWithEl.innerHTML = teammateHtml;
+        } else {
+            playedWithEl.innerHTML = '<p class="muted-text italic text-xs">No teammate data found.</p>';
         }
 
-        // --- Attach/Verify Modal Button Listeners ---
-        console.log("[PLAYER MODAL] Attaching/Verifying modal action button listeners...");
-
-        // Remove existing listeners to prevent duplicates if modal is reopened
-        const editBtn = modalContent.querySelector('#modal-edit-player-btn');
-        const cancelEditBtn = modalContent.querySelector('#modal-cancel-edit-player-btn');
-        const saveBtn = modalContent.querySelector('#modal-save-player-btn');
-        const deleteBtn = modalContent.querySelector('#modal-delete-player-btn');
-        const closeBtn = modalContent.querySelector('.modal-cancel-button'); // Generic close
-
-        // It's safer to remove and re-add listeners each time the modal opens
-        editBtn?.removeEventListener('click', handleEditClick);
-        cancelEditBtn?.removeEventListener('click', handleCancelEditClick);
-        saveBtn?.removeEventListener('click', savePlayerChanges);
-        deleteBtn?.removeEventListener('click', deletePlayer);
-        closeBtn?.removeEventListener('click', closePlayerModal);
-
-        // Add listeners
-        editBtn?.addEventListener('click', handleEditClick);
-        cancelEditBtn?.addEventListener('click', handleCancelEditClick);
-        saveBtn?.addEventListener('click', savePlayerChanges);
-        deleteBtn?.addEventListener('click', deletePlayer);
-        closeBtn?.addEventListener('click', closePlayerModal);
-
-        console.log("[PLAYER MODAL] Listeners attached/verified.");
-        // --- End Listener Attachment ---
-
-        // *** Log after successful data population and listener attachment ***
-        console.log(`[PLAYER MODAL ${playerId}] AFTER successful data population and listener setup.`);
+        // --- Display Opponent Stats ---
+        const sortedOpponents = Object.entries(opponentCounts).sort(([, countA], [, countB]) => countB - countA);
+         if (sortedOpponents.length > 0) {
+            let opponentHtml = '<ul class="space-y-1 text-xs">';
+            sortedOpponents.slice(0, 5).forEach(([pId, count]) => { // Show top 5
+                const name = globalPlayerCache[pId]?.name || 'Unknown Player';
+                opponentHtml += `<li class="flex justify-between"><span>${name}</span> <strong>${count} games</strong></li>`;
+            });
+            opponentHtml += '</ul>';
+            playedAgainstEl.innerHTML = opponentHtml;
+        } else {
+            playedAgainstEl.innerHTML = '<p class="muted-text italic text-xs">No opponent data found.</p>';
+        }
 
     } catch (error) {
-        console.error(`[PLAYER MODAL ${playerId}] Error during fetching or populating data:`, error); // <-- Log specific error
-        alert(`Error loading player details: ${error.message}`);
-        closePlayerModal(); // Close on critical error
-    }
-
-    // *** Log at the very end of the function ***
-    console.log(`[PLAYER MODAL ${playerId}] Reached end of openPlayerModal function.`);
-}
-
-// Helper function to handle the edit button click
-function handleEditClick() {
-    togglePlayerModalEdit(true);
-}
-// Helper function to handle the cancel edit button click
-function handleCancelEditClick() {
-    togglePlayerModalEdit(false);
-}
-
-function closePlayerModal() {
-    const modalElement = document.getElementById('player-info-modal');
-    if (!modalElement) return;
-    if (typeof closeModal === 'function') {
-        closeModal(modalElement); // Generic close handles hiding, scroll, etc.
-    } else {
-        console.error("[PLAYER MODAL] closeModal function not found!");
-        modalElement.style.display = 'none';
+        console.error(`[Player Profile] Error fetching teammate/opponent stats for ${playerId}:`, error);
+        playedWithEl.innerHTML = '<p class="error-text text-xs">Error loading stats.</p>';
+        playedAgainstEl.innerHTML = '<p class="error-text text-xs">Error loading stats.</p>';
+         if (error.code === 'failed-precondition') {
+             console.error("Firestore index potentially missing for teammate/opponent queries (e.g., on team1_participants, team2_participants, or participants + format).");
+             playedWithEl.innerHTML = '<p class="error-text text-xs">DB Index Error</p>';
+             playedAgainstEl.innerHTML = '<p class="error-text text-xs">DB Index Error</p>';
+         }
     }
 }
 
-// --- Player Modal Recent Activity ---
 
+// --- Player Recent Activity ---
+// Cache for course pars fetched during activity population
+let courseParCacheActivity = {};
+
+/**
+ * Populates the recent activity list for a player.
+ * @param {HTMLElement} activityElement - The UL element to populate.
+ * @param {string} playerId - The ID of the player.
+ * @param {number} [limit=5] - Max number of activities to show.
+ */
 async function populatePlayerRecentActivity(activityElement, playerId, limit = 5) {
     if (!db || !playerId || !activityElement) {
          console.warn("[Player Activity] Missing DB, playerId, or activityElement.");
@@ -438,7 +547,6 @@ async function populatePlayerRecentActivity(activityElement, playerId, limit = 5
     }
     activityElement.innerHTML = '<li class="text-gray-500 dark:text-gray-400">Loading activity...</li>';
 
-    const courseParCacheActivity = {};
     const getCourseParActivity = async (courseId) => {
          if (!courseId) return null;
          if (courseParCacheActivity[courseId] !== undefined) return courseParCacheActivity[courseId];
@@ -472,7 +580,10 @@ async function populatePlayerRecentActivity(activityElement, playerId, limit = 5
              let description = "";
              const gameDate = game.date_played?.toDate ? game.date_played.toDate().toLocaleDateString() : 'Unknown Date';
              const gameType = gameTypesConfig[game.game_type] || game.game_type || 'Unknown Game';
+             const formatDisplay = game.format ? ` (${game.format})` : '';
              const participants = game.participants || [];
+             const team1 = game.team1_participants || [];
+             const team2 = game.team2_participants || [];
 
              if (game.game_type === 'golf') {
                  description = `Played ${gameType}`;
@@ -491,130 +602,85 @@ async function populatePlayerRecentActivity(activityElement, playerId, limit = 5
                          } else { description += ` (${game.score} on unknown course)`; }
                      } else { description += ` (${game.score}, no course info)`; }
                  } else { description += ` (score not recorded)`; }
-             } else {
-                 const participantNames = participants.map(id => globalPlayerCache[id]?.name || 'Unknown Player');
-                 if (game.outcome === 'Win/Loss' && participantNames.length >= 2) {
-                    const winnerName = participantNames[0]; const loserName = participantNames[1];
-                    if (winnerName === currentPlayerName) { description = `Beat ${loserName} in ${gameType}`; }
-                    else if (loserName === currentPlayerName) { description = `Lost to ${winnerName} in ${gameType}`; }
-                    else { description = `${winnerName} beat ${loserName} in ${gameType}`; }
-                 } else if (game.outcome === 'Draw' && participantNames.length >= 2) {
-                    const opponentName = participantNames.find(name => name !== currentPlayerName && name !== 'Unknown Player') || 'opponent';
-                    description = `Drew against ${opponentName} in ${gameType}`;
-                 } else {
-                     const otherPlayerNames = participantNames.filter(name => name !== currentPlayerName).join(', ');
-                     description = `Played ${gameType}${otherPlayerNames ? ' with ' + otherPlayerNames : ''}`;
+                 if (game.hole_details) {
+                     const totalPutts = Object.values(game.hole_details).reduce((sum, hole) => sum + (hole.putts || 0), 0);
+                     if (totalPutts > 0) description += ` (${totalPutts} putts)`;
                  }
-                 if (game.score) description += ` (${game.score})`;
+
+             } else if (game.outcome === 'Team Win') {
+                 const playerTeam = team1.includes(playerId) ? team1 : (team2.includes(playerId) ? team2 : null);
+                 const opponentTeam = playerTeam === team1 ? team2 : team1;
+                 const playerTeamNames = playerTeam?.map(id => globalPlayerCache[id]?.name || '?').join(', ');
+                 const opponentTeamNames = opponentTeam?.map(id => globalPlayerCache[id]?.name || '?').join(', ');
+
+                 if (playerTeam === team1) { // Player was on winning team
+                     description = `Won ${gameType}${formatDisplay} with ${playerTeamNames.replace(currentPlayerName, '').replace(', ,',',').replace(/^, |, $/,'').trim() || 'Teammates'} against ${opponentTeamNames}`;
+                 } else { // Player was on losing team
+                     description = `Lost ${gameType}${formatDisplay} with ${playerTeamNames.replace(currentPlayerName, '').replace(', ,',',').replace(/^, |, $/,'').trim() || 'Teammates'} to ${opponentTeamNames}`;
+                 }
+
+             } else if (game.outcome === 'Win/Loss') { // 1v1 Win/Loss
+                 const winnerId = participants[0];
+                 const loserId = participants[1];
+                 const winnerName = globalPlayerCache[winnerId]?.name || 'Unknown';
+                 const loserName = globalPlayerCache[loserId]?.name || 'Unknown';
+                 if (winnerId === playerId) { description = `Beat ${loserName} in ${gameType}${formatDisplay}`; }
+                 else if (loserId === playerId) { description = `Lost to ${winnerName} in ${gameType}${formatDisplay}`; }
+                 else { description = `${winnerName} beat ${loserName} in ${gameType}${formatDisplay}`; } // Should not happen if query is correct
+
+                 // Add specific details
+                 if (game.game_type === 'chess' && game.chess_outcome) description += ` (${game.chess_outcome})`;
+                 if (game.score) description += ` [${game.score}]`;
+
+             } else if (game.outcome === 'Draw') {
+                 if (team1.length > 0) { // Team Draw
+                     description = `Drew ${gameType}${formatDisplay}`; // Simplified for brevity
+                 } else { // 1v1 Draw
+                     const otherPlayerId = participants.find(id => id !== playerId);
+                     const otherPlayerName = globalPlayerCache[otherPlayerId]?.name || 'Unknown';
+                     description = `Drew with ${otherPlayerName} in ${gameType}${formatDisplay}`;
+                 }
+                 if (game.score) description += ` [${game.score}]`;
+
+             } else if (game.outcome === 'Cutthroat Win') {
+                 const winnerId = participants.find(pId => team1.includes(pId)); // Assuming winner is stored in team1 for consistency
+                 if (winnerId === playerId) { description = `Won ${gameType}${formatDisplay}`; }
+                 else { description = `Played ${gameType}${formatDisplay}`; } // Lost or participated
+
+             } else if (game.outcome === 'Solo Complete') {
+                 description = `Completed ${gameType}${formatDisplay} in ${game.score}s`;
+                 if (game.points) description += ` (${game.points} pts)`;
+             } else { // Fallback (e.g., Bowling 'Single')
+                 description = `Played ${gameType}${formatDisplay}`;
+                 if (game.score) description += ` (Score: ${game.score})`;
              }
 
-            const li = document.createElement('li');
-            li.className = '!text-gray-800 dark:text-gray-200';
-            li.innerHTML = `<span class="text-gray-500 dark:text-gray-400 text-xs mr-2">[${gameDate}]</span> ${description}`;
-            activityElement.appendChild(li);
+
+             // Create list item
+             const li = document.createElement('li');
+             li.className = 'text-sm border-b border-gray-200 dark:border-gray-700 pb-2 mb-2 last:border-b-0 last:pb-0 last:mb-0';
+             li.innerHTML = `
+                <span class="text-gray-500 dark:text-gray-400 text-xs block">${gameDate}</span>
+                <a href="#game-info-section?gameId=${game.id}" class="nav-link hover:text-indigo-600 dark:hover:text-indigo-400" data-target="game-info-section">${description}</a>
+             `;
+             // Add listener for navigation
+             const link = li.querySelector('a');
+             if (link) {
+                 link.addEventListener('click', (e) => {
+                     e.preventDefault();
+                     if (typeof showSection === 'function') {
+                         showSection('game-info-section', true, { gameId: game.id });
+                     } else { window.location.hash = `#game-info-section?gameId=${game.id}`; }
+                 });
+             }
+             activityElement.appendChild(li);
         }
 
     } catch (error) {
-        console.error(`Error fetching recent activity for player ${playerId}:`, error);
-         if (error.code === 'failed-precondition') {
-             activityElement.innerHTML = `<li class="text-red-500">Error: Firestore index missing for activity query. Check console.</li>`;
-             console.error("Firestore index needed: games collection, fields: participants (array-contains), date_played (desc).");
-         } else {
-            activityElement.innerHTML = `<li class="text-red-500">Error loading activity: ${error.message}</li>`;
-         }
+        console.error(`[Player Profile] Error fetching recent activity for ${playerId}:`, error);
+        activityElement.innerHTML = '<li class="error-text">Error loading activity.</li>';
     }
-}
-
-
-// --- Player Info Modal Edit/Save/Delete ---
-
-function togglePlayerModalEdit(editMode) {
-    const modalElement = document.getElementById('player-info-modal');
-    if (!modalElement) return;
-    if (editMode) {
-         modalElement.classList.add('modal-editing');
-         modalElement.querySelector('#modal-edit-player-name-input')?.focus(); // Focus name input
-    } else {
-         modalElement.classList.remove('modal-editing');
-         const playerId = modalElement.getAttribute('data-current-player-id');
-         if (playerId && globalPlayerCache[playerId]) {
-             const originalData = globalPlayerCache[playerId];
-             modalElement.querySelector('#modal-edit-player-name-input').value = originalData.name || '';
-             modalElement.querySelector('#modal-edit-player-icon-input').value = originalData.iconUrl || '';
-         }
-    }
-}
-
-async function savePlayerChanges() {
-    const modalElement = document.getElementById('player-info-modal');
-    if (!modalElement || !db) return;
-    const playerId = modalElement.getAttribute('data-current-player-id');
-    if (!playerId) { alert("Error: No player ID found."); return; }
-
-    const nameInput = modalElement.querySelector('#modal-edit-player-name-input');
-    const iconInput = modalElement.querySelector('#modal-edit-player-icon-input');
-    const newName = nameInput?.value.trim();
-    const newIconUrl = iconInput?.value.trim() || null;
-
-    if (!newName) { alert("Player name cannot be empty."); nameInput?.focus(); return; }
-
-    const updatedData = { name: newName, iconUrl: newIconUrl };
-
-    try {
-         await db.collection('players').doc(playerId).update(updatedData);
-         alert("Player details updated successfully!");
-
-         if (globalPlayerCache[playerId]) {
-            globalPlayerCache[playerId].name = newName;
-            globalPlayerCache[playerId].iconUrl = newIconUrl;
-         } else {
-             playersCachePopulated = false;
-         }
-
-         togglePlayerModalEdit(false);
-
-         modalElement.querySelector('#modal-player-name').textContent = newName;
-         const iconSrc = newIconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(newName || '?')}&background=E0E7FF&color=4F46E5&size=80`;
-         modalElement.querySelector('#modal-player-icon').src = iconSrc;
-
-         if (typeof populatePlayersList === 'function') await populatePlayersList();
-
-    } catch (error) {
-        console.error(`Error updating player ${playerId}:`, error);
-        alert(`Failed to update player: ${error.message}`);
-    }
-}
-
-async function deletePlayer() {
-     const modalElement = document.getElementById('player-info-modal');
-     if (!modalElement || !db) return;
-     const playerId = modalElement.getAttribute('data-current-player-id');
-     const playerName = modalElement.querySelector('#modal-player-name')?.textContent || 'this player';
-     if (!playerId) { alert("Error: No player ID found."); return; }
-
-     if (confirm(`Are you sure you want to delete ${playerName} (${playerId})?\nWARNING: This cannot be undone and may affect historical game records and rankings.`)) {
-         try {
-             await db.collection('players').doc(playerId).delete();
-             alert(`${playerName} deleted successfully!`);
-
-             delete globalPlayerCache[playerId];
-             playersCachePopulated = false;
-
-             closePlayerModal();
-
-             if (typeof populatePlayersList === 'function') await populatePlayersList();
-             if (typeof populateDashboard === 'function') await populateDashboard();
-             if (typeof populateResultsTable === 'function') await populateResultsTable();
-             if (typeof updateRankingsVisibility === 'function' && document.getElementById('rankings-section') && !document.getElementById('rankings-section').classList.contains('hidden')) {
-                 await updateRankingsVisibility();
-             }
-
-         } catch (error) {
-             console.error(`Error deleting player ${playerId}:`, error);
-             alert(`Failed to delete player: ${error.message}`);
-         }
-     }
-}
+} // End populatePlayerRecentActivity
 
 // Note: This file assumes that 'firebase', 'db', 'openModal', 'closeModal', 'gameTypesConfig',
 // 'DEFAULT_ELO', 'ELO_GAME_KEYS', 'currentPlayer', 'populateDashboard',

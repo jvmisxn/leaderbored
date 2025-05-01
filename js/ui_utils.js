@@ -1,6 +1,6 @@
 // --- ui_utils.js ---
 
-// --- DOM Element References (Assign these in main initialization) ---
+// --- DOM Element References ---
 let navLinks, loginForm, loginError, logoutButton,
     recordGameModal, openRecordGameModalBtn,
     addPlayerModal, openAddPlayerModalBtn,
@@ -13,9 +13,9 @@ let navLinks, loginForm, loginError, logoutButton,
     manageTournamentsListContainer,
     darkModeToggle,
     bodyElement,
-    mainContentContainer; // Added main content container reference
+    mainContentContainer; // Keep reference
 
-// Function to assign elements (call this during initialization)
+// Function to assign elements (called by main.js)
 function assignElements() {
     navLinks = document.querySelectorAll('.nav-link');
     loginForm = document.getElementById('login-form');
@@ -48,237 +48,14 @@ function assignElements() {
     darkModeToggle = document.getElementById('dark-mode-toggle');
     bodyElement = document.body;
 
-    // Basic checks (optional but recommended)
     if (!mainContentContainer) console.error("Critical Error: Main content container (#main-content) not found!");
+    if (!darkModeToggle) console.warn("Dark mode toggle (#dark-mode-toggle) not found.");
+    if (!bodyElement) console.error("Critical Error: Body element not found!");
+
     console.log("[UI Utils] Elements assigned.");
 }
 
-// --- Page Section Navigation (Refactored for Templates) ---
-async function showSection(targetId) {
-    if (!mainContentContainer) { console.error("Main content container not assigned yet in showSection"); return; }
-    console.log(`[NAV Template] Navigating to: ${targetId}`);
-    const cleanTargetId = targetId.startsWith('#') ? targetId.substring(1) : targetId;
-    const templateId = `template-${cleanTargetId}`;
-    const template = document.getElementById(templateId);
-
-    if (!template) {
-        console.warn(`[NAV Template] Template with ID "${templateId}" not found. Showing home.`);
-        const homeTemplate = document.getElementById('template-home-section');
-        if (homeTemplate) {
-            await loadTemplateContent(homeTemplate, 'home-section');
-        } else {
-            console.error("Critical Error: Home template (#template-home-section) not found as fallback.");
-            mainContentContainer.innerHTML = '<p class="error-text text-center py-10">Error: Could not load page content.</p>';
-        }
-        return;
-    }
-
-    await loadTemplateContent(template, cleanTargetId);
-
-    window.location.hash = cleanTargetId;
-    window.scrollTo(0, 0);
-}
-
-async function loadTemplateContent(templateElement, sectionId) {
-    if (!mainContentContainer || !templateElement || !templateElement.content) {
-        console.error("[NAV Template] Invalid template or main container for loading.");
-        return;
-    }
-    console.log(`[NAV Template] START Load for section: ${sectionId} using template: ${templateElement.id}`);
-
-    console.log(`[NAV Template] Clearing #main-content (before). Current innerHTML length: ${mainContentContainer.innerHTML.length}`);
-    mainContentContainer.innerHTML = ''; // Clear existing content
-    console.log(`[NAV Template] Cleared #main-content (after). Current innerHTML length: ${mainContentContainer.innerHTML.length}`); // Check if empty
-
-    const clonedContent = templateElement.content.cloneNode(true);
-    console.log(`[NAV Template] Cloned template content for ${sectionId}. Node type: ${clonedContent.nodeType}`);
-
-    mainContentContainer.appendChild(clonedContent);
-    const sectionAdded = !!mainContentContainer.querySelector(`section#${sectionId}`);
-    console.log(`[NAV Template] Appended content for section: ${sectionId}. <section id="${sectionId}"> added? ${sectionAdded}. Current #main-content innerHTML length: ${mainContentContainer.innerHTML.length}`);
-
-    if (!sectionAdded) {
-        console.error(`[NAV Template] CRITICAL: Failed to append <section id="${sectionId}"> from template ${templateElement.id}. Aborting population.`);
-        mainContentContainer.innerHTML = `<p class="error-text text-center py-10">Error: Failed to load page structure for ${sectionId}.</p>`;
-        return;
-    }
-
-    try {
-        const needsCache = ['home-section', 'results-section', 'players-section', 'rankings-section', 'submit-past-game-section', 'tournament-detail-section', 'sports-section'];
-        let cacheReady = playersCachePopulated; // Check initial state
-
-        // If cache is needed but not populated, try fetching it
-        if (needsCache.includes(sectionId) && !cacheReady) {
-            console.warn(`[NAV Template] Player cache not ready for ${sectionId}, attempting population...`);
-
-            if (!db) { // Check if DB is initialized before attempting fetch
-                 console.error("[NAV Template] Cannot fetch cache: Firestore DB not initialized.");
-                 cacheReady = false; // Mark cache as not ready
-            } else {
-                 // Attempt to fetch and update the readiness flag based on success/failure
-                 cacheReady = await fetchAllPlayersForCache();
-            }
-
-            // If cache fetch failed, display error and stop further population for this section
-            if (!cacheReady) {
-                console.error(`[NAV Template] Failed to populate cache before loading ${sectionId}. Section content may be incomplete.`);
-                const sectionElement = mainContentContainer.querySelector(`#${sectionId}`);
-                // Provide a more specific error message in the UI
-                if (sectionElement) sectionElement.innerHTML = `<p class="error-text p-4 text-center">Error: Could not load required player data. Cache fetch failed. Check console for details.</p>`;
-                return; // Stop processing this section load
-            }
-            console.log(`[NAV Template] Cache populated successfully for ${sectionId}.`);
-        }
-
-        // Proceed with population only if cache is ready OR if the section doesn't need the cache
-        if (cacheReady || !needsCache.includes(sectionId)) {
-            console.log(`[NAV Template] Checking population functions for section: ${sectionId}`);
-
-            // Add specific logs before and after each call
-            if (sectionId === 'home-section' && typeof populateDashboard === 'function') {
-                console.log('[NAV Template] Attempting to call populateDashboard...');
-                await populateDashboard();
-                console.log('[NAV Template] Finished populateDashboard.');
-            }
-            // --- TEMPORARILY DISABLED POPULATION FOR DEBUGGING ---
-            else if (sectionId === 'rankings-section' /* && typeof updateGameTypeDropdowns === 'function' && typeof updateRankingsVisibility === 'function' */) {
-                console.log('[NAV Template] SKIPPING rankings population (DEBUGGING). Basic template should load.');
-                // updateGameTypeDropdowns();
-                // await updateRankingsVisibility();
-                // const filterDropdown = mainContentContainer.querySelector('#rankings-game-filter');
-                // if (filterDropdown) { ... }
-            }
-            else if (sectionId === 'results-section' /* && typeof populateResultsTable === 'function' */) {
-                console.log('[NAV Template] SKIPPING results population (DEBUGGING). Basic template should load.');
-                // await populateResultsTable();
-            }
-            else if (sectionId === 'players-section' /* && typeof populatePlayersList === 'function' */) {
-                console.log('[NAV Template] SKIPPING players population (DEBUGGING). Basic template should load.');
-                // await populatePlayersList();
-            }
-            else if (sectionId === 'tournaments-section' && typeof populateTournamentsList === 'function') {
-                console.log('[NAV Template] Attempting to call populateTournamentsList for full list...');
-                await populateTournamentsList('tournaments-list-full');
-                console.log('[NAV Template] Finished populateTournamentsList.');
-            }
-            else if (sectionId === 'tournament-detail-section' && typeof populateTournamentDetails === 'function') {
-                 // ... existing tournament detail logic ...
-            }
-            else if (sectionId === 'submit-past-game-section' && typeof setupSubmitPastGameListeners === 'function') {
-                console.log('[NAV Template] Attempting to call setupSubmitPastGameListeners...');
-                await setupSubmitPastGameListeners();
-                console.log('[NAV Template] Finished setupSubmitPastGameListeners.');
-            }
-            else if (sectionId === 'game-info-section') {
-                 console.log('[NAV Template] Setting up game-info section...');
-                 // ... existing game-info logic ...
-                 console.log('[NAV Template] Finished game-info section setup.');
-            }
-            else if (sectionId === 'sports-section' /* && typeof setupSportsSectionListeners === 'function' */) {
-                console.log('[NAV Template] SKIPPING sports population/listeners (DEBUGGING). Basic template should load.');
-                // mainContentContainer.querySelector('#sports-gallery')?.classList.remove('hidden');
-                // mainContentContainer.querySelector('#golf-details-view')?.classList.add('hidden');
-                // setupSportsSectionListeners();
-            }
-            else if (sectionId === 'live-game-section' && typeof setupLiveGameSection === 'function') {
-                console.log('[NAV Template] Attempting to call setupLiveGameSection...');
-                setupLiveGameSection();
-                console.log('[NAV Template] Finished setupLiveGameSection.');
-            }
-            else if (sectionId === 'player-login-section' && typeof setupLoginListeners === 'function') {
-                 // ... existing login logic ...
-            }
-             else if (sectionId === 'player-register-section' && typeof setupRegisterListeners === 'function') {
-                 // ... existing register logic ...
-             }
-             else {
-                 console.log(`[NAV Template] No specific population function configured or called for section: ${sectionId}`);
-             }
-             // --- END OF TEMPORARY DISABLING ---
-
-        }
-
-    } catch (error) {
-        console.error(`[NAV Template] Error during population functions for ${sectionId}:`, error);
-        const sectionElement = mainContentContainer.querySelector(`#${sectionId}`);
-        if (sectionElement) sectionElement.innerHTML = `<p class="error-text p-4 text-center">Error loading content: ${error.message}</p>`;
-    }
-    console.log(`[NAV Template] END Load for section: ${sectionId}`);
-}
-
-// --- Sports Section Specific Listeners ---
-
-function setupSportsSectionListeners() {
-    console.log("[SPORTS] Setting up listeners...");
-    const sportsSection = document.getElementById('sports-section');
-    if (!sportsSection) {
-        console.error("[SPORTS] Sports section container not found.");
-        return;
-    }
-
-    const galleryView = sportsSection.querySelector('#sports-gallery');
-    const golfDetailsView = sportsSection.querySelector('#golf-details-view');
-    const backToGalleryBtn = sportsSection.querySelector('#back-to-sports-gallery-btn');
-    const openAddCourseBtn = sportsSection.querySelector('#open-add-course-modal-btn'); // Ensure this exists in golf_courses.js or similar
-    const showGolfRulesBtn = sportsSection.querySelector('#show-golf-rules-btn'); // Ensure this exists in golf_courses.js or similar
-
-    // Listener for all "View Details" buttons in the gallery
-    galleryView?.addEventListener('click', async (event) => {
-        const button = event.target.closest('.view-sport-details-btn');
-        if (!button) return;
-
-        const sport = button.getAttribute('data-sport');
-        console.log(`[SPORTS] Clicked view details for: ${sport}`);
-
-        if (sport === 'golf') {
-            galleryView.classList.add('hidden');
-            golfDetailsView?.classList.remove('hidden');
-            // Populate golf courses list when switching to this view
-            if (typeof populateGolfCourses === 'function') {
-                console.log("[SPORTS] Populating golf courses...");
-                await populateGolfCourses();
-            } else {
-                console.error("[SPORTS] populateGolfCourses function not found!");
-            }
-        } else if (sport === 'overall') {
-            // Navigate to rankings section, pre-selecting 'overall'
-            showSection('rankings-section'); // The rankings section logic handles the 'overall' default
-        } else if (gameTypesConfig[sport]) {
-            // Navigate to rankings section, pre-selecting the specific game
-            // We need a way to pass the preselection hint to the rankings page
-            window.location.hash = `rankings-section?game=${sport}`; // Use query param in hash
-            // showSection will handle the hash change, but rankings needs to read the param
-            // Modification needed in rankings_results.js/updateRankingsVisibility to read this hash param
-        } else {
-            alert(`Details/Rankings view for "${sport}" not implemented yet.`);
-        }
-    });
-
-    // Listener for "Back to Sports" button in Golf Details
-    backToGalleryBtn?.addEventListener('click', () => {
-        golfDetailsView?.classList.add('hidden');
-        galleryView?.classList.remove('hidden');
-    });
-
-    // Listener for "Add New Course" button (ensure openAddCourseModal is globally accessible)
-    if (openAddCourseBtn && typeof openAddCourseModal === 'function') {
-        openAddCourseBtn.addEventListener('click', openAddCourseModal);
-    } else if (openAddCourseBtn) {
-        console.warn("[SPORTS] openAddCourseModal function not found for button.");
-    }
-
-    // Listener for "View Golf Rules" button (ensure openGolfRulesModal is globally accessible)
-    if (showGolfRulesBtn && typeof openGolfRulesModal === 'function') {
-        showGolfRulesBtn.addEventListener('click', openGolfRulesModal);
-    } else if (showGolfRulesBtn) {
-        console.warn("[SPORTS] openGolfRulesModal function not found for button.");
-    }
-
-    console.log("[SPORTS] Listeners setup complete.");
-}
-
 // --- Mobile Navigation ---
-
 /**
  * Toggles the visibility of the mobile navigation menu.
  * @param {boolean} [forceOpen] - If true, opens the menu. If false, closes it. If undefined, toggles.
@@ -325,8 +102,6 @@ function setupMobileNavListeners() {
 
     console.log("[UI] Mobile navigation listeners attached.");
 }
-
-// --- End Mobile Navigation ---
 
 // --- Generic UI Utilities ---
 
@@ -385,11 +160,9 @@ function closeModal(modalElement) {
     console.log(`[UI Modal - closeModal DEBUG] Current classes on modal:`, modalElement.className);
     console.log(`[UI Modal - closeModal DEBUG] Current classes on body:`, document.body.className);
 
-    // --- Direct Actions (Debugging) ---
     modalElement.classList.remove('modal-active');
     document.body.classList.remove('modal-open');
     modalElement.style.display = 'none'; // Hide directly
-    // --- End Direct Actions ---
 
     console.log(`[UI Modal - closeModal DEBUG] Removed 'modal-active' from #${modalElement.id}. New classes:`, modalElement.className);
     console.log(`[UI Modal - closeModal DEBUG] Removed 'modal-open' from body. New classes:`, document.body.className);
@@ -415,128 +188,6 @@ function toggleProfileDropdown() {
     console.log("[UI] Toggled profile dropdown visibility.");
 }
 
-// --- Dashboard Population ---
-
-async function populateDashboard() {
-    console.log("[DASHBOARD] Populating...");
-    if (!db) { console.warn("[DASHBOARD] DB not ready, skipping population."); return; }
-    if (!mainContentContainer) { console.error("[DASHBOARD] Main content container not found."); return; }
-
-    const recentGamesList = mainContentContainer.querySelector('#recent-games-list');
-    const topPlayersList = mainContentContainer.querySelector('#top-players-list');
-    const topTeamsList = mainContentContainer.querySelector('#top-teams-list');
-    const dashboardTournamentsListElement = mainContentContainer.querySelector('#dashboard-tournaments-list'); // Get the element
-
-    if (!recentGamesList || !topPlayersList || !topTeamsList || !dashboardTournamentsListElement) { // Check the element
-        console.error("[DASHBOARD] One or more dashboard list elements not found within #main-content.");
-        return;
-    }
-
-    // Pass the ID string 'dashboard-tournaments-list' to populateTournamentsList
-    const populateTournamentsPromise = (typeof populateTournamentsList === 'function')
-        ? populateTournamentsList('dashboard-tournaments-list', 3) // Pass ID string
-        : Promise.resolve();
-
-    await Promise.all([
-        populateRecentGamesListElement(recentGamesList, 5),
-        populateTopPlayersListElement(topPlayersList, 5),
-        populateTopTeamsListElement(topTeamsList, 5),
-        populateTournamentsPromise
-    ]).catch(error => {
-        console.error("[DASHBOARD] Error during concurrent population:", error);
-    });
-    console.log("[DASHBOARD] Population attempt complete.");
-}
-
-async function populateRecentGamesListElement(listElement, limit = 5) {
-    if (!listElement || !db) { console.warn(`Recent games list element or DB not ready.`); return; }
-    listElement.innerHTML = `<li class="loading-text">Loading recent games...</li>`;
-    try {
-        const q = db.collection('games').orderBy('date_played', 'desc').limit(limit);
-        const snapshot = await q.get();
-        if (snapshot.empty) {
-            listElement.innerHTML = `<li class="muted-text">No games recorded yet.</li>`;
-            return;
-        }
-        listElement.innerHTML = '';
-        if (!playersCachePopulated) await fetchAllPlayersForCache();
-
-        for (const doc of snapshot.docs) {
-            const game = { id: doc.id, ...doc.data() };
-            const gameDate = game.date_played?.toDate ? game.date_played.toDate().toLocaleDateString() : 'N/A';
-            const gameType = gameTypesConfig[game.game_type] || game.game_type || 'Game';
-            let description = gameType;
-            const participants = game.participants || [];
-            const participantNames = participants.map(id => globalPlayerCache[id]?.name || 'Unknown Player');
-
-            if (game.game_type === 'golf' && participantNames.length > 0) {
-                description = `${gameType}: <b>${participantNames[0]}</b>`;
-            } else if (participants.length >= 2 && (game.outcome === 'Win/Loss' || game.outcome === 'Draw')) {
-                if (game.outcome === 'Win/Loss') {
-                     description = `${gameType}: <b>${participantNames[0]}</b> beat ${participantNames[1]}`;
-                } else {
-                     description = `${gameType}: ${participantNames[0]} drew with ${participantNames[1]}`;
-                }
-            } else if (participants.length > 0) {
-                description = `${gameType}: ${participantNames.join(', ')}`;
-            }
-            if (game.score) description += ` (${game.score})`;
-
-            const li = document.createElement('li');
-            li.className = 'border-b pb-2 mb-2 last:border-0 last:mb-0 last:pb-0 text-sm';
-            li.innerHTML = `
-                <div class="flex justify-between items-start">
-                    <div>${description}</div>
-                    <div class="muted-text text-xs ml-2 whitespace-nowrap">${gameDate}</div>
-                </div>`;
-            listElement.appendChild(li);
-        }
-    } catch (error) {
-        console.error(`Error fetching recent games for element:`, error);
-        if (error.code === 'failed-precondition') {
-            listElement.innerHTML = `<li class="error-text">Error: Firestore index missing.</li>`;
-        } else {
-            listElement.innerHTML = `<li class="error-text">Error loading games.</li>`;
-        }
-    }
-}
-
-async function populateTopPlayersListElement(listElement, limit = 5) {
-    if (!listElement || !db) { console.warn(`Top players list element or DB not ready.`); return; }
-    listElement.innerHTML = '<li class="loading-text">Loading rankings...</li>';
-    try {
-        const snapshot = await db.collection('players').orderBy('elo_overall', 'desc').limit(limit).get();
-        if (snapshot.empty) {
-            listElement.innerHTML = '<li class="muted-text">No players found.</li>'; return;
-        }
-        listElement.innerHTML = '';
-        let rank = 1;
-        snapshot.forEach(doc => {
-            const player = doc.data();
-            const li = document.createElement('li');
-            li.className = "flex justify-between items-center";
-            li.innerHTML = `
-                 <span>${rank}. ${player.name || 'Unnamed'}</span>
-                 <span class="text-sm font-medium accent-text">${Math.round(player.elo_overall || DEFAULT_ELO)}</span>`;
-            listElement.appendChild(li);
-            rank++;
-        });
-    } catch (error) {
-        console.error(`Error fetching top players:`, error);
-        if (error.code === 'failed-precondition') {
-            listElement.innerHTML = `<li class="error-text">Error: Firestore index missing.</li>`;
-        } else {
-            listElement.innerHTML = `<li class="error-text">Error loading rankings.</li>`;
-        }
-    }
-}
-
-async function populateTopTeamsListElement(listElement, limit = 5) {
-    if (listElement) {
-        listElement.innerHTML = '<li class="muted-text italic">Team rankings not yet implemented.</li>';
-    }
-}
-
 // --- Dark Mode Toggle Logic ---
 
 /**
@@ -544,9 +195,17 @@ async function populateTopTeamsListElement(listElement, limit = 5) {
  * @param {boolean} isDark - True to apply dark mode, false for light mode.
  */
 function applyTheme(isDark) {
-    document.documentElement.classList.remove(isDark ? 'light' : 'dark');
-    document.documentElement.classList.add(isDark ? 'dark' : 'light');
-    console.log(`[Theme] Applied ${isDark ? 'Dark' : 'Light'} Mode`);
+    console.log(`[Theme] applyTheme called with isDark: ${isDark}`);
+    const htmlElement = document.documentElement;
+    if (!htmlElement) {
+        console.error("[Theme] Cannot apply theme: <html> element not found!");
+        return;
+    }
+    const removing = isDark ? 'light' : 'dark';
+    const adding = isDark ? 'dark' : 'light';
+    htmlElement.classList.remove(removing);
+    htmlElement.classList.add(adding);
+    console.log(`[Theme] Applied theme. Removed '${removing}', Added '${adding}'. Current <html> classes:`, htmlElement.className);
 }
 
 /**
@@ -554,42 +213,329 @@ function applyTheme(isDark) {
  * and sets up the toggle switch listener.
  */
 function initializeDarkMode() {
+    console.log("[Theme] initializeDarkMode function started.");
     const toggle = document.getElementById('dark-mode-toggle');
     if (!toggle) {
-        console.warn("[Theme] Dark mode toggle switch not found.");
+        console.warn("[Theme] Dark mode toggle switch (#dark-mode-toggle) not found.");
         return;
     }
+    console.log("[Theme] Toggle switch found:", toggle);
 
     // Check localStorage first
     const savedTheme = localStorage.getItem('theme');
-    
+    console.log("[Theme] localStorage 'theme':", savedTheme);
+
     // Check system preference if no saved theme
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
+    console.log("[Theme] System prefers dark:", prefersDark);
+
     // Determine initial state
     const initialThemeIsDark = savedTheme === 'dark' || (savedTheme === null && prefersDark);
-    
+    console.log("[Theme] Determined initial theme is dark:", initialThemeIsDark);
+
     // Apply initial theme immediately
     applyTheme(initialThemeIsDark);
     toggle.checked = initialThemeIsDark;
-    
+    console.log("[Theme] Initial theme applied. Toggle checked state:", toggle.checked);
+
     // Listener for toggle changes
     toggle.addEventListener('change', (event) => {
         const isDark = event.target.checked;
+        console.log("[Theme] Toggle changed. New checked state (isDark):", isDark);
         applyTheme(isDark);
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        try {
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            console.log("[Theme] Saved theme to localStorage:", isDark ? 'dark' : 'light');
+        } catch (e) {
+            console.error("[Theme] Error saving theme to localStorage:", e);
+        }
     });
 
     // Listen for system theme changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+        console.log("[Theme] System theme preference changed. Matches dark:", event.matches);
+        // Only apply system change if no user preference is saved in localStorage
         if (!localStorage.getItem('theme')) {
+            console.log("[Theme] No saved theme in localStorage, applying system preference.");
             const systemPrefersDark = event.matches;
             applyTheme(systemPrefersDark);
             toggle.checked = systemPrefersDark;
+        } else {
+            console.log("[Theme] Saved theme exists in localStorage, ignoring system change.");
         }
     });
 
-    console.log("[Theme] Dark mode initialized with state:", initialThemeIsDark);
+    console.log("[Theme] Dark mode initialization complete.");
 }
 
-console.log("[UI] ui_utils.js loaded. Functions (populateSelectWithOptions, openModal, closeModal, toggleProfileDropdown, setupDarkModeToggle) defined globally.");
+// --- Helper Functions ---
+/**
+ * Populates a select dropdown with options from a configuration object or array.
+ * @param {HTMLSelectElement} selectElement - The select element to populate.
+ * @param {object|Array} optionsData - An object (key-value pairs) or array of objects [{id, name}, ...].
+ * @param {string} [defaultOptionText=''] - Text for the initial disabled/default option.
+ * @param {string|null} [selectedValue=null] - The value to pre-select.
+ */
+function populateSelectWithOptions(selectElement, optionsData, defaultOptionText = '', selectedValue = null) {
+    // *** ADD LOGGING HERE ***
+    console.log(`[populateSelectWithOptions] Called for element:`, selectElement ? `#${selectElement.id}` : 'null', ` | Default Text: "${defaultOptionText}" | Selected Value: ${selectedValue}`);
+    console.log(`[populateSelectWithOptions] Options Data Type: ${typeof optionsData}`, optionsData);
+    // *** END LOGGING ***
+
+    if (!selectElement) {
+        console.error("populateSelectWithOptions: selectElement is null.");
+        return;
+    }
+    console.log(`[UI] Populating select: #${selectElement.id}`);
+    selectElement.innerHTML = ''; // Clear existing options
+
+    // Add default option if provided
+    if (defaultOptionText) {
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = defaultOptionText;
+        defaultOption.disabled = true; // Make it non-selectable if it's just a placeholder
+        if (!selectedValue) defaultOption.selected = true; // Select it if no other value is pre-selected
+        selectElement.appendChild(defaultOption);
+    }
+
+    // Add options from data
+    if (Array.isArray(optionsData)) { // Array of objects like [{id: 'val1', name: 'Label 1'}, ...]
+        optionsData.forEach(item => {
+            if (item && typeof item === 'object' && item.hasOwnProperty('id') && item.hasOwnProperty('name')) {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = item.name;
+                if (selectedValue && item.id === selectedValue) {
+                    option.selected = true;
+                    if (defaultOptionText) { // Unselect the default if a value is selected
+                         const defaultOpt = selectElement.querySelector('option[value=""]');
+                         if (defaultOpt) defaultOpt.selected = false;
+                    }
+                }
+                selectElement.appendChild(option);
+            } else {
+                console.warn(`[UI] Skipping invalid item in optionsData array for #${selectElement.id}:`, item);
+            }
+        });
+    } else if (typeof optionsData === 'object' && optionsData !== null) { // Object like {'val1': 'Label 1', ...}
+        Object.entries(optionsData).forEach(([value, text]) => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = text;
+            if (selectedValue && value === selectedValue) {
+                option.selected = true;
+                 if (defaultOptionText) { // Unselect the default
+                     const defaultOpt = selectElement.querySelector('option[value=""]');
+                     if (defaultOpt) defaultOpt.selected = false;
+                 }
+            }
+            selectElement.appendChild(option);
+        });
+    } else {
+        console.error(`[UI] Invalid optionsData format for #${selectElement.id}. Expected object or array.`);
+    }
+     console.log(`[UI] Finished populating select: #${selectElement.id}. Selected value: ${selectElement.value}`);
+}
+
+/**
+ * Generates the HTML string for dynamic form fields based on the game key.
+ * This function centralizes the form structure for both live and past game submission.
+ * Uses generic 'game-' prefixed IDs based primarily on the original live game structure.
+ * @param {string} gameKey - The key of the selected game (e.g., 'golf', 'pool_8ball').
+ * @param {string} context - Optional context ('live' or 'submit') for minor variations if needed.
+ * @returns {string} The HTML string for the form fields.
+ */
+function generateGameFormFieldsHTML(gameKey, context = 'submit') {
+    console.log(`[UI Utils] Generating form fields for game: ${gameKey}, context: ${context}`);
+    let html = '';
+    // Use generic 'game-' prefixed IDs
+
+    switch (gameKey) {
+        case 'golf':
+            // IDs based on original live_game structure, plus player select
+            html = `
+                ${context === 'submit' ? `
+                <div>
+                    <label for="game-player1" class="block mb-1">Player:</label>
+                    <select id="game-player1" name="player1" class="input-field" required></select>
+                </div>
+                ` : ''}
+                <div>
+                    <label for="game-golf-course-select" class="block mb-1">Course:</label>
+                    <select id="game-golf-course-select" name="course_id" class="input-field"></select>
+                </div>
+                <div>
+                    <label for="game-golf-holes-select" class="block mb-1">Holes Played:</label>
+                    <select id="game-golf-holes-select" name="past_golf_holes_played" class="input-field">
+                        <option value="18" selected>18 Holes</option>
+                        <option value="9F">Front 9</option>
+                        <option value="9B">Back 9</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="game-golf-score-input" class="block mb-1">Total Score:</label>
+                    <input type="number" id="game-golf-score-input" name="score" min="1" class="input-field" ${context === 'submit' ? 'required' : ''}>
+                     <span class="text-xs text-gray-500 dark:text-gray-400">Enter total score if not tracking hole-by-hole.</span>
+                </div>
+                <!-- Hole-by-hole tracking section -->
+                <details id="game-golf-hole-details" class="mt-4">
+                    <summary class="cursor-pointer font-medium text-indigo-600 dark:text-indigo-400">Track Hole-by-Hole (Optional)</summary>
+                    <div id="game-golf-hole-inputs" class="mt-2 space-y-3 p-4 border rounded-md bg-gray-50 dark:bg-gray-700">
+                        <!-- Hole inputs will be generated by JS based on context -->
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Hole inputs will appear here based on selection.</p>
+                    </div>
+                </details>
+                 ${context === 'submit' ? `
+                 <hr class="my-4">
+                 <div>
+                     <label for="submit-date-played" class="block mb-1">Date Played:</label>
+                     <input type="date" id="submit-date-played" name="date_played" class="input-field" required>
+                 </div>
+                 <div>
+                     <label for="submit-time-played" class="block mb-1">Time Played (Optional):</label>
+                     <input type="time" id="submit-time-played" name="time_played" class="input-field">
+                 </div>
+                 <div>
+                    <label for="submit-notes" class="block mb-1">Notes (Optional):</label>
+                    <textarea id="submit-notes" name="notes" rows="2" class="input-field"></textarea>
+                 </div>
+                 ` : ''}
+            `;
+            break;
+        case 'bowling':
+             // IDs based on original live_game structure (assuming simple score input)
+            html = `
+                ${context === 'submit' ? `
+                <div>
+                    <label for="game-player1" class="block mb-1">Player:</label>
+                    <select id="game-player1" name="player1" class="input-field" required></select>
+                </div>
+                ` : ''}
+                <div>
+                    <label for="game-score-input" class="block mb-1">Final Score:</label>
+                    <input type="number" id="game-score-input" name="score" min="0" max="300" class="input-field" required>
+                </div>
+                 ${context === 'submit' ? `
+                 <hr class="my-4">
+                 <div>
+                     <label for="submit-date-played" class="block mb-1">Date Played:</label>
+                     <input type="date" id="submit-date-played" name="date_played" class="input-field" required>
+                 </div>
+                 <div>
+                     <label for="submit-time-played" class="block mb-1">Time Played (Optional):</label>
+                     <input type="time" id="submit-time-played" name="time_played" class="input-field">
+                 </div>
+                 <div>
+                    <label for="submit-notes" class="block mb-1">Notes (Optional):</label>
+                    <textarea id="submit-notes" name="notes" rows="2" class="input-field"></textarea>
+                 </div>
+                 ` : ''}
+            `;
+            break;
+        case 'pool_8ball':
+        case 'pool_9ball':
+        case 'chess':
+        case 'ping_pong':
+        case 'magic_gathering':
+        case 'disney_lorcana':
+        case 'warhammer_40k':
+            // Standard 1v1 Win/Loss/Draw
+             if (context === 'live') {
+                 // Simplified live outcome selection
+                 html = `
+                     <div>
+                         <label for="game-outcome-select" class="block mb-1">Outcome:</label>
+                         <select id="game-outcome-select" name="outcome" class="input-field" required>
+                             <option value="">-- Select Outcome --</option>
+                             <option value="win">I Won</option>
+                             <option value="loss">I Lost</option>
+                             <option value="draw">Draw</option>
+                         </select>
+                     </div>
+                     <!-- Add live-specific fields like scratches for pool -->
+                     ${gameKey === 'pool_8ball' ? `
+                     <div class="grid grid-cols-2 gap-4 mt-4">
+                         <div>
+                             <label for="game-pool-scratches-me" class="block mb-1 text-sm">My Scratches:</label>
+                             <input type="number" id="game-pool-scratches-me" name="scratches_me" min="0" value="0" class="input-field w-full">
+                         </div>
+                         <div>
+                             <label for="game-pool-scratches-opp" class="block mb-1 text-sm">Opponent Scratches:</label>
+                             <input type="number" id="game-pool-scratches-opp" name="scratches_opp" min="0" value="0" class="input-field w-full">
+                         </div>
+                     </div>
+                     ` : ''}
+                 `;
+             } else { // context === 'submit'
+                 html = `
+                     <div>
+                         <label for="game-winner-select" class="block mb-1">Winner:</label>
+                         <select id="game-winner-select" name="winner" class="input-field" required></select>
+                     </div>
+                     <div>
+                         <label for="game-loser-select" class="block mb-1">Loser:</label>
+                         <select id="game-loser-select" name="loser" class="input-field" required></select>
+                     </div>
+                     <div>
+                         <label for="game-score-details" class="block mb-1">Score/Details (Optional):</label>
+                         <input type="text" id="game-score-details" name="score" class="input-field">
+                     </div>
+                     <div class="flex items-center mt-2">
+                         <input type="checkbox" id="submit-is-draw" name="is_draw" class="mr-2 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                         <label for="submit-is-draw">Record as Draw</label>
+                     </div>
+                     <!-- Add submit-specific fields like pool scratches, chess outcome -->
+                     ${gameKey === 'pool_8ball' ? `
+                     <div class="grid grid-cols-2 gap-4 mt-4">
+                         <div>
+                             <label for="submit-pool-scratches-winner" class="block mb-1 text-sm">Winner Scratches:</label>
+                             <input type="number" id="submit-pool-scratches-winner" name="scratches_winner" min="0" class="input-field w-full">
+                         </div>
+                         <div>
+                             <label for="submit-pool-scratches-loser" class="block mb-1 text-sm">Loser Scratches:</label>
+                             <input type="number" id="submit-pool-scratches-loser" name="scratches_loser" min="0" class="input-field w-full">
+                         </div>
+                     </div>
+                     ` : ''}
+                     ${gameKey === 'chess' ? `
+                     <div class="mt-4">
+                        <label for="submit-chess-outcome" class="block mb-1 text-sm">Outcome Detail:</label>
+                        <select id="submit-chess-outcome" name="chess_outcome" class="input-field">
+                            <option value="">-- Optional --</option>
+                            <option value="checkmate">Checkmate</option>
+                            <option value="resignation">Resignation</option>
+                            <option value="timeout">Timeout</option>
+                            <option value="stalemate">Stalemate (Draw)</option>
+                            <option value="agreement">Agreement (Draw)</option>
+                            <option value="repetition">Repetition (Draw)</option>
+                            <option value="insufficient_material">Insufficient Material (Draw)</option>
+                        </select>
+                     </div>
+                     ` : ''}
+                     <hr class="my-4">
+                     <div>
+                         <label for="submit-date-played" class="block mb-1">Date Played:</label>
+                         <input type="date" id="submit-date-played" name="date_played" class="input-field" required>
+                     </div>
+                     <div>
+                         <label for="submit-time-played" class="block mb-1">Time Played (Optional):</label>
+                         <input type="time" id="submit-time-played" name="time_played" class="input-field">
+                     </div>
+                     <div>
+                        <label for="submit-notes" class="block mb-1">Notes (Optional):</label>
+                        <textarea id="submit-notes" name="notes" rows="2" class="input-field"></textarea>
+                     </div>
+                 `;
+             }
+            break;
+        // Add cases for other game types (pool_cutthroat, team games, etc.)
+        // Ensure IDs and names are consistent where data represents the same thing.
+        default:
+            html = `<p class="text-gray-500 dark:text-gray-400 italic">Form fields for this game type are not yet configured.</p>`;
+            break;
+    }
+    return html;
+}
+
+console.log("[UI] ui_utils.js loaded. Functions defined globally.");

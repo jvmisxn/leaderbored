@@ -289,19 +289,50 @@ body.admin-logged-in .player-public-only { display: none; }
 
 /* --- Layout & Components --- */
 /* Dropdown */
-#profile-dropdown, #play-dropdown {
+#profile-dropdown,
+#play-dropdown {
     background-color: var(--card-bg-light);
     border: 1px solid var(--border-color-light);
     transition: opacity 0.2s ease-out, transform 0.2s ease-out;
 }
-#profile-dropdown a, #play-dropdown a {
+#profile-dropdown a,
+#play-dropdown a {
     color: var(--text-color-light);
 }
-#profile-dropdown a:hover, #play-dropdown a:hover {
+#profile-dropdown a:hover,
+#play-dropdown a:hover {
     background-color: var(--bg-color-light); /* Light gray hover */
     color: var(--link-hover-light);
 }
-#profile-dropdown.hidden, #play-dropdown.hidden { opacity: 0; transform: translateY(-10px); pointer-events: none; }
+#profile-dropdown.hidden,
+#play-dropdown.hidden { opacity: 0; transform: translateY(-10px); pointer-events: none; }
+
+/* Dark Mode Dropdown Styles */
+body.dark #profile-dropdown,
+body.dark #play-dropdown {
+    background-color: var(--card-bg-dark) !important; /* Ensure dark background */
+    border-color: var(--border-color-dark) !important; /* Ensure dark border */
+}
+body.dark #profile-dropdown a,
+body.dark #play-dropdown a {
+    color: var(--text-color-dark) !important;
+}
+body.dark #profile-dropdown a:hover,
+body.dark #play-dropdown a:hover {
+    background-color: var(--bg-color-dark) !important; /* Darker gray hover */
+    color: var(--link-hover-dark) !important;
+}
+
+/* --- Fix: Force dark dropdown link hover background --- */
+body.dark #profile-dropdown a:hover,
+body.dark #play-dropdown a:hover,
+body.dark .group:hover #profile-dropdown a:hover,
+body.dark .group:hover #play-dropdown a:hover,
+body.dark .group:focus-within #profile-dropdown a:hover,
+body.dark .group:focus-within #play-dropdown a:hover {
+    background-color: var(--bg-color-dark) !important;
+    color: var(--link-hover-dark) !important;
+}
 
 /* Modals */
 .modal-container {
@@ -443,14 +474,14 @@ body.dark nav a:hover { color: var(--link-hover-dark); }
 body.dark nav button { color: var(--text-color-dark); }
 
 /* Dark Dropdowns */
-body.dark #profile-dropdown, body.dark #play-dropdown {
+body.dark #profile-dropdown {
     background-color: var(--card-bg-dark);
     border-color: var(--border-color-dark);
 }
-body.dark #profile-dropdown a, body.dark #play-dropdown a {
+body.dark #profile-dropdown a {
     color: var(--text-color-dark);
 }
-body.dark #profile-dropdown a:hover, body.dark #play-dropdown a:hover {
+body.dark #profile-dropdown a:hover {
     background-color: var(--bg-color-dark); /* Darker hover */
     color: var(--link-hover-dark);
 }
@@ -578,37 +609,32 @@ body.dark #dark-mode-toggle + div {
 .mobile-menu {
     position: fixed;
     top: 0;
-    right: -100%; /* Start off-screen */
-    width: 75%; /* Adjust width as needed */
-    max-width: 300px;
-    height: 100%;
-    background-color: #fff; /* Light mode background */
-    padding: 1.5rem;
+    right: 0;
+    bottom: 0;
+    width: 280px; /* Adjust width as needed */
+    padding: 20px;
     box-shadow: -2px 0 5px rgba(0,0,0,0.1);
-    transition: right 0.3s ease-in-out;
-    z-index: 100; /* Ensure it's above other content */
-    overflow-y: auto; /* Allow scrolling if menu is long */
-}
-
-.dark .mobile-menu {
-    background-color: #1f2937; /* Dark mode background (gray-800) */
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 100; /* Ensure it's above the overlay */
+    overflow-y: auto; /* Allow scrolling if content is long */
 }
 
 .mobile-menu.open {
-    right: 0; /* Slide in */
+    transform: translateX(0);
 }
 
 .mobile-menu-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 99; /* Below menu, above content */
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay */
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    z-index: 99; /* Below the menu, above the content */
 }
 
 .mobile-menu-overlay.open {
@@ -616,27 +642,160 @@ body.dark #dark-mode-toggle + div {
     visibility: visible;
 }
 
-.mobile-menu .nav-link {
-    display: block;
-    padding: 0.75rem 0; /* Adjust padding */
-    font-size: 1.1rem; /* Larger font for mobile */
-    border-bottom: 1px solid #e5e7eb; /* Light mode border */
-}
-
-.dark .mobile-menu .nav-link {
-    border-bottom-color: #374151; /* Dark mode border (gray-700) */
-}
-
-.mobile-menu .nav-link:last-child {
-    border-bottom: none;
-}
-
 .mobile-menu-close-btn {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
-    font-size: 1.5rem;
+    top: 10px;
+    right: 15px;
+    font-size: 2rem;
+    line-height: 1;
     background: none;
     border: none;
     cursor: pointer;
+    color: inherit;
+}
+
+/* Player Info Modal: force light text in dark mode */
+body.dark #player-info-modal .modal-content,
+body.dark #player-info-modal,
+body.dark #player-info-modal .modal-view-mode,
+body.dark #player-info-modal .modal-edit-mode,
+body.dark #player-info-modal h2,
+body.dark #player-info-modal h3,
+body.dark #player-info-modal label,
+body.dark #player-info-modal input,
+body.dark #player-info-modal .text-gray-900,
+body.dark #player-info-modal .text-gray-800,
+body.dark #player-info-modal .text-gray-700,
+body.dark #player-info-modal .text-gray-600,
+body.dark #player-info-modal .text-gray-500 {
+    color: #f3f4f6 !important;
+    background-color: transparent !important;
+}
+body.dark #player-info-modal .text-gray-400,
+body.dark #player-info-modal .muted-text {
+    color: #9ca3af !important;
+}
+body.dark #player-info-modal .text-indigo-700 {
+    color: #818cf8 !important;
+}
+body.dark #player-info-modal .bg-white {
+    background-color: #1f2937 !important;
+}
+body.dark #player-info-modal input,
+body.dark #player-info-modal input[type="text"],
+body.dark #player-info-modal input[type="url"] {
+    background-color: #374151 !important;
+    color: #f3f4f6 !important;
+    border-color: #4b5563 !important;
+}
+
+/* --- Basic Player Entry Styles --- */
+.player-entry {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem; /* py-3 px-4 */
+    background-color: var(--card-bg-light);
+    border: 1px solid var(--border-color-light);
+    border-radius: 0.75rem; /* rounded-xl */
+    margin-bottom: 0.75rem; /* mb-3 */
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); /* shadow */
+}
+
+.player-entry:hover {
+    background-color: var(--bg-color-light); /* Slightly different background on hover */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* shadow-md */
+}
+
+.player-entry-image {
+    width: 40px; /* w-10 */
+    height: 40px; /* h-10 */
+    border-radius: 50%; /* rounded-full */
+    margin-right: 1rem; /* mr-4 */
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.player-entry-info {
+    flex-grow: 1;
+}
+
+.player-entry-name {
+    font-weight: 600; /* font-semibold */
+    color: var(--text-color-light);
+}
+
+.player-entry-elo {
+    font-size: 0.875rem; /* text-sm */
+    color: var(--text-muted-light);
+}
+
+/* Dark Mode for Basic Player Entry */
+body.dark .player-entry {
+    background-color: var(--card-bg-dark);
+    border-color: var(--border-color-dark);
+}
+body.dark .player-entry:hover {
+    background-color: var(--bg-color-dark); /* Slightly different dark background on hover */
+}
+body.dark .player-entry-name {
+    color: var(--text-color-dark);
+}
+body.dark .player-entry-elo {
+    color: var(--text-muted-dark);
+}
+
+/* Grid container adjustments for list */
+#players-list-container {
+    display: block; /* Or grid grid-cols-1 gap-3 */
+    padding: 0; /* Adjust padding if needed */
+}
+
+/* Sticky Footer - Applied via Tailwind classes on body/main/footer */
+/* body { display: flex; flex-direction: column; min-height: 100vh; } */
+/* main { flex-grow: 1; } */
+/* footer { flex-shrink: 0; } */
+
+/* Player Profile Theming */
+.player-profile-themed {
+    /* Define default theme colors using CSS variables */
+    --player-primary-color: #4f46e5; /* Default: Indigo-600 */
+    --player-secondary-color: #e0e7ff; /* Default: Indigo-100 */
+    --player-text-on-primary: #ffffff; /* Text color on primary background */
+    --player-text-on-secondary: #3730a3; /* Text color on secondary background */
+
+    /* Apply a subtle top border */
+    border-top: 4px solid var(--player-primary-color);
+    padding-top: 1.5rem; /* Adjust as needed */
+}
+
+.player-profile-header-border {
+    border-bottom-color: var(--player-secondary-color);
+}
+
+.player-profile-image-border {
+    border-color: var(--player-primary-color);
+}
+
+.player-profile-name-text {
+    color: var(--player-primary-color);
+}
+
+/* Example of using secondary color for backgrounds (adjust as needed) */
+/* .player-profile-themed .card {
+    background-color: var(--player-secondary-color);
+} */
+
+/* Placeholder Styles */
+.loading-text {
+    @apply text-gray-500 dark:text-gray-400 italic text-center py-4;
+}
+
+.error-text {
+    @apply text-red-600 dark:text-red-400 font-medium text-center py-4;
+}
+
+.muted-text {
+     @apply text-gray-500 dark:text-gray-400 text-sm;
 }

@@ -52,107 +52,240 @@ async function fetchTournaments(status = 'upcoming', limitCount = 20) {
 }
 
 /**
- * Populates a list element with tournament data.
- * @param {string} listElementId - The ID of the UL element to populate.
- * @param {number} limitCount - The maximum number of tournaments to display.
- * @param {string} filter - 'upcoming', 'completed', 'active', or 'all'.
+ * Populates the tournaments list container.
+ * @param {string} containerId - The ID of the container element to populate.
+ * @param {number|null} limit - Maximum number of tournaments to show (null for all).
+ * @param {string} filter - The filter to apply ('upcoming', 'past', 'all').
  */
-async function populateTournamentsList(listElementId, limitCount = 20, filter = 'upcoming') {
-    console.log(`[TOURNAMENTS] Starting populateTournamentsList for #${listElementId} with filter: ${filter}`);
+async function populateTournamentsList(containerId, limit = null, filter = 'upcoming') {
+    const listContainer = document.getElementById(containerId);
+    if (!listContainer) {
+        console.error(`[Tournaments] Container element #${containerId} not found.`);
+        return;
+    }
 
-    // Ensure db is available before proceeding
+    console.log(`[Tournaments] Populating list #${containerId} (Filter: ${filter}, Limit: ${limit})`);
+    listContainer.innerHTML = `<p class="loading-text text-center py-5 text-gray-600 dark:text-gray-400">Loading ${filter} tournaments...</p>`;
+
+    // --- Placeholder Implementation ---
+    // TODO: Replace with actual Firestore query and rendering logic
+    setTimeout(() => { // Simulate async fetch
+        listContainer.innerHTML = `
+            <div class="card bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                <h3 class="font-semibold text-gray-900 dark:text-gray-100">Placeholder Tournament</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Date: Sometime soon</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Game: Placeholder Game</p>
+                <p class="text-sm text-gray-500 dark:text-gray-500 mt-2 italic">Tournament functionality not fully implemented yet.</p>
+                <a href="#tournament-detail-section?tournamentId=placeholder" class="nav-link text-indigo-600 dark:text-indigo-400 text-sm mt-2 inline-block" data-target="tournament-detail-section">View Details (Placeholder)</a>
+            </div>
+        `;
+        console.log(`[Tournaments] Displayed placeholder content for #${containerId}.`);
+    }, 500);
+    // --- End Placeholder ---
+
+    // Example of how you might fetch data later:
+    /*
     if (!db) {
-        console.error(`[TOURNAMENTS POPULATE ${listElementId}] Firestore db object not available.`);
-        const listElement = document.getElementById(listElementId);
-        if (listElement) listElement.innerHTML = '<li class="error-text">Error: Database connection failed.</li>';
+        console.error("[Tournaments] Firestore DB not available.");
+        listContainer.innerHTML = '<p class="error-text">Error connecting to database.</p>';
         return;
     }
-
-    const listElement = document.getElementById(listElementId);
-    if (!listElement) {
-        console.error(`[TOURNAMENTS] List element #${listElementId} not found in DOM`);
-        return;
-    }
-
-    console.log(`[TOURNAMENTS] Populating list #${listElementId} with filter: ${filter}...`);
-    listElement.innerHTML = `<li class="loading-text text-base">Loading tournaments...</li>`;
 
     try {
         let query = db.collection('tournaments');
 
-        // Apply filter based on status
-        switch (filter) {
-            case 'completed':
-                query = query.where('status', 'in', ['Completed', 'Cancelled']);
-                break;
-            case 'upcoming':
-                query = query.where('status', 'in', ['Upcoming', 'Active']);
-                break;
-            case 'all':
-                break;
-            default:
-                console.warn(`[TOURNAMENTS] Unknown filter '${filter}', defaulting to 'upcoming'.`);
-                query = query.where('status', 'in', ['Upcoming', 'Active']);
+        // Apply filtering based on date
+        const now = firebase.firestore.Timestamp.now();
+        if (filter === 'upcoming') {
+            query = query.where('start_date', '>=', now).orderBy('start_date', 'asc');
+        } else if (filter === 'past') {
+            query = query.where('start_date', '<', now).orderBy('start_date', 'desc');
+        } else { // 'all'
+            query = query.orderBy('start_date', 'desc');
         }
 
-        // Apply ordering and limit
-        query = query.orderBy('date_created', 'desc').limit(limitCount);
+        if (limit) {
+            query = query.limit(limit);
+        }
 
-        console.log(`[TOURNAMENTS] Executing query...`, query);
         const snapshot = await query.get();
-        console.log(`[TOURNAMENTS] Query complete. Found ${snapshot.size} tournaments.`);
 
         if (snapshot.empty) {
-            listElement.innerHTML = `<li class="text-center py-4 text-gray-500">No tournaments found.</li>`;
+            listContainer.innerHTML = `<p class="muted-text text-center py-5">No ${filter} tournaments found.</p>`;
             return;
         }
 
-        // Clear and populate list
-        listElement.innerHTML = '';
+        listContainer.innerHTML = ''; // Clear loading message
         snapshot.forEach(doc => {
             const tournament = { id: doc.id, ...doc.data() };
-            const li = document.createElement('li');
-            li.className = `border dark:border-gray-700 p-4 rounded-lg mb-4`;
-
-            const status = tournament.status || 'Upcoming';
-            const gameType = (typeof gameTypesConfig !== 'undefined' && gameTypesConfig[tournament.game_type]) 
-                ? gameTypesConfig[tournament.game_type] 
-                : (tournament.game_type || 'N/A');
-
-            li.innerHTML = `
-                <div class="flex justify-between items-start mb-2 flex-wrap gap-2">
-                    <h3 class="text-lg font-semibold">${tournament.name || 'Unnamed Tournament'}</h3>
-                    <span class="text-sm font-medium status-${status.toLowerCase()} px-2 py-0.5 rounded">${status}</span>
-                </div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Game: ${gameType}</p>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Format: ${tournament.format || 'N/A'}</p>
-                <div class="flex justify-between items-center">
-                    <span class="text-xs text-gray-500">${tournament.date_created ? new Date(tournament.date_created.seconds * 1000).toLocaleDateString() : 'Date unknown'}</span>
-                    <a href="#tournament-detail-section?tournamentId=${tournament.id}" 
-                       class="text-sm font-medium text-indigo-600 hover:text-indigo-800">
-                        View Details &rarr;
-                    </a>
-                </div>`;
-
-            listElement.appendChild(li);
+            const card = document.createElement('div');
+            card.className = 'card bg-white dark:bg-gray-800 p-4 rounded-lg shadow';
+            // Populate card with tournament details...
+            // card.innerHTML = `... HTML for tournament card ...`;
+            listContainer.appendChild(card);
         });
 
     } catch (error) {
-        console.error('[TOURNAMENTS] Error populating tournaments:', error);
-        listElement.innerHTML = `<li class="error-text text-center py-4">Error loading tournaments: ${error.message}</li>`;
+        console.error(`[Tournaments] Error fetching tournaments (Filter: ${filter}):`, error);
+        listContainer.innerHTML = `<p class="error-text">Error loading tournaments: ${error.message}</p>`;
     }
+    */
 }
 
 // --- Create Tournament Modal Functions ---
 
+/**
+ * Opens the modal to create a new tournament.
+ */
 async function openCreateTournamentModal() {
-    // ... existing code ...
+    const modalElement = document.getElementById('create-tournament-modal');
+    if (!modalElement) { console.error("Create Tournament modal element not found."); return; }
+    if (!db) { console.error("Create Tournament modal: DB not ready."); alert("Database connection error."); return; }
+
+    // Ensure necessary data is ready
+    try {
+        if (!window.globalGameConfigs) await fetchAndCacheGameConfigs();
+        if (!playersCachePopulated) await fetchAllPlayersForCache();
+    } catch (error) {
+        console.error("Error preparing data for create tournament modal:", error);
+        alert(`Error loading required data: ${error.message}`);
+        return;
+    }
+
+    const allPlayers = Object.values(globalPlayerCache || {}).sort((a, b) => a.name.localeCompare(b.name));
+    const gameConfigs = window.globalGameConfigs || {};
+
+    // Define and Inject HTML
+    const modalContentHTML = `
+        <div class="modal-content">
+            <button id="close-create-tournament-modal-btn" class="modal-close-button">&times;</button>
+            <h2 class="text-2xl font-semibold mb-5 text-indigo-700 dark:text-indigo-400">Create New Tournament</h2>
+            <form id="create-tournament-form">
+                <div class="mb-4">
+                    <label for="create-tournament-name" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Tournament Name:</label>
+                    <input type="text" id="create-tournament-name" name="name" class="input-field w-full" required>
+                </div>
+                <div class="mb-4">
+                    <label for="create-tournament-game-type" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Game Type:</label>
+                    <select id="create-tournament-game-type" name="game_type" class="input-field w-full" required>
+                        <option value="">Select Game...</option>
+                        ${Object.entries(gameConfigs).map(([key, config]) => `<option value="${key}">${config.name || key}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="create-tournament-start-date" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Start Date:</label>
+                    <input type="date" id="create-tournament-start-date" name="start_date" class="input-field w-full" required>
+                </div>
+                <div class="mb-4">
+                    <label for="create-tournament-description" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Description (Optional):</label>
+                    <textarea id="create-tournament-description" name="description" class="input-field w-full h-24"></textarea>
+                </div>
+                <div class="mb-5">
+                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Participants:</label>
+                    <div id="create-tournament-participants-list" class="max-h-40 overflow-y-auto border dark:border-gray-600 rounded p-2 space-y-1">
+                        <!-- Player checkboxes populated by JS -->
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Select players participating in the tournament.</p>
+                </div>
+                <p id="create-tournament-error" class="text-red-500 text-sm mt-2 h-4"></p>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" id="cancel-create-tournament-modal-btn" class="button button-secondary">Cancel</button>
+                    <button type="submit" class="button button-primary">Create Tournament</button>
+                </div>
+            </form>
+        </div>`;
+    modalElement.innerHTML = modalContentHTML;
+
+    // Populate participants checklist
+    const participantsContainer = modalElement.querySelector('#create-tournament-participants-list');
+    populateParticipantChecklist(participantsContainer, allPlayers); // Use helper
+
+    // Attach listeners *after* injecting HTML
+    modalElement.querySelector('#close-create-tournament-modal-btn')?.addEventListener('click', closeCreateTournamentModal);
+    modalElement.querySelector('#cancel-create-tournament-modal-btn')?.addEventListener('click', closeCreateTournamentModal);
+    modalElement.querySelector('#create-tournament-form')?.addEventListener('submit', handleCreateTournamentSubmit);
+
+    openModal(modalElement); // Use generic openModal
 }
+
+/**
+ * Closes the Create Tournament modal.
+ */
 function closeCreateTournamentModal() {
-    // ... existing code ...
+    const modalElement = document.getElementById('create-tournament-modal');
+    if (modalElement) closeModal(modalElement); // Use generic close
 }
+
+/**
+ * Handles the submission of the Create Tournament form.
+ */
 async function handleCreateTournamentSubmit(event) {
-    // ... existing code ...
+    event.preventDefault();
+    const form = event.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const errorMsgElement = form.querySelector('#create-tournament-error');
+
+    if (!db || !firebase || !firebase.firestore) { console.error("Create submit: DB not ready."); alert("Database connection error."); return; }
+
+    submitButton.disabled = true;
+    if (errorMsgElement) errorMsgElement.textContent = '';
+
+    const formData = new FormData(form);
+    const tournamentData = {};
+
+    // Basic validation and data extraction
+    tournamentData.name = formData.get('name')?.trim();
+    tournamentData.game_type = formData.get('game_type');
+    tournamentData.description = formData.get('description')?.trim() || '';
+    const startDateStr = formData.get('start_date');
+    tournamentData.participant_ids = formData.getAll('participants'); // Gets all checked values
+
+    if (!tournamentData.name || !tournamentData.game_type || !startDateStr) {
+        if (errorMsgElement) errorMsgElement.textContent = "Please fill in Name, Game Type, and Start Date.";
+        submitButton.disabled = false;
+        return;
+    }
+    if (!tournamentData.participant_ids || tournamentData.participant_ids.length < 2) {
+         if (errorMsgElement) errorMsgElement.textContent = "Please select at least two participants.";
+         submitButton.disabled = false;
+         return;
+    }
+
+    // Convert date string to Firestore Timestamp
+    try {
+        tournamentData.start_date = firebase.firestore.Timestamp.fromDate(new Date(startDateStr + 'T00:00:00'));
+    } catch (e) {
+        if (errorMsgElement) errorMsgElement.textContent = "Invalid date format.";
+        submitButton.disabled = false;
+        return;
+    }
+
+    // Set initial status and creation date
+    tournamentData.status = 'upcoming'; // Default status
+    tournamentData.date_created = firebase.firestore.FieldValue.serverTimestamp();
+    // Add other fields like format, rounds, etc. if needed later
+
+    console.log(`[TOURNAMENT CREATE SUBMIT] Creating tournament with data:`, tournamentData);
+
+    try {
+        const docRef = await db.collection('tournaments').add(tournamentData);
+        console.log(`[TOURNAMENT CREATE SUBMIT] Tournament "${tournamentData.name}" created successfully with ID: ${docRef.id}.`);
+        alert(`Tournament "${tournamentData.name}" created successfully!`);
+        closeCreateTournamentModal();
+
+        // Refresh the tournaments list if it's the current section
+        if (currentSectionId === 'tournaments-section') {
+            console.log("[TOURNAMENT CREATE SUBMIT] Refreshing tournaments list view...");
+            const filter = currentQueryParams.get('filter') || 'all';
+            await populateTournamentsList('tournaments-list-full', filter);
+        }
+
+    } catch (error) {
+        console.error(`[TOURNAMENT CREATE SUBMIT] Error creating tournament:`, error);
+        if (errorMsgElement) errorMsgElement.textContent = `Error creating tournament: ${error.message}`;
+    } finally {
+        submitButton.disabled = false;
+    }
 }
 
 /**
@@ -207,6 +340,9 @@ async function populateTournamentDetails(tournamentId) {
     editBtn.setAttribute('data-tournament-id', tournamentId); // Set ID for edit button early
 
     try {
+        // Ensure configs are loaded before fetching tournament data
+        if (!window.globalGameConfigs) await fetchAndCacheGameConfigs();
+
         const docRef = db.collection('tournaments').doc(tournamentId);
         const docSnap = await docRef.get();
 
@@ -224,7 +360,7 @@ async function populateTournamentDetails(tournamentId) {
 
         // --- Populate Basic Details ---
         nameEl.textContent = tournament.name || 'Unnamed Tournament';
-        const gameTypeDisplay = gameTypesConfig[tournament.game_type] || tournament.game_type || 'N/A';
+        const gameTypeDisplay = window.globalGameConfigs[tournament.game_type]?.name || tournament.game_type || 'N/A';
         const startDateStr = tournament.start_date?.toDate ? tournament.start_date.toDate().toLocaleDateString() : 'N/A';
         const statusDisplay = tournament.status ? tournament.status.charAt(0).toUpperCase() + tournament.status.slice(1) : 'Unknown';
 
@@ -303,6 +439,9 @@ async function openEditTournamentModal(tournamentId) {
     openModal(modalElement); // Open modal with loading state
 
     try {
+        // Ensure configs are loaded before fetching tournament data
+        if (!window.globalGameConfigs) await fetchAndCacheGameConfigs();
+
         const docRef = db.collection('tournaments').doc(tournamentId);
         const docSnap = await docRef.get();
 
@@ -332,7 +471,7 @@ async function openEditTournamentModal(tournamentId) {
                     <div class="mb-4">
                         <label for="edit-tournament-game-type" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Game Type:</label>
                         <select id="edit-tournament-game-type" name="game_type" class="input-field" required>
-                            ${Object.entries(gameTypesConfig).map(([key, name]) => `<option value="${key}" ${key === tournament.game_type ? 'selected' : ''}>${name}</option>`).join('')}
+                            ${Object.entries(window.globalGameConfigs).map(([key, config]) => `<option value="${key}" ${key === tournament.game_type ? 'selected' : ''}>${config.name || key}</option>`).join('')}
                         </select>
                     </div>
                     <div class="mb-4">

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LeaderBored - Friendly Competition Tracker</title>
+    <title>Leaderbored</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Move Tailwind config BEFORE other styles -->
     <script>
@@ -31,92 +31,108 @@
         table.show-golf-columns .golf-column {
             display: table-cell;
         }
+        /* Smaller input field for modals with many inputs */
+        .input-field-sm {
+            @apply shadow-sm appearance-none border rounded py-1 px-2 text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 dark:border-gray-500 leading-tight focus:outline-none focus:ring-1 focus:ring-blue-500;
+        }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-inter flex flex-col min-h-screen">
-    <nav class="bg-white dark:bg-gray-800 p-5 shadow-lg sticky top-0 z-50 flex items-center justify-between flex-shrink-0">
-        <a href="#home-section" class="nav-link flex-shrink-0 text-lg font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300" data-target="home-section">🏆 LeaderBored</a>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans antialiased">
 
-        <!-- Desktop Navigation Links - Hidden on small screens -->
-        <div class="hidden md:flex items-center space-x-4">
-            <div class="relative group">
-                <button class="px-3 py-2 rounded-md focus:outline-none flex items-center text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400">
-                    PLAY <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                </button>
-                <div id="play-dropdown" class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 bg-white dark:bg-gray-800">
-                    <a href="#live-game-section" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="live-game-section" role="menuitem">PLAY LIVE GAME</a>
-                    <a href="#submit-past-game-section" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="submit-past-game-section" role="menuitem">SUBMIT PAST GAME</a>
-                </div>
-            </div>
-            <div class="relative group">
-                <button class="px-3 py-2 rounded-md focus:outline-none flex items-center text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400">
-                    INFO <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                </button>
-                <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 bg-white dark:bg-gray-800">
-                    <a href="#players-section" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="players-section" role="menuitem">PLAYERS</a>
-                    <a href="#rankings-section" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="rankings-section" role="menuitem">RANKINGS</a>
-                    <a href="#results-section" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="results-section" role="menuitem">GAMES</a>
-                    <a href="#sports-section" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="sports-section" role="menuitem">SPORTS</a>
-                </div>
-            </div>
-            <div class="relative group">
-                <button class="px-3 py-2 rounded-md focus:outline-none flex items-center text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400">
-                    TOURNAMENTS <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                </button>
-                <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 bg-white dark:bg-gray-800">
-                    <a href="#tournaments-section?filter=upcoming" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="tournaments-section" role="menuitem">UPCOMING</a>
-                    <a href="#tournaments-section?filter=completed" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="tournaments-section" role="menuitem">HISTORY</a>
-                </div>
-            </div>
-        </div>
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50">
+        <nav class="bg-white dark:bg-gray-800 p-5 shadow-lg sticky top-0 z-50 flex items-center justify-between flex-shrink-0">
+            <a href="#home-section" class="nav-link flex-shrink-0 text-lg font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300" data-target="home-section">🏆 LeaderBored</a>
 
-        <!-- Right side: Login/Profile & Hamburger -->
-        <div class="flex items-center space-x-4 flex-shrink-0">
-            <a href="#player-login-section" id="player-login-link" class="button button-primary px-4 py-2 rounded-lg text-sm font-medium shadow hover:shadow-md public-only player-public-only nav-link text-white dark:text-gray-900 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-400 dark:hover:bg-indigo-500" data-target="player-login-section">Login</a>
-            <div id="profile-section" class="relative player-only">
-                <button id="profile-photo-button" class="block h-10 w-10 rounded-full overflow-hidden border-2 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    <img id="profile-photo-img" src="https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40" alt="My Profile" class="h-full w-full object-cover">
-                </button>
-                <div id="profile-dropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none hidden" role="menu" aria-orientation="vertical" aria-labelledby="profile-photo-button">
-                    <a href="#" id="dropdown-edit-profile" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">Edit Profile</a>
-                    <a href="#" id="dropdown-settings" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">Settings</a>
-                    <a href="#" id="dropdown-logout" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">Logout</a>
+            <!-- Desktop Navigation Links - Hidden on small screens -->
+            <div class="hidden md:flex items-center space-x-4">
+                <div class="relative group">
+                    <button class="px-3 py-2 rounded-md focus:outline-none flex items-center text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400">
+                        PLAY <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </button>
+                    <div id="play-dropdown" class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 bg-white dark:bg-gray-800">
+                        <a href="#live-game-section" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="live-game-section" role="menuitem">PLAY LIVE GAME</a>
+                        <a href="#submit-past-game-section" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="submit-past-game-section" role="menuitem">SUBMIT PAST GAME</a>
+                    </div>
+                </div>
+                <div class="relative group">
+                    <button class="px-3 py-2 rounded-md focus:outline-none flex items-center text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400">
+                        INFO <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </button>
+                    <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 bg-white dark:bg-gray-800">
+                        <a href="#players-section" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="players-section" role="menuitem">PLAYERS</a>
+                        <a href="#rankings-section" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="rankings-section" role="menuitem">RANKINGS</a>
+                        <a href="#results-section" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="results-section" role="menuitem">GAMES</a>
+                        <a href="#sports-section" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="sports-section" role="menuitem">SPORTS</a>
+                    </div>
+                </div>
+                <div class="relative group">
+                    <button class="px-3 py-2 rounded-md focus:outline-none flex items-center text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400">
+                        TOURNAMENTS <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </button>
+                    <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 bg-white dark:bg-gray-800">
+                        <a href="#tournaments-section?filter=upcoming" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="tournaments-section" role="menuitem">UPCOMING</a>
+                        <a href="#tournaments-section?filter=completed" class="block px-4 py-2 text-sm nav-link text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" data-target="tournaments-section" role="menuitem">HISTORY</a>
+                    </div>
                 </div>
             </div>
 
-            <!-- Hamburger Button - Visible only on small screens -->
-            <button id="hamburger-btn" class="md:hidden p-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                <span class="sr-only">Open main menu</span>
-                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-            </button>
-        </div>
-    </nav>
+            <!-- Right side: Login/Profile & Hamburger -->
+            <div class="flex items-center space-x-4 flex-shrink-0">
+                <a href="#player-login-section" id="player-login-link" class="button button-primary px-4 py-2 rounded-lg text-sm font-medium shadow hover:shadow-md public-only player-public-only nav-link text-white dark:text-gray-900 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-400 dark:hover:bg-indigo-500" data-target="player-login-section">Login</a>
+                <div id="profile-section" class="relative player-only">
+                    <button id="profile-photo-button" class="block h-10 w-10 rounded-full overflow-hidden border-2 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <img id="profile-photo-img" src="https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40" alt="My Profile" class="h-full w-full object-cover">
+                    </button>
+                    <div id="profile-dropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none hidden" role="menu" aria-orientation="vertical" aria-labelledby="profile-photo-button">
+                        <a href="#edit-profile-section" id="dropdown-edit-profile" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 nav-link" data-target="edit-profile-section" role="menuitem">Edit Profile</a>
+                        <a href="#" id="dropdown-settings" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">Settings</a>
+                        <a href="#" id="dropdown-logout" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">Logout</a>
+                    </div>
+                </div>
 
-    <!-- Mobile Menu Panel -->
-    <div id="mobile-menu-overlay" class="mobile-menu-overlay"></div>
-    <div id="mobile-menu" class="mobile-menu dark:bg-gray-800">
-        <button id="mobile-menu-close-btn" class="mobile-menu-close-btn text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">&times;</button>
-        <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Menu</h2>
-        <nav class="flex flex-col space-y-3">
-            <a href="#home-section" class="nav-link block py-2 text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400" data-target="home-section">Dashboard</a>
-            <a href="#live-game-section" class="nav-link block py-2 text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400" data-target="live-game-section">Play Live Game</a>
-            <a href="#submit-past-game-section" class="nav-link block py-2 text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400" data-target="submit-past-game-section">Submit Past Game</a>
-            <a href="#players-section" class="nav-link block py-2 text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400" data-target="players-section">Players</a>
-            <a href="#rankings-section" class="nav-link block py-2 text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400" data-target="rankings-section">Rankings</a>
-            <a href="#results-section" class="nav-link block py-2 text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400" data-target="results-section">Games</a>
-            <a href="#sports-section" class="nav-link block py-2 text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400" data-target="sports-section">Sports</a>
-            <a href="#tournaments-section?filter=upcoming" class="nav-link block py-2 text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400" data-target="tournaments-section">Upcoming Tournaments</a>
-            <a href="#tournaments-section?filter=completed" class="nav-link block py-2 text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400" data-target="tournaments-section">Tournament History</a>
+                <!-- Hamburger Button - Visible only on small screens -->
+                <button id="hamburger-btn" class="md:hidden p-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                    <span class="sr-only">Open main menu</span>
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
         </nav>
-    </div>
+    </header>
 
-    <main id="main-content" class="container mx-auto mt-8 p-6 flex-grow">
-        <p class="loading-text text-center py-10 text-gray-600 dark:text-gray-400">Loading initial section...</p>
+    <!-- Main Content Area -->
+    <main id="main-content" class="container mx-auto px-4 py-8 md:py-12">
+        <!-- Content will be loaded here by JS -->
+        <p class="loading-text text-center py-20 text-gray-600 dark:text-gray-400">Loading...</p>
     </main>
 
-    <!-- === Section Templates === -->
+    <!-- Footer -->
+    <footer class="bg-gray-200 dark:bg-gray-800 text-center py-4 mt-12">
+        <p class="text-sm text-gray-500 dark:text-gray-400">&copy; 2024 LeaderBored. All rights reserved.</p>
+        <label for="dark-mode-toggle" class="mt-2 inline-flex items-center cursor-pointer">
+            <span class="mr-2 text-sm text-gray-600 dark:text-gray-300">Dark Mode:</span>
+            <input type="checkbox" id="dark-mode-toggle" class="sr-only peer">
+            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+        </label>
+    </footer>
+
+    <!-- Modals Container -->
+    <div id="modals-container">
+        <div id="add-player-modal" class="modal"></div>
+        <div id="edit-player-modal" class="modal"></div>
+        <div id="add-sport-modal" class="modal"></div>
+        <div id="edit-sport-modal" class="modal"></div>
+        <div id="create-tournament-modal" class="modal"></div>
+        <div id="edit-tournament-modal" class="modal"></div>
+        <div id="add-course-modal" class="modal"></div>
+        <div id="edit-course-modal" class="modal"></div>
+    </div>
+
+    <!-- === TEMPLATES === -->
+
+    <!-- Home Section Template -->
     <template id="template-home-section">
         <section id="home-section" class="page-section space-y-8">
             <h1 class="text-4xl font-bold border-b-2 pb-3 mb-6 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">Dashboard</h1>
@@ -153,7 +169,7 @@
         </section>
     </template>
 
-    <!-- Add Players Section Template -->
+    <!-- Players Section Template -->
     <template id="template-players-section">
         <section id="players-section" class="page-section space-y-6">
             <div class="flex flex-col md:flex-row justify-between md:items-center border-b-2 pb-3 mb-6 border-gray-200 dark:border-gray-700 gap-4 md:gap-0">
@@ -185,11 +201,11 @@
         </section>
     </template>
 
-    <!-- Add Player Profile Section Template -->
+    <!-- Player Profile Section Template -->
     <template id="template-player-profile-section">
         <section id="player-profile-section" class="page-section space-y-8 player-profile-themed">
             <div class="mb-4">
-                <a href="#players-section" class="nav-link inline-flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300" data-target="players-section">
+                <a id="player-profile-back-button" href="#players-section" class="nav-link inline-flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300" data-target="players-section">
                     <svg class="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
@@ -201,6 +217,7 @@
                 <img id="player-profile-image" src="https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=128" alt="Player Profile" class="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 player-profile-image-border shadow-lg">
                 <div class="text-center sm:text-left">
                     <h1 id="player-profile-name" class="text-3xl md:text-4xl font-bold player-profile-name-text">Loading...</h1>
+                    <p id="player-profile-meta" class="text-sm text-gray-500 dark:text-gray-400 mt-1"></p>
                 </div>
             </div>
 
@@ -219,15 +236,20 @@
                         </div>
                     </div>
                     <div class="card bg-white dark:bg-gray-800 p-5 rounded-lg shadow">
-                        <h2 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">Most Played With</h2>
-                        <div id="player-profile-played-with">
-                             <p class="loading-text text-gray-600 dark:text-gray-400">Loading teammate stats...</p>
-                        </div>
-                    </div>
-                    <div class="card bg-white dark:bg-gray-800 p-5 rounded-lg shadow">
-                        <h2 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">Most Played Against</h2>
-                        <div id="player-profile-played-against">
-                             <p class="loading-text text-gray-600 dark:text-gray-400">Loading opponent stats...</p>
+                        <h2 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">Social Stats</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Most Played With</h3>
+                                <div id="player-profile-played-with">
+                                     <p class="loading-text text-xs text-gray-600 dark:text-gray-400">Loading teammate stats...</p>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Most Played Against</h3>
+                                <div id="player-profile-played-against">
+                                     <p class="loading-text text-xs text-gray-600 dark:text-gray-400">Loading opponent stats...</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -239,6 +261,28 @@
                             <li class="loading-text text-gray-600 dark:text-gray-400">Loading recent activity...</li>
                         </ul>
                     </div>
+
+                    <div id="player-profile-detailed-stats" class="space-y-6">
+                        <div id="player-profile-golf-stats" class="card bg-white dark:bg-gray-800 p-5 rounded-lg shadow hidden">
+                            <h2 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">Golf Stats</h2>
+                            <div id="golf-stats-content">
+                                <p class="muted-text italic">Golf stats coming soon...</p>
+                            </div>
+                        </div>
+                        <div id="player-profile-pool-stats" class="card bg-white dark:bg-gray-800 p-5 rounded-lg shadow hidden">
+                            <h2 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">Pool Stats</h2>
+                            <div id="pool-stats-content">
+                                <p class="muted-text italic">Pool stats coming soon...</p>
+                            </div>
+                        </div>
+                        <div id="player-profile-chess-stats" class="card bg-white dark:bg-gray-800 p-5 rounded-lg shadow hidden">
+                            <h2 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">Chess Stats</h2>
+                            <div id="chess-stats-content">
+                                <p class="muted-text italic">Chess stats coming soon...</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card bg-white dark:bg-gray-800 p-5 rounded-lg shadow">
                         <h2 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">Rivalries</h2>
                         <div id="player-profile-rivalries">
@@ -256,248 +300,173 @@
         </section>
     </template>
 
-    <!-- Add Rankings Section Template -->
-    <template id="template-rankings-section">
-        <section id="rankings-section" class="page-section space-y-6">
-            <div class="flex flex-col md:flex-row justify-between md:items-center border-b-2 pb-3 mb-6 border-gray-200 dark:border-gray-700 gap-4 md:gap-0">
-                <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100">Rankings</h1>
-                <!-- Filter Dropdown -->
-                <div class="relative">
-                    <label for="rankings-game-filter" class="sr-only">Filter by game:</label>
-                    <select id="rankings-game-filter" class="appearance-none bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-2 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white dark:focus:bg-gray-600 focus:border-indigo-500">
-                        <option value="overall">Overall Elo</option>
-                        <!-- Game-specific options will be populated by JS -->
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
-                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+    <!-- Edit Profile Section Template -->
+    <template id="template-edit-profile-section">
+        <section id="edit-profile-section" class="page-section max-w-lg mx-auto mt-12">
+            <div class="card bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+                <h1 class="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">Edit Your Profile</h1>
+                <form id="edit-profile-form" class="space-y-6">
+                    <div>
+                        <label for="edit-profile-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Display Name</label>
+                        <input type="text" id="edit-profile-name" name="name" required
+                            class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                     </div>
-                </div>
-            </div>
-
-            <!-- Container for rankings tables (one per game + overall) -->
-            <div id="rankings-tables-container" class="space-y-8">
-                <p class="loading-text text-center py-5 text-gray-600 dark:text-gray-400">Loading rankings...</p>
-                <!-- Rankings tables will be populated by JS -->
-            </div>
-        </section>
-    </template>
-
-    <!-- Add Results Section Template -->
-    <template id="template-results-section">
-        <section id="results-section" class="page-section space-y-6">
-            <div class="flex flex-col md:flex-row justify-between md:items-center border-b-2 pb-3 mb-6 border-gray-200 dark:border-gray-700 gap-4 md:gap-0">
-                <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100">Game Results</h1>
-                <!-- Filter Dropdown -->
-                <div class="relative">
-                    <label for="results-game-filter" class="sr-only">Filter by game:</label>
-                    <select id="results-game-filter" class="appearance-none bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-2 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white dark:focus:bg-gray-600 focus:border-indigo-500">
-                        <option value="all">All Games</option>
-                        <!-- Game-specific options will be populated by JS -->
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
-                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    <div>
+                        <label for="edit-profile-icon-url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Icon URL (Optional)</label>
+                        <input type="url" id="edit-profile-icon-url" name="iconUrl" placeholder="https://example.com/image.png"
+                            class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Enter a URL for your avatar/icon. Leave blank to use a generated avatar.</p>
                     </div>
-                </div>
-            </div>
-
-            <!-- Container for the results table -->
-            <div class="card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md overflow-x-auto">
-                <table id="results-table" class="w-full text-left table-auto text-sm">
-                    <thead>
-                        <tr class="bg-gray-100 dark:bg-gray-700">
-                            <th class="px-4 py-3 text-gray-700 dark:text-gray-200">Date</th>
-                            <th class="px-4 py-3 text-gray-700 dark:text-gray-200">Game Type</th>
-                            <th class="px-4 py-3 text-gray-700 dark:text-gray-200">Result / Description</th>
-                            <th class="px-4 py-3 golf-column text-gray-700 dark:text-gray-200">Course</th>
-                            <th class="px-4 py-3 golf-column text-gray-700 dark:text-gray-200">Location</th>
-                        </tr>
-                    </thead>
-                    <tbody id="results-table-body">
-                        <tr><td colspan="5" class="loading-text text-center py-4 text-gray-600 dark:text-gray-400">Loading game results...</td></tr>
-                    </tbody>
-                </table>
-                <!-- Add pagination controls here if needed -->
-            </div>
-        </section>
-    </template>
-
-    <!-- Add Live Game Section Template -->
-    <template id="template-live-game-section">
-        <section id="live-game-section" class="page-section space-y-6">
-            <h1 class="text-4xl font-bold border-b-2 pb-3 mb-6 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">Play Live Game</h1>
-
-            <div class="card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                <!-- Step 1: Select Game Type -->
-                <div class="mb-6">
-                    <label for="live-game-select" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Select Game Type:</label>
-                    <select id="live-game-select" name="live_game_type" class="shadow border rounded-lg w-full md:w-1/2 py-3 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">-- Select a Game --</option>
-                        <!-- Options populated by JS from gameTypesConfig -->
-                    </select>
-                </div>
-
-                <!-- Step 2: Dynamic Tools Container -->
-                <div id="live-game-tools-container" class="space-y-4">
-                    <p class="text-gray-500 dark:text-gray-400 italic">Select a game type above to see available tools.</p>
-                </div>
-
-                <!-- Submit Button Area (Initially Hidden) -->
-                <div id="live-game-submit-area" class="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end" style="display: none;">
-                    <button type="button" id="submit-live-game-score-btn" class="button button-primary px-6 py-3 rounded-lg font-medium shadow hover:shadow-md text-white dark:text-gray-900 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-400 dark:hover:bg-indigo-500">
-                        Finish Game & Submit Score
-                    </button>
-                </div>
-            </div>
-        </section>
-    </template>
-
-    <!-- Add Sports Section Template -->
-    <template id="template-sports-section">
-        <section id="sports-section" class="page-section space-y-8">
-            <h1 class="text-4xl font-bold border-b-2 pb-3 mb-6 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">Sports & Activities</h1>
-
-            <!-- All Sports List -->
-            <div class="card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-200">All Tracked Activities</h2>
-                <div id="all-sports-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    <p class="loading-text col-span-full text-gray-600 dark:text-gray-400">Loading activities...</p>
-                    <!-- Sports will be populated by JS -->
-                </div>
-            </div>
-
-            <!-- Golf Specific Section -->
-            <div class="card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200">Golf Courses</h2>
-                    <button id="add-course-btn" class="button button-secondary admin-only px-4 py-2 rounded-lg text-sm font-medium shadow hover:shadow-md text-gray-700 dark:text-gray-200 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 flex-shrink-0">
-                        Add New Course
-                    </button>
-                </div>
-                <div id="golf-courses-list" class="mb-6">
-                    <p class="loading-text text-gray-600 dark:text-gray-400">Loading golf courses...</p>
-                    <!-- Golf courses will be populated by JS -->
-                </div>
-
-                <h3 class="text-xl font-semibold mb-3 mt-6 text-gray-800 dark:text-gray-200">Recent Golf Games</h3>
-                <div class="overflow-x-auto">
-                    <table id="recent-golf-games-table" class="min-w-full text-sm border-collapse border border-gray-300 dark:border-gray-600">
-                        <thead>
-                            <tr class="bg-gray-100 dark:bg-gray-700">
-                                <th class="p-2 border text-gray-700 dark:text-gray-200">Date</th>
-                                <th class="p-2 border text-gray-700 dark:text-gray-200">Player</th>
-                                <th class="p-2 border text-gray-700 dark:text-gray-200">Score</th>
-                                <th class="p-2 border text-gray-700 dark:text-gray-200">Course Name</th>
-                                <th class="p-2 border text-gray-700 dark:text-gray-200">Location</th>
-                                <!-- ...other columns as needed... -->
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Other Sport Specific Sections (Add as needed) -->
-            <!-- Example:
-            <div class="card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Bowling Alleys</h2>
-                <div id="bowling-alleys-list">
-                    <p class="muted-text italic text-gray-600 dark:text-gray-400">Bowling alley tracking coming soon...</p>
-                </div>
-            </div>
-            -->
-        </section>
-    </template>
-
-    <!-- Add Submit Past Game Section Template -->
-    <template id="template-submit-past-game-section">
-        <section id="submit-past-game-section" class="page-section space-y-6">
-            <h1 class="text-4xl font-bold border-b-2 pb-3 mb-6 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">Submit Past Game Result</h1>
-
-            <div class="card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                <!-- Step 1: Select Game Type -->
-                <div class="mb-6">
-                    <label for="submit-game-type-select" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Select Game Type:</label>
-                    <select id="submit-game-type-select" name="game_type" class="shadow border rounded-lg w-full md:w-1/2 py-3 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">-- Select a Game --</option>
-                        <!-- Options populated by JS from gameTypesConfig -->
-                    </select>
-                </div>
-
-                <!-- Step 2: Dynamic Form Container -->
-                <form id="submit-past-game-form" class="hidden">
-                    <!-- Form content will be loaded here by JS -->
-                    <div id="submit-game-form-fields" class="space-y-4">
-                        <p class="text-gray-500 dark:text-gray-400 italic">Select a game type above to enter details.</p>
-                    </div>
-
-                    <!-- Submit Button Area -->
-                    <div class="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                        <button type="submit" id="submit-past-game-btn" class="button button-primary px-6 py-3 rounded-lg font-medium shadow hover:shadow-md text-white dark:text-gray-900 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-400 dark:hover:bg-indigo-500">
-                            Submit Game Result
-                        </button>
+                    <div id="edit-profile-error" class="text-red-600 dark:text-red-400 text-sm h-5"></div>
+                    <div class="flex justify-end space-x-3">
+                         <button type="button" onclick="showSection('home-section')" class="button button-secondary">Cancel</button>
+                         <button type="submit" class="button button-primary">Save Changes</button>
                     </div>
                 </form>
             </div>
         </section>
     </template>
 
-    <!-- Add Sport Details Section Template -->
-    <template id="template-sport-details-section">
-        <section id="sport-details-section" class="page-section space-y-6">
-            <!-- Back Button -->
-            <div class="mb-4">
-                 <a href="#sports-section" class="nav-link inline-flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300" data-target="sports-section">
-                    <svg class="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Back to Sports & Activities
-                </a>
+    <!-- Rankings Section Template -->
+    <template id="template-rankings-section">
+        <section id="rankings-section" class="page-section space-y-8">
+            <!-- Header and Filter -->
+            <div class="flex flex-col md:flex-row justify-between md:items-center border-b-2 pb-3 mb-6 border-gray-200 dark:border-gray-700 gap-4 md:gap-0">
+                <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100">Rankings</h1>
+                <!-- Game Type Filter -->
+                <div class="relative">
+                    <label for="rankings-game-filter" class="sr-only">Filter rankings by game:</label>
+                    <select id="rankings-game-filter" class="appearance-none bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-2 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white dark:focus:bg-gray-600 focus:border-indigo-500">
+                        <option value="overall">Overall (1v1)</option>
+                        <!-- Options populated by JS -->
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                </div>
             </div>
 
+            <!-- Container for Ranking Tables -->
+            <div id="ranking-tables-container" class="space-y-8">
+                <p class="loading-text text-center py-10 text-gray-600 dark:text-gray-400">Loading rankings...</p>
+                <!-- Ranking tables will be dynamically added/shown here by JS -->
+                <!-- Example structure for Overall (initially hidden by JS, shown if selected) -->
+                <div id="ranking-table-overall" class="ranking-table hidden">
+                    <!-- ... content generated by JS ... -->
+                </div>
+                <!-- Other game tables will be added here -->
+            </div>
+        </section>
+    </template>
+
+    <!-- Player Login Section Template -->
+    <template id="template-player-login-section">
+        <section id="player-login-section" class="page-section max-w-md mx-auto mt-12">
+            <div class="card bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-semibold mb-6 text-center text-indigo-700 dark:text-indigo-400">Player Login</h2>
+                <form id="login-form">
+                    <div class="mb-4">
+                        <label for="login-email" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Email:</label>
+                        <input type="email" id="login-email" name="email" class="input-field w-full" required autocomplete="email">
+                    </div>
+                    <div class="mb-6">
+                        <label for="login-password" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Password:</label>
+                        <input type="password" id="login-password" name="password" class="input-field w-full" required autocomplete="current-password">
+                    </div>
+                    <p id="login-error" class="text-red-500 text-sm mb-4 h-4"></p>
+                    <button type="submit" class="button button-primary w-full">Login</button>
+                </form>
+                <p class="text-center mt-6 text-sm text-gray-600 dark:text-gray-400">
+                    Don't have an account? <a href="#player-signup-section" class="nav-link text-indigo-600 dark:text-indigo-400 hover:underline" data-target="player-signup-section">Sign up</a>
+                </p>
+            </div>
+        </section>
+    </template>
+
+    <!-- Player Signup Section Template -->
+    <template id="template-player-signup-section">
+        <section id="player-signup-section" class="page-section max-w-md mx-auto mt-12">
+            <div class="card bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-semibold mb-6 text-center text-indigo-700 dark:text-indigo-400">Player Sign Up</h2>
+                <form id="signup-form">
+                    <div class="mb-4">
+                        <label for="signup-name" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Player Name:</label>
+                        <input type="text" id="signup-name" name="playerName" class="input-field w-full" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="signup-email" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Email:</label>
+                        <input type="email" id="signup-email" name="email" class="input-field w-full" required autocomplete="email">
+                    </div>
+                    <div class="mb-6">
+                        <label for="signup-password" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Password:</label>
+                        <input type="password" id="signup-password" name="password" class="input-field w-full" required autocomplete="new-password">
+                    </div>
+                    <p id="signup-error" class="text-red-500 text-sm mb-4 h-4"></p>
+                    <button type="submit" class="button button-primary w-full">Sign Up</button>
+                </form>
+                <p class="text-center mt-6 text-sm text-gray-600 dark:text-gray-400">
+                    Already have an account? <a href="#player-login-section" class="nav-link text-indigo-600 dark:text-indigo-400 hover:underline" data-target="player-login-section">Login</a>
+                </p>
+            </div>
+        </section>
+    </template>
+
+    <!-- Sports List Section Template -->
+    <template id="template-sports-section">
+        <section id="sports-section" class="page-section space-y-6">
+            <div class="flex flex-col md:flex-row justify-between md:items-center border-b-2 pb-3 mb-6 border-gray-200 dark:border-gray-700 gap-4 md:gap-0">
+                <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100">Sports & Activities</h1>
+                <button id="add-sport-btn" class="button button-primary px-4 py-2 rounded-lg text-sm font-medium shadow hover:shadow-md text-white dark:text-gray-900 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-400 dark:hover:bg-indigo-500 flex-shrink-0">
+                    Add New Sport
+                </button>
+            </div>
+            <div id="all-sports-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <p class="loading-text text-center py-5 text-gray-600 dark:text-gray-400 col-span-full">Loading sports list...</p>
+            </div>
+        </section>
+    </template>
+
+    <!-- Sport Details Section Template -->
+    <template id="template-sport-details-section">
+        <section id="sport-details-section" class="page-section space-y-8">
             <!-- Header -->
             <div class="border-b-2 pb-3 mb-6 border-gray-200 dark:border-gray-700">
-                <h1 id="sport-details-title" class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100">Loading Sport...</h1>
+                <a href="#sports-section" class="nav-link text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-2 inline-block">&larr; Back to Sports List</a>
+                <h1 id="sport-details-name" class="text-4xl font-bold text-gray-900 dark:text-gray-100">Loading Sport...</h1>
             </div>
 
-            <!-- Content Area -->
-            <div id="sport-details-content" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Left Column (Links & Info) -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column (Details & Rankings) -->
                 <div class="lg:col-span-1 space-y-6">
-                    <!-- Links Card -->
+                    <!-- Details Card -->
                     <div class="card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                        <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Quick Links</h2>
-                        <ul class="space-y-3">
-                            <li><a id="sport-details-rankings-link" href="#" class="nav-link font-medium text-indigo-600 dark:text-indigo-400 hover:underline">View Rankings</a></li>
-                            <li><a id="sport-details-results-link" href="#" class="nav-link font-medium text-indigo-600 dark:text-indigo-400 hover:underline">View All Game Results</a></li>
-                            <li><a id="sport-details-submit-link" href="#" class="nav-link font-medium text-indigo-600 dark:text-indigo-400 hover:underline player-only">Submit Past Game</a></li>
-                            <li><a id="sport-details-live-link" href="#" class="nav-link font-medium text-indigo-600 dark:text-indigo-400 hover:underline player-only">Play Live Game</a></li>
-                            <li><a id="sport-details-rules-link" href="#" target="_blank" rel="noopener noreferrer" class="font-medium text-indigo-600 dark:text-indigo-400 hover:underline hidden">Official Rules</a></li>
-                        </ul>
-                    </div>
-
-                    <!-- Info Card -->
-                    <div class="card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                        <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">About <span class="sport-name-placeholder">[Sport Name]</span></h2>
-                        <p id="sport-details-description" class="text-gray-600 dark:text-gray-300 mb-4">
-                            Detailed information or specific features for this sport will appear here.
-                        </p>
-                        <div id="sport-details-formats" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 hidden">
-                            <h3 class="text-md font-semibold mb-2 text-gray-700 dark:text-gray-300">Formats:</h3>
-                            <ul id="sport-details-formats-list" class="list-disc list-inside space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                                <!-- Format links populated by JS -->
-                            </ul>
+                        <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Details</h2>
+                        <div id="sport-details-content">
+                            <p class="loading-text">Loading details...</p>
                         </div>
                     </div>
 
-                    <!-- Top Players Card (Optional) -->
-                    <div id="sport-details-top-players-card" class="card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hidden">
-                        <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Top Players (<span class="sport-name-placeholder">[Sport Name]</span>)</h2>
-                        <ol id="sport-details-top-players-list" class="list-decimal list-inside space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                            <li>Loading...</li>
-                        </ol>
-                        <a id="sport-details-full-rankings-link" href="#" class="mt-3 inline-block text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">View full rankings...</a>
+                    <!-- Rankings Card -->
+                    <div class="card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Top 5 Players</h2>
+                        <div id="sport-details-rankings">
+                            <p class="loading-text">Loading rankings...</p>
+                        </div>
+                    </div>
+
+                    <!-- Golf Specific Card (Hidden by default) -->
+                    <div id="sport-details-golf-card" class="card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hidden">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Golf Courses</h2>
+                        <div class="space-y-4">
+                            <div class="admin-only">
+                                <!-- Changed from button to link -->
+                                <a href="#add-golf-course-section" id="add-course-btn-details" class="button button-sm button-primary w-full nav-link" data-target="add-golf-course-section">Add New Course</a>
+                            </div>
+                            <h3 class="text-md font-semibold mb-2 text-gray-700 dark:text-gray-300">Available Courses</h3>
+                            <div id="golf-courses-list-details" class="max-h-60 overflow-y-auto">
+                                <p class="loading-text">Loading courses...</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -507,63 +476,395 @@
                     <!-- Add filter controls if needed -->
                     <div class="overflow-x-auto">
                         <table id="sport-details-results-table" class="w-full text-left table-auto text-sm">
-                            <thead>
+                             <thead>
                                 <tr class="bg-gray-100 dark:bg-gray-700">
                                     <th class="px-4 py-3 text-gray-700 dark:text-gray-200">Date</th>
-                                    <th class="px-4 py-3 text-gray-700 dark:text-gray-200">Game Type</th>
                                     <th class="px-4 py-3 text-gray-700 dark:text-gray-200">Result / Description</th>
-                                    <th class="px-4 py-3 golf-column text-gray-700 dark:text-gray-200">Course</th>
-                                    <th class="px-4 py-3 golf-column text-gray-700 dark:text-gray-200">Location</th>
+                                    <!-- Add sport-specific columns if needed, e.g., Score -->
                                 </tr>
                             </thead>
                             <tbody id="sport-details-results-table-body">
-                                <tr><td colspan="5" class="loading-text text-center py-4 text-gray-600 dark:text-gray-400">Loading game results...</td></tr>
+                                <tr><td colspan="2" class="loading-text px-4 py-6 text-center">Loading recent results...</td></tr>
                             </tbody>
                         </table>
                     </div>
-                    <a id="sport-details-all-results-link" href="#" class="mt-4 inline-block text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">View all results for this sport...</a>
+                    <a href="#results-section?game=SPORT_KEY_PLACEHOLDER" id="view-all-sport-results-link" class="nav-link text-indigo-600 dark:text-indigo-400 text-sm mt-4 inline-block">View All Results for <span class="sport-name-placeholder">[Sport Name]</span> &rarr;</a>
                 </div>
             </div>
         </section>
     </template>
 
-    <!-- === Modals (Containers) === -->
-    <div id="player-info-modal" class="modal-container"></div>
-    <div id="add-player-modal" class="modal-container"></div>
-    <div id="create-tournament-modal" class="modal-container"></div>
-    <div id="add-course-modal" class="modal"></div>
-    <div id="edit-course-modal" class="modal"></div>
-    <div id="edit-tournament-modal" class="modal"></div>
+    <!-- Add Sport Section Template -->
+    <template id="template-add-sport-section">
+        <section id="add-sport-section" class="page-section max-w-2xl mx-auto">
+            <div class="mb-4">
+                <a href="#sports-section" class="nav-link inline-flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300" data-target="sports-section">
+                    <svg class="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back to Sports & Activities
+                </a>
+            </div>
+            <h1 class="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">Add New Sport/Activity</h1>
+            <form id="add-sport-form" class="card bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md space-y-6">
+                <div class="mb-4">
+                    <label for="sport-name" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Sport/Activity Name:</label>
+                    <input type="text" id="sport-name" name="sport-name" class="input-field w-full" required placeholder="e.g., Pool, Chess, Cornhole">
+                </div>
 
-    <!-- === Footer === -->
-    <footer class="text-center mt-12 py-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
-        <p class="text-sm text-gray-500 dark:text-gray-400">&copy; 2024 LeaderBored. All rights reserved.</p>
-        <label for="dark-mode-toggle" class="mt-2 inline-flex items-center cursor-pointer">
-            <span class="mr-2 text-sm text-gray-600 dark:text-gray-300">Dark Mode:</span>
-            <input type="checkbox" id="dark-mode-toggle" class="sr-only peer">
-            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-        </label>
-    </footer>
+                <!-- Activity Type -->
+                <fieldset class="mb-4 border p-4 rounded dark:border-gray-600">
+                    <legend class="text-sm font-bold mb-2 px-1 text-gray-700 dark:text-gray-300">Primary Activity Type:</legend>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="flex items-center space-x-2">
+                            <input type="radio" name="activity-type" value="physical" class="form-radio h-4 w-4 text-indigo-600 dark:bg-gray-500 dark:border-gray-400" required>
+                            <span class="text-gray-700 dark:text-gray-300 text-sm">Physical / Outdoor</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="radio" name="activity-type" value="tabletop" class="form-radio h-4 w-4 text-indigo-600 dark:bg-gray-500 dark:border-gray-400">
+                            <span class="text-gray-700 dark:text-gray-300 text-sm">Tabletop / Board / Card Game</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="radio" name="activity-type" value="video_game" class="form-radio h-4 w-4 text-indigo-600 dark:bg-gray-500 dark:border-gray-400">
+                            <span class="text-gray-700 dark:text-gray-300 text-sm">Video Game</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="radio" name="activity-type" value="other" class="form-radio h-4 w-4 text-indigo-600 dark:bg-gray-500 dark:border-gray-400">
+                            <span class="text-gray-700 dark:text-gray-300 text-sm">Other</span>
+                        </label>
+                    </div>
+                    <p id="type-error" class="text-red-500 text-xs mt-1 h-3"></p>
+                </fieldset>
 
-    <!-- === Scripts === -->
+                <!-- Characteristics -->
+                <fieldset class="mb-4 border p-4 rounded dark:border-gray-600">
+                    <legend class="text-sm font-bold mb-2 px-1 text-gray-700 dark:text-gray-300">Characteristics:</legend>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="sport-is-physical" name="sport-is-physical" class="form-checkbox h-4 w-4 text-indigo-600 dark:bg-gray-500 dark:border-gray-400">
+                            <span class="text-gray-700 dark:text-gray-300 text-sm">Physical Exertion</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="sport-is-outdoor" name="sport-is-outdoor" class="form-checkbox h-4 w-4 text-indigo-600 dark:bg-gray-500 dark:border-gray-400">
+                            <span class="text-gray-700 dark:text-gray-300 text-sm">Typically Outdoors</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="sport-is-venue" name="sport-is-venue" class="form-checkbox h-4 w-4 text-indigo-600 dark:bg-gray-500 dark:border-gray-400">
+                            <span class="text-gray-700 dark:text-gray-300 text-sm">Requires Venue/Setup</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="sport-is-turnbased" name="sport-is-turnbased" class="form-checkbox h-4 w-4 text-indigo-600 dark:bg-gray-500 dark:border-gray-400">
+                            <span class="text-gray-700 dark:text-gray-300 text-sm">Turn-Based</span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <!-- Supported Formats -->
+                <fieldset class="mb-4 border p-4 rounded dark:border-gray-600">
+                    <legend class="text-sm font-bold mb-2 px-1 text-gray-700 dark:text-gray-300">Supported Formats:</legend>
+                     <div class="grid grid-cols-2 gap-4">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="sport-supports-1v1" name="sport-supports-1v1" class="form-checkbox h-4 w-4 text-indigo-600 dark:bg-gray-500 dark:border-gray-400">
+                            <span class="text-gray-700 dark:text-gray-300 text-sm">1 vs 1</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="sport-supports-teams" name="sport-supports-teams" class="form-checkbox h-4 w-4 text-indigo-600 dark:bg-gray-500 dark:border-gray-400">
+                            <span class="text-gray-700 dark:text-gray-300 text-sm">Teams</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="sport-supports-solo" name="sport-supports-solo" class="form-checkbox h-4 w-4 text-indigo-600 dark:bg-gray-500 dark:border-gray-400">
+                            <span class="text-gray-700 dark:text-gray-300 text-sm">Single Player (Score-based)</span>
+                        </label>
+                     </div>
+                     <p id="format-error" class="text-red-500 text-xs mt-1 h-3"></p>
+                </fieldset>
+
+                <!-- Ranking & Score -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="sport-ranking-system" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Ranking System:</label>
+                        <select id="sport-ranking-system" name="sport-ranking-system" class="input-field w-full">
+                            <option value="elo">Elo (for 1v1/Teams)</option>
+                            <option value="manual">Manual Outcome (Win/Loss/Draw)</option>
+                            <option value="score_high">Score (Higher is Better)</option>
+                            <option value="score_low">Score (Lower is Better)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="sport-score-unit" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Score Unit (Optional):</label>
+                        <input type="text" id="sport-score-unit" name="sport-score-unit" class="input-field w-full" placeholder="e.g., points, strokes, seconds, goals">
+                    </div>
+                </div>
+
+                 <p id="add-sport-error" class="text-red-500 text-sm mt-2 h-4"></p>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <a href="#sports-section" class="button button-secondary nav-link" data-target="sports-section">Cancel</a>
+                    <button type="submit" class="button button-primary">Add Sport</button>
+                </div>
+            </form>
+        </section>
+    </template>
+
+    <!-- Live Game Section Template -->
+    <template id="template-live-game-section">
+        <section id="live-game-section" class="page-section max-w-2xl mx-auto">
+            <h1 class="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">Play Live Game</h1>
+            <div class="card bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md space-y-6">
+                <!-- Game Type Selection -->
+                <div>
+                    <label for="live-game-type-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Game Type</label>
+                    <select id="live-game-type-select" name="game_type" required class="input-field w-full">
+                        <option value="">Select Game Type...</option>
+                        <!-- Options populated by JS -->
+                    </select>
+                </div>
+
+                <!-- Live Tools Container -->
+                <div id="live-tools-container" class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Live Tools</h2>
+                    <!-- Timer -->
+                    <div id="live-timer-controls" class="flex items-center space-x-2">
+                        <span class="font-mono text-lg" id="live-timer-display">00:00:00</span>
+                        <button id="live-timer-start" class="button button-secondary text-sm">Start</button>
+                        <button id="live-timer-pause" class="button button-secondary text-sm hidden">Pause</button>
+                        <button id="live-timer-reset" class="button button-danger text-sm">Reset</button>
+                    </div>
+                    <!-- Game Specific Tools Placeholder -->
+                    <div id="live-game-specific-tools">
+                        <p class="text-gray-500 dark:text-gray-400 text-center">Select a game type to see live tools.</p>
+                    </div>
+                </div>
+
+                <!-- Data Entry (Mirrors Submit Form) -->
+                <div id="live-game-data-entry" class="space-y-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Game Details</h2>
+                    <div id="live-game-specific-fields" class="space-y-6">
+                        <p class="text-gray-500 dark:text-gray-400 text-center">Select a game type to enter details.</p>
+                    </div>
+                </div>
+
+                <!-- Error Message Area -->
+                <div id="live-game-error-message" class="text-red-600 dark:text-red-400 text-sm h-5"></div>
+
+                <!-- Finish Button -->
+                <div class="flex justify-end">
+                    <button id="live-game-finish-btn" class="button button-primary">Finish Game & Submit Score</button>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- Results Section Template -->
+    <template id="template-results-section">
+        <section id="results-section" class="page-section space-y-6">
+            <!-- Header and Filters -->
+            <div class="flex flex-col md:flex-row justify-between md:items-center border-b-2 pb-3 mb-6 border-gray-200 dark:border-gray-700 gap-4 md:gap-0">
+                <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100">Game Results</h1>
+                <div class="flex items-center space-x-4">
+                    <!-- Game Type Filter -->
+                    <div class="relative">
+                        <label for="results-game-filter" class="sr-only">Filter by game:</label>
+                        <select id="results-game-filter" class="appearance-none bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-2 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white dark:focus:bg-gray-600 focus:border-indigo-500">
+                            <option value="all">All Games</option>
+                            <!-- Options populated by JS -->
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        </div>
+                    </div>
+                    <!-- Add more filters if needed (e.g., date range, player) -->
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            <div class="overflow-x-auto card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                <table id="results-table" class="w-full text-left table-auto text-sm">
+                    <thead>
+                        <tr class="bg-gray-100 dark:bg-gray-700">
+                            <th class="px-4 py-3 text-gray-700 dark:text-gray-200">Date</th>
+                            <th class="px-4 py-3 text-gray-700 dark:text-gray-200">Game Type</th>
+                            <th class="px-4 py-3 text-gray-700 dark:text-gray-200">Result / Description</th>
+                            <th class="px-4 py-3 golf-column text-gray-700 dark:text-gray-200">Course</th>
+                            <th class="px-4 py-3 golf-column text-gray-700 dark:text-gray-200">Location</th>
+                            <th class="px-4 py-3 text-gray-700 dark:text-gray-200">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body">
+                        <tr><td colspan="6" class="loading-text text-center py-4 text-gray-600 dark:text-gray-400">Loading game results...</td></tr>
+                    </tbody>
+                </table>
+                <!-- Add Pagination if needed -->
+            </div>
+        </section>
+    </template>
+
+    <!-- Submit Past Game Section Template -->
+    <template id="template-submit-past-game-section">
+        <section id="submit-past-game-section" class="page-section max-w-2xl mx-auto">
+            <h1 class="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">Submit Past Game Result</h1>
+            <form id="submit-past-game-form" class="card bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md space-y-6">
+                <!-- Game Type Selection -->
+                <div>
+                    <label for="submit-game-type-select" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Game Type:</label>
+                    <select id="submit-game-type-select" name="game_type" class="input-field w-full" required>
+                        <option value="">Loading game types...</option>
+                        <!-- Options populated by JS -->
+                    </select>
+                </div>
+
+                <!-- Common Fields -->
+                <div>
+                    <label for="submit-date-played" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Date & Time Played:</label>
+                    <input type="datetime-local" id="submit-date-played" name="date_played" class="input-field w-full" required>
+                </div>
+                <div>
+                    <label for="submit-duration" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Duration (Optional):</label>
+                    <input type="text" id="submit-duration" name="duration" class="input-field w-full" placeholder="e.g., 1h 30m">
+                </div>
+                <div>
+                    <label for="submit-notes" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Notes (Optional):</label>
+                    <textarea id="submit-notes" name="notes" class="input-field w-full h-20" placeholder="Any interesting details..."></textarea>
+                </div>
+
+                <!-- Dynamic Fields Container -->
+                <div id="submit-form-fields" class="space-y-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <!-- Game-specific fields will be loaded here by JS -->
+                    <p class="text-gray-500 dark:text-gray-400 text-center">Select a game type to enter details.</p>
+                </div>
+
+                <!-- Error Message Area -->
+                <div id="submit-error-message" class="text-red-600 dark:text-red-400 text-sm h-5"></div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end">
+                    <button type="submit" class="button button-primary">Submit Result</button>
+                </div>
+            </form>
+        </section>
+    </template>
+
+    <!-- Tournaments Section Template -->
+    <template id="template-tournaments-section">
+        <section id="tournaments-section" class="page-section space-y-6">
+            <div class="flex flex-col md:flex-row justify-between md:items-center border-b-2 pb-3 mb-6 border-gray-200 dark:border-gray-700 gap-4 md:gap-0">
+                <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100">Tournaments</h1>
+            </div>
+            <div id="tournaments-list-full" class="space-y-4">
+                <p class="loading-text text-center py-5 text-gray-600 dark:text-gray-400">Loading tournaments...</p>
+            </div>
+        </section>
+    </template>
+
+    <!-- Tournament Detail Section Template -->
+    <template id="template-tournament-detail-section">
+        <section id="tournament-detail-section" class="page-section space-y-8">
+            <div class="mb-4">
+                <a href="#tournaments-section" class="nav-link inline-flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300" data-target="tournaments-section">
+                    <svg class="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back to Tournaments
+                </a>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-start border-b-2 pb-4 mb-6 border-gray-200 dark:border-gray-700 gap-4">
+                <h1 id="tournament-detail-name" class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100">Loading Tournament...</h1>
+                <!-- Admin Only Edit Button -->
+                <button id="edit-tournament-btn" class="button button-secondary admin-only" data-tournament-id="">
+                    <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    Edit Tournament
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Left Column: Details & Participants -->
+                <div class="md:col-span-1 space-y-6">
+                    <div class="card bg-white dark:bg-gray-800 p-5 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">Details</h2>
+                        <div id="tournament-detail-content" class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                            <p class="loading-text">Loading details...</p>
+                        </div>
+                    </div>
+                    <!-- Participants card might be populated within #tournament-detail-content or separately -->
+                </div>
+
+                <!-- Right Column: Bracket/Games/Results -->
+                <div id="tournament-games-content" class="md:col-span-2 space-y-6">
+                    <div class="card bg-white dark:bg-gray-800 p-5 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">Bracket / Games</h2>
+                        <!-- Content for bracket/games will be populated here -->
+                        <p class="loading-text">Loading games...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- Game Info Section Template -->
+    <template id="template-game-info-section">
+        <!-- ... existing game info section template ... -->
+    </template>
+
+    <!-- Golf Courses Section Template -->
+    <template id="template-golf-courses-section">
+        <section id="golf-courses-section" class="page-section space-y-6">
+            <div class="flex flex-col md:flex-row justify-between md:items-center border-b-2 pb-3 mb-6 border-gray-200 dark:border-gray-700 gap-4 md:gap-0">
+                <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100">Golf Courses</h1>
+                <!-- Changed from button to link -->
+                <a href="#add-golf-course-section" id="add-course-btn-main" class="button button-primary admin-only px-4 py-2 rounded-lg text-sm font-medium shadow hover:shadow-md text-white dark:text-gray-900 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-400 dark:hover:bg-indigo-500 flex-shrink-0 nav-link" data-target="add-golf-course-section">
+                    Add New Course
+                </a>
+            </div>
+            <div id="golf-courses-list" class="space-y-4">
+                <p class="loading-text text-center py-5 text-gray-600 dark:text-gray-400">Loading courses...</p>
+            </div>
+        </section>
+    </template>
+
+    <!-- NEW Add Golf Course Section Template -->
+    <template id="template-add-golf-course-section">
+        <section id="add-golf-course-section" class="page-section max-w-3xl mx-auto">
+             <div class="mb-4">
+                <a href="#golf-courses-section" class="nav-link inline-flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300" data-target="golf-courses-section">
+                    <svg class="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back to Golf Courses
+                </a>
+            </div>
+            <h1 class="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">Add New Golf Course</h1>
+            <div id="add-course-form-container" class="card bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+                <!-- Form HTML will be injected here by golf_courses.js -->
+                <p class="loading-text">Loading form...</p>
+            </div>
+        </section>
+    </template>
+
+    <!-- === END TEMPLATES === -->
+
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js" defer></script>
-    <script src="js/firebase_config.js" defer></script>
-    <script src="js/game_config.js" defer></script>
-    <script src="js/ui_utils.js" defer></script>
-    <script src="js/auth.js" defer></script>
-    <script src="js/player_management.js" defer></script>
-    <script src="js/dashboard.js" defer></script>
-    <script src="js/rankings_results.js" defer></script>
-    <script src="js/tournaments.js" defer></script>
-    <script src="js/golf_courses.js" defer></script>
-    <script src="js/live_game.js" defer></script>
-    <script src="js/submit_score.js" defer></script>
-    <script src="js/game_info.js" defer></script>
-    <script src="js/main.js" defer></script>
-    <script>
-        console.log("HTML Parsed: Reached end of body.");
-    </script>
+    <script src="js/firebase_config.js"></script>
+    <script src="js/game_config.js"></script>
+    <script src="js/ui_utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/player_management.js"></script>
+    <script src="js/golf_courses.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/players.js"></script>
+    <script src="js/rankings_results.js"></script>
+    <script src="js/results.js"></script>
+    <script src="js/sports_list.js"></script>
+    <script src="js/sport_details.js"></script>
+    <script src="js/sports.js"></script>
+    <script src="js/live_game.js"></script>
+    <script src="js/submit_score.js"></script>
+    <script src="js/game_info.js"></script>
+    <script src="js/tournaments.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

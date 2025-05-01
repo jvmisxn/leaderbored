@@ -30,7 +30,7 @@ async function populateDashboard() {
         promises.push(populateRecentGamesListElement(recentGamesList, 5));
     } else {
         console.error("[Dashboard] populateRecentGamesListElement function not found.");
-        recentGamesList.innerHTML = '<li class="error-text">Error loading recent games function.</li>';
+        recentGamesList.innerHTML = '<li class="error-text">Error: Recent games component failed to load.</li>'; // Updated error
     }
 
     if (typeof populateTopPlayersListElement === 'function') {
@@ -38,7 +38,7 @@ async function populateDashboard() {
         promises.push(populateTopPlayersListElement(topPlayersList, 5));
     } else {
         console.error("[Dashboard] populateTopPlayersListElement function not found.");
-        topPlayersList.innerHTML = '<li class="error-text">Error loading top players function.</li>';
+        topPlayersList.innerHTML = '<li class="error-text">Error: Top players component failed to load.</li>'; // Updated error
     }
 
     if (typeof populateTopTeamsListElement === 'function') {
@@ -46,7 +46,7 @@ async function populateDashboard() {
         promises.push(populateTopTeamsListElement(topTeamsList, 5)); // This function currently shows 'not implemented'
     } else {
          console.error("[Dashboard] populateTopTeamsListElement function not found.");
-         topTeamsList.innerHTML = '<li class="error-text">Error loading top teams function.</li>';
+         topTeamsList.innerHTML = '<li class="error-text">Error: Top teams component failed to load.</li>'; // Updated error
     }
 
     if (typeof populateTournamentsList === 'function') {

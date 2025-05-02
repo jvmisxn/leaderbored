@@ -1,539 +1,363 @@
 // --- golf_courses.js ---
 
+let golfCoursesCache = {};
+let golfCoursesCachePopulated = false;
+let isFetchingGolfCourses = false; // Flag to prevent concurrent fetches
+
 /**
- * Ensures the global golf course cache is populated.
+ * Fetches all golf courses from Firestore and caches them.
+ * Processes tee box data from the hole_details array.
  */
-async function ensureGolfCourseCache() {
-    // Uses global golfCourseCachePopulated and globalGolfCourseCache
-    if (golfCourseCachePopulated) return;
-    if (!db) {
-        console.error("[Golf Cache] DB not available.");
+async function fetchAllGolfCourses() {
+    // If already populated, return immediately
+    if (golfCoursesCachePopulated) {
+        console.log("[Golf Courses] Using cached golf courses.");
         return;
     }
-    console.log("[Golf Cache] Populating golf course cache...");
+    // If currently fetching, wait for it to complete (simple approach)
+    if (isFetchingGolfCourses) {
+        console.log("[Golf Courses] Waiting for ongoing fetch to complete...");
+        // Poll or use a promise queue for more robust waiting if needed
+        await new Promise(resolve => setTimeout(resolve, 100)); // Simple wait
+        return fetchAllGolfCourses(); // Re-check status after waiting
+    }
+
+    isFetchingGolfCourses = true; // Set fetching flag
+
     try {
-        const snapshot = await db.collection('golf_courses').orderBy('name').get();
-        globalGolfCourseCache = {}; // Reset global cache
+        console.log("[Golf Courses] Fetching golf courses from Firestore...");
+        const snapshot = await db.collection('golf_courses').get();
+        const courses = {};
+
         snapshot.forEach(doc => {
-            // Fetch all data, including the new hole_details
-            globalGolfCourseCache[doc.id] = { id: doc.id, ...doc.data() };
+            const courseData = doc.data();
+            const courseId = doc.id;
+            const course = { id: courseId, ...courseData, tees: {} }; // Initialize tees object
+
+            // Check if hole_details exists and is a non-empty array before processing
+            if (courseData.hole_details && Array.isArray(courseData.hole_details) && courseData.hole_details.length > 0) {
+                // --- MODIFIED: Process hole_details based on provided structure ---
+                courseData.hole_details.forEach(holeDetail => {
+                    const holeNumber = holeDetail.hole;
+                    const holePar = holeDetail.par;
+                    const yardsMap = holeDetail.yards;
+                    const holeIndex = holeNumber - 1; // 0-based index
+
+                    if (holeIndex >= 0 && holeIndex < 18 && yardsMap && typeof yardsMap === 'object') {
+                        Object.entries(yardsMap).forEach(([teeColor, yardage]) => {
+                            // Ensure we only process the standard tee colors
+                            const lowerTeeColor = teeColor.toLowerCase();
+                            if (['red', 'gold', 'white', 'blue'].includes(lowerTeeColor)) {
+                                // Initialize tee object if it doesn't exist
+                                if (!course.tees[lowerTeeColor]) {
+                                    course.tees[lowerTeeColor] = {
+                                        id: lowerTeeColor,
+                                        name: lowerTeeColor.charAt(0).toUpperCase() + lowerTeeColor.slice(1),
+                                        par: Array(18).fill(null),
+                                        yardage: Array(18).fill(null),
+                                        handicap: Array(18).fill(null) // Keep handicap array, though not in source data
+                                    };
+                                }
+                                // Assign par and yardage for the current hole and tee
+                                course.tees[lowerTeeColor].par[holeIndex] = holePar ?? null;
+                                course.tees[lowerTeeColor].yardage[holeIndex] = yardage ?? null;
+                                // Handicap data is not in the provided structure, so it remains null
+                            }
+                        });
+                    }
+                });
+                 // --- END MODIFIED ---
+            } else {
+                // Log a warning if hole_details are missing or invalid
+                console.warn(`[Golf Courses] Course ${courseId} (${courseData.name || 'Unnamed'}) is missing valid 'hole_details' array. Tee data cannot be processed.`);
+            }
+
+            courses[courseId] = course;
         });
-        golfCourseCachePopulated = true; // Set global flag
-        console.log(`[Golf Cache] Cached ${snapshot.size} courses globally.`);
+
+        golfCoursesCache = courses;
+        golfCoursesCachePopulated = true;
+        console.log(`[Golf Courses] Fetched and cached ${Object.keys(golfCoursesCache).length} courses. Processed tee data from hole_details.`);
     } catch (error) {
-        console.error("[Golf Cache] Error fetching courses for cache:", error);
-        // Don't block execution, but log the error
-        golfCourseCachePopulated = false; // Ensure flag is false on error
+        console.error("[Golf Courses] Error fetching golf courses:", error);
+        golfCoursesCache = {}; // Reset cache on error
+        golfCoursesCachePopulated = false;
+    } finally {
+        isFetchingGolfCourses = false; // Reset fetching flag
     }
 }
 
-// --- Add Course Page Functions ---
+/**
+ * Populates a select dropdown element with golf course options.
+ * @param {HTMLSelectElement} selectElement - The select element to populate.
+ * @param {string} [prompt='Select Course'] - The default prompt option text.
+ * @param {string|null} [selectedValue=null] - The ID of the course to pre-select.
+ */
+async function populateGolfCourseDropdown(selectElement, prompt = 'Select Course', selectedValue = null) {
+    if (!selectElement) {
+        console.warn("[Golf Courses] populateGolfCourseDropdown: Select element not provided.");
+        return;
+    }
+    selectElement.innerHTML = `<option value="">-- ${prompt} --</option>`; // Clear and add prompt
+    selectElement.disabled = true; // Disable while loading
+
+    try {
+        // Ensure cache is populated (includes waiting for tee data)
+        if (!golfCoursesCachePopulated) {
+            await fetchAllGolfCourses();
+        }
+        const courses = golfCoursesCache;
+        const coursesArray = Object.values(courses);
+
+        if (coursesArray.length === 0) {
+            selectElement.innerHTML += `<option value="" disabled>No courses found</option>`;
+        } else {
+            coursesArray.forEach(course => {
+                const option = new Option(`${course.name}${course.location ? ` (${course.location})` : ''}`, course.id);
+                selectElement.add(option);
+            });
+        }
+
+        // Set selected value if provided and exists
+        if (selectedValue && selectElement.querySelector(`option[value="${selectedValue}"]`)) {
+            selectElement.value = selectedValue;
+        } else if (selectedValue) {
+            console.warn(`[Golf Courses] Could not select course value "${selectedValue}" in ${selectElement.id}.`);
+        }
+
+    } catch (error) {
+        console.error("[Golf Courses] Error populating course dropdown:", error);
+        selectElement.innerHTML += `<option value="" disabled>Error loading courses</option>`;
+    } finally {
+        selectElement.disabled = false; // Re-enable dropdown
+    }
+}
 
 /**
- * Generates the HTML string for the Add Course form.
- * @returns {string} HTML string for the form.
+ * Populates a select dropdown element with available tee box options for a specific course.
+ * @param {HTMLSelectElement} selectElement - The select element to populate.
+ * @param {string} courseId - The ID of the selected golf course.
  */
-function generateAddCourseFormHTML() {
-    console.log("[Golf Add Form] Generating HTML...");
-    let holeInputsHTML = '';
+async function populateTeeBoxDropdown(selectElement, courseId) {
+    if (!selectElement || !courseId) {
+        console.error("[Golf Courses] Missing select element or course ID for tee box population.");
+        if (selectElement) selectElement.innerHTML = '<option value="">Error</option>';
+        return;
+    }
+
+    selectElement.innerHTML = '<option value="">Loading Tees...</option>';
+    selectElement.disabled = true;
+
+    try {
+        // Ensure the cache is fully populated, including tee data, before proceeding
+        if (!golfCoursesCachePopulated) {
+            console.log("[Golf Courses] Tee population waiting for course cache...");
+            await fetchAllGolfCourses(); // Wait for the fetch (including tees) to complete
+        }
+
+        const course = golfCoursesCache[courseId];
+
+        // Check if course and tee data exist *after* ensuring cache is populated
+        if (!course || !course.tees || Object.keys(course.tees).length === 0) {
+            // --- REFINED Warning Message --- 
+            console.warn(`[Golf Courses] No tee data processed or found for course ID: ${courseId} in cache. Check if course has 'hole_details' in Firestore.`);
+            // --- END REFINED --- 
+            selectElement.innerHTML = '<option value="">No Tees Available</option>';
+            selectElement.disabled = true; // Keep disabled if no tees
+            return;
+        }
+
+        // --- MODIFIED: Custom Sort Order for Tees ---
+        const desiredTeeOrder = ['red', 'gold', 'white', 'blue'];
+        const availableTees = Object.keys(course.tees);
+
+        // Filter available tees to only include those in the desired order
+        // and sort them according to the desired order
+        const sortedTees = availableTees
+            .filter(tee => desiredTeeOrder.includes(tee.toLowerCase())) // Ensure case-insensitivity if needed
+            .sort((a, b) => {
+                const indexA = desiredTeeOrder.indexOf(a.toLowerCase());
+                const indexB = desiredTeeOrder.indexOf(b.toLowerCase());
+                return indexA - indexB;
+            });
+        // --- END MODIFIED ---
+
+        if (sortedTees.length > 0) {
+            selectElement.innerHTML = '<option value="">-- Select Tee Box --</option>'; // Default option
+            sortedTees.forEach(teeKey => { // Use sortedTees instead of teeColors
+                const teeData = course.tees[teeKey];
+                const option = document.createElement('option');
+                option.value = teeKey; // Use the original key (e.g., 'red') as value
+                // Use the name from teeData if available, otherwise capitalize the key
+                option.textContent = teeData.name || (teeKey.charAt(0).toUpperCase() + teeKey.slice(1));
+                selectElement.appendChild(option);
+            });
+            selectElement.disabled = false; // Enable select
+            console.log(`[Golf Courses] Populated tee box dropdown for course ${courseId} with options (custom order): `, sortedTees);
+        } else {
+            selectElement.innerHTML = '<option value="">No Tees Defined</option>';
+            selectElement.disabled = true;
+        }
+
+    } catch (error) {
+        console.error(`[Golf Courses] Error populating tee boxes for course ${courseId}:`, error);
+        selectElement.innerHTML = '<option value="">Error loading tees</option>';
+        selectElement.disabled = true; // Keep disabled on error
+    } finally {
+        selectElement.disabled = false; // Re-enable dropdown
+    }
+}
+
+/**
+ * Retrieves the par and yardage data for a specific course and tee color.
+ * @param {string} courseId - The ID of the golf course.
+ * @param {string} teeColor - The key of the selected tee (e.g., 'white', 'blue').
+ * @returns {Promise<object|null>} An object containing { par: {...}, yardage: {...} } or null if not found.
+ */
+async function getTeeBoxData(courseId, teeColor) {
+    if (!courseId || !teeColor) return null;
+
+    try {
+        // Ensure cache is populated
+        if (!golfCoursesCachePopulated) {
+            await fetchAllGolfCourses();
+        }
+        const course = golfCoursesCache ? golfCoursesCache[courseId] : null;
+        const teeData = course?.tees?.[teeColor];
+
+        if (teeData && teeData.par && teeData.yardage) {
+            return {
+                par: teeData.par,
+                yardage: teeData.yardage
+            };
+        } else {
+            console.warn(`[Golf Courses] Tee data not found for course ${courseId}, tee ${teeColor}`);
+            return null;
+        }
+    } catch (error) {
+        console.error(`[Golf Courses] Error getting tee box data for ${courseId} / ${teeColor}:`, error);
+        return null;
+    }
+}
+
+/**
+ * Sets up the "Add Golf Course" form, including generating par inputs and attaching submit listener.
+ */
+function setupAddGolfCourseForm() {
+    console.log("[Golf Courses] Setting up Add Golf Course form...");
+    const form = document.getElementById('add-golf-course-form');
+    const parInputsContainer = document.getElementById('par-inputs-container');
+    const errorElement = form?.querySelector('#add-course-error');
+
+    if (!form || !parInputsContainer || !errorElement) {
+        console.error("[Golf Courses] Add Golf Course form or required elements not found.");
+        const section = document.getElementById('add-golf-course-section');
+        if (section) section.innerHTML = '<p class="error-text text-center py-10">Error loading form structure.</p>';
+        return;
+    }
+
+    // 1. Generate Par Input Fields dynamically
+    let parInputsHtml = '';
     for (let i = 1; i <= 18; i++) {
-        holeInputsHTML += `
-            <fieldset class="mb-3 p-3 border rounded dark:border-gray-600">
-                <legend class="text-sm font-medium px-1">Hole ${i}</legend>
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
-                    <div>
-                        <label for="hole-${i}-par" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Par</label>
-                        <input type="number" id="hole-${i}-par" name="hole-${i}-par" min="3" max="6" class="input-field-sm w-full" required>
-                    </div>
-                    <div>
-                        <label for="hole-${i}-yards-blue" class="block text-xs font-medium text-blue-600 dark:text-blue-400">Yards (Blue)</label>
-                        <input type="number" id="hole-${i}-yards-blue" name="hole-${i}-yards-blue" min="50" max="700" class="input-field-sm w-full" required>
-                    </div>
-                    <div>
-                        <label for="hole-${i}-yards-white" class="block text-xs font-medium text-gray-700 dark:text-gray-300">Yards (White)</label>
-                        <input type="number" id="hole-${i}-yards-white" name="hole-${i}-yards-white" min="50" max="700" class="input-field-sm w-full" required>
-                    </div>
-                    <div>
-                        <label for="hole-${i}-yards-gold" class="block text-xs font-medium text-yellow-600 dark:text-yellow-400">Yards (Gold)</label>
-                        <input type="number" id="hole-${i}-yards-gold" name="hole-${i}-yards-gold" min="50" max="700" class="input-field-sm w-full">
-                    </div>
-                    <div>
-                        <label for="hole-${i}-yards-red" class="block text-xs font-medium text-red-600 dark:text-red-400">Yards (Red)</label>
-                        <input type="number" id="hole-${i}-yards-red" name="hole-${i}-yards-red" min="50" max="700" class="input-field-sm w-full">
-                    </div>
-                </div>
-            </fieldset>
-        `;
+        parInputsHtml += `
+            <div>
+                <label for="par-hole-${i}" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5">Hole ${i}:</label>
+                <input type="number" id="par-hole-${i}" name="par_hole_${i}" class="input-field-sm w-full text-center" min="1" max="10" required value="4">
+            </div>`;
     }
+    parInputsContainer.innerHTML = parInputsHtml;
 
-    const formHTML = `
-        <form id="add-course-form">
-            <div class="mb-4">
-                <label for="course-name" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Course Name:</label>
-                <input type="text" id="course-name" name="course-name" class="input-field w-full" required>
-            </div>
-            <div class="mb-4">
-                <label for="course-location" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Location (Optional):</label>
-                <input type="text" id="course-location" name="course-location" class="input-field w-full" placeholder="e.g., City, State">
-            </div>
-
-            <h3 class="text-lg font-semibold mt-6 mb-3 text-gray-800 dark:text-gray-200">Hole Details (1-18)</h3>
-            <div class="space-y-4 max-h-[50vh] overflow-y-auto pr-2"> <!-- Added max-height and scroll -->
-                ${holeInputsHTML}
-            </div>
-
-            <p id="add-course-error" class="text-red-500 text-sm mt-4 h-4"></p>
-            <div class="mt-6 flex justify-end space-x-3 sticky bottom-0 bg-white dark:bg-gray-800 py-3 border-t dark:border-gray-700 -mx-8 px-8 rounded-b-lg"> <!-- Adjusted padding/margin for sticky footer -->
-                <!-- Changed Cancel button to a link -->
-                <a href="#golf-courses-section" class="button button-secondary nav-link" data-target="golf-courses-section">Cancel</a>
-                <button type="submit" class="button button-primary">Add Course</button>
-            </div>
-        </form>
-    `;
-    return formHTML;
+    // 2. Attach Submit Listener (ensure only one is attached)
+    if (!form.dataset.listenerAttached) {
+        form.addEventListener('submit', handleAddGolfCourseSubmit);
+        form.dataset.listenerAttached = 'true';
+        console.log("[Golf Courses] Attached submit listener to Add Golf Course form.");
+    } else {
+        console.log("[Golf Courses] Submit listener already attached to Add Golf Course form.");
+    }
 }
 
 /**
- * Sets up the Add Golf Course page section.
- * Injects the form and attaches the submit listener.
+ * Handles the submission of the Add Golf Course form.
  */
-function setupAddGolfCoursePage() {
-    console.log("[Golf Add Page] Setting up...");
-    const formContainer = document.getElementById('add-course-form-container');
-    if (!formContainer) {
-        console.error("[Golf Add Page] Form container (#add-course-form-container) not found.");
-        return;
-    }
-    if (!db) {
-        console.error("[Golf Add Page] DB not ready.");
-        formContainer.innerHTML = '<p class="error-text">Database connection error.</p>';
-        return;
-    }
-
-    // Generate and inject the form HTML
-    formContainer.innerHTML = generateAddCourseFormHTML();
-
-    // Attach the submit listener to the newly injected form
-    const formElement = formContainer.querySelector('#add-course-form');
-    if (formElement) {
-        formElement.removeEventListener('submit', handleAddCourseSubmit); // Prevent duplicates if re-navigating
-        formElement.addEventListener('submit', handleAddCourseSubmit);
-        console.log("[Golf Add Page] Submit listener attached to form.");
-    } else {
-        console.error("[Golf Add Page] Could not find form element (#add-course-form) after injection.");
-    }
-}
-
-
-// Handles submission of the Add Course form (from the page)
-async function handleAddCourseSubmit(event) {
+async function handleAddGolfCourseSubmit(event) {
     event.preventDefault();
     const form = event.target;
     const submitButton = form.querySelector('button[type="submit"]');
     const errorElement = form.querySelector('#add-course-error');
-    if (!db || !firebase || !firebase.firestore) { alert("Database connection or Firestore components missing."); return; }
+    if (!db) { alert("Database connection error."); return; }
 
     if (errorElement) errorElement.textContent = '';
     submitButton.disabled = true;
     submitButton.textContent = 'Adding...';
 
-    let isValid = true;
-    form.querySelectorAll('input[required], input[type="number"]').forEach(field => { // Include number inputs for range checks
-        field.classList.remove('border-red-500');
-        if (field.required && !field.value.trim()) {
-            isValid = false;
-            field.classList.add('border-red-500');
-            if (errorElement && !errorElement.textContent) errorElement.textContent = "Please fill all required fields.";
-        }
-        if (field.type === 'number' && field.value) { // Check ranges only if a value is entered
-            const val = parseFloat(field.value);
-            const min = parseFloat(field.min);
-            const max = parseFloat(field.max);
-            if (isNaN(val) || (field.hasAttribute('min') && val < min) || (field.hasAttribute('max') && val > max)) {
-                isValid = false;
-                field.classList.add('border-red-500');
-                if (errorElement && !errorElement.textContent) errorElement.textContent = `Invalid value for ${field.labels?.[0]?.textContent || field.name}. Check ranges (${field.min}-${field.max}).`;
-            }
-        }
-    });
-
-    if (!isValid) {
-        if (errorElement && !errorElement.textContent) errorElement.textContent = "Please correct the highlighted fields.";
-        submitButton.disabled = false;
-        submitButton.textContent = 'Add Course';
-        alert("Please fill out all required fields correctly. Check ranges for Par and Yardages.");
-        return;
-    }
-
-    const formData = new FormData(form);
-    const courseName = formData.get('course-name')?.trim();
-    const courseLocation = formData.get('course-location')?.trim() || null;
-
-    if (!courseName) {
-        if (errorElement) errorElement.textContent = "Course name is required.";
-        submitButton.disabled = false;
-        submitButton.textContent = 'Add Course';
-        return;
-    }
-
-    const hole_details = [];
-    let totalPar = 0;
-    for (let i = 1; i <= 18; i++) {
-        const par = parseInt(formData.get(`hole-${i}-par`), 10);
-        totalPar += par;
-        hole_details.push({
-            hole: i,
-            par: par,
-            yards: {
-                blue: parseInt(formData.get(`hole-${i}-yards-blue`), 10),
-                white: parseInt(formData.get(`hole-${i}-yards-white`), 10),
-                gold: parseInt(formData.get(`hole-${i}-yards-gold`), 10) || null,
-                red: parseInt(formData.get(`hole-${i}-yards-red`), 10) || null,
-            }
-        });
-    }
-
-    console.log(`[ADD COURSE] Attempting to add course: ${courseName}`);
-
     try {
+        const courseName = form.querySelector('#course-name').value.trim();
+        const courseLocation = form.querySelector('#course-location').value.trim();
+
+        if (!courseName || !courseLocation) {
+            throw new Error("Course Name and Location are required.");
+        }
+
+        const parValues = {};
+        let totalPar = 0;
+        let isValid = true;
+        for (let i = 1; i <= 18; i++) {
+            const input = form.querySelector(`#par-hole-${i}`);
+            const par = parseInt(input.value, 10);
+            if (isNaN(par) || par < 1 || par > 10) {
+                input.classList.add('border-red-500');
+                isValid = false;
+            } else {
+                input.classList.remove('border-red-500');
+                parValues[`hole_${i}`] = par;
+                totalPar += par;
+            }
+        }
+
+        if (!isValid) {
+            throw new Error("Please enter valid par values (1-10) for all holes.");
+        }
+
         const courseData = {
             name: courseName,
             location: courseLocation,
+            par: parValues,
             total_par: totalPar,
-            hole_details: hole_details,
-            date_created: firebase.firestore.FieldValue.serverTimestamp()
+            date_added: firebase.firestore.FieldValue.serverTimestamp()
         };
 
+        // Add course to Firestore
         const docRef = await db.collection('golf_courses').add(courseData);
-        console.log(`[FIRESTORE] Course "${courseName}" added successfully with ID: ${docRef.id}`);
-        alert(`Course "${courseName}" added successfully!`);
+        console.log(`[FIRESTORE] Golf course "${courseName}" added successfully with ID: ${docRef.id}`);
+        alert(`Golf course "${courseName}" added successfully!`);
 
-        golfCourseCachePopulated = false; // Invalidate cache
-        await ensureGolfCourseCache(); // Re-populate global cache
-
-        // Refresh relevant UI elements (dropdowns)
-        if (typeof populateLiveGolfCourseSelect === 'function') {
-             console.log("[ADD COURSE] Refreshing live golf course select dropdown...");
-             await populateLiveGolfCourseSelect();
+        // Clear cache and potentially refresh dropdowns if needed
+        golfCoursesCache = null;
+        golfCoursesCachePopulated = false;
+        // Example: If a course dropdown is visible, refresh it
+        const liveCourseSelect = document.getElementById('live-golf-course-select');
+        if (liveCourseSelect && liveCourseSelect.closest('section')?.style.display !== 'none') {
+            await populateGolfCourseDropdown(liveCourseSelect);
         }
-        if (typeof populateGolfCourseSelectForSubmit === 'function') {
-            console.log("[ADD COURSE] Refreshing submit past game golf course select dropdown...");
-            await populateGolfCourseSelectForSubmit();
+        const submitCourseSelect = document.getElementById('game-golf-course-select');
+        if (submitCourseSelect && submitCourseSelect.closest('section')?.style.display !== 'none') {
+            await populateGolfCourseDropdown(submitCourseSelect);
         }
 
-        // Navigate back to the golf courses list and force refresh
+        form.reset(); // Reset form fields
+        // Optionally navigate away or show success message inline
         if (typeof showSection === 'function') {
-            showSection('golf-courses-section', true);
-        } else {
-            window.location.hash = '#golf-courses-section'; // Fallback
+            showSection('sports-section'); // Go back to sports list after adding
         }
 
     } catch (error) {
-        console.error("Error adding course:", error);
+        console.error("Error adding golf course:", error);
         if (errorElement) errorElement.textContent = `Error: ${error.message}`;
-        alert(`Failed to add course: ${error.message}`);
     } finally {
-        // Re-enable button even if navigation happens, in case of errors before navigation
         submitButton.disabled = false;
         submitButton.textContent = 'Add Course';
     }
-} // End handleAddCourseSubmit
-
-// --- Populate Golf Courses List (Sports Section) ---
-
-/**
- * Populates a list element with golf courses.
- * @param {HTMLElement} listElement - The container element (e.g., a div or ul) to populate.
- */
-async function populateGolfCourses(listElement) {
-    console.log("[SPORTS/GOLF] Populating golf courses list...");
-
-    if (!listElement) {
-        console.error("[SPORTS/GOLF] Target element for golf courses list not provided.");
-        return;
-    }
-
-    listElement.innerHTML = `<p class="loading-text">Loading courses...</p>`;
-
-    if (!db) {
-        console.error("[SPORTS/GOLF] DB not available.");
-        listElement.innerHTML = `<p class="error-text">Error: Database connection failed.</p>`;
-        return;
-    }
-
-    await ensureGolfCourseCache();
-
-    if (!golfCourseCachePopulated || Object.keys(globalGolfCourseCache).length === 0) {
-         listElement.innerHTML = `<p class="muted-text italic">No golf courses found.</p>`;
-         return;
-    }
-
-    const courses = Object.values(globalGolfCourseCache);
-
-    let html = '<ul class="space-y-2 text-sm">';
-
-    courses.forEach(course => {
-        let totalYardsWhite = 'N/A';
-        if (course.hole_details && Array.isArray(course.hole_details)) {
-            totalYardsWhite = course.hole_details.reduce((sum, hole) => sum + (hole.yards?.white || 0), 0);
-        }
-
-        html += `
-            <li class="flex justify-between items-start border-b border-gray-200 dark:border-gray-700 pb-2 last:border-b-0">
-                <div class="flex-grow mr-2">
-                    <strong class="font-medium">${course.name || 'Unnamed Course'}</strong>
-                    <span class="text-gray-500 dark:text-gray-400 text-xs"> (Par ${course.total_par || 'N/A'})</span>
-                    ${course.location ? `<br><span class="text-gray-500 dark:text-gray-400 text-xs">${course.location}</span>` : ''}
-                    <br><span class="text-gray-500 dark:text-gray-400 text-xs">White Tees: ${totalYardsWhite} yds</span>
-                </div>
-                <button class="edit-course-btn button button-xs button-secondary admin-only flex-shrink-0 mt-1" data-course-id="${course.id}">Edit</button>
-            </li>
-        `;
-    });
-
-    html += '</ul>';
-    listElement.innerHTML = html;
-
-    listElement.querySelectorAll('.edit-course-btn').forEach(btn => {
-        btn.removeEventListener('click', handleEditCourseButtonClick);
-        btn.addEventListener('click', handleEditCourseButtonClick);
-    });
-
-    if (typeof handleAuthChange === 'function' && typeof auth !== 'undefined') {
-        handleAuthChange(auth.currentUser);
-    }
-
-    console.log(`[SPORTS/GOLF] Displayed ${courses.length} courses.`);
 }
 
-/**
- * Handles the click event for the "Edit Course" button.
- * @param {Event} event
- */
-function handleEditCourseButtonClick(event) {
-    const courseId = event.target.dataset.courseId;
-    if (!courseId) {
-        console.error("[SPORTS/GOLF] Edit button clicked without course ID.");
-        return;
-    }
-    console.log(`[SPORTS/GOLF] Edit button clicked for course: ${courseId}`);
-    if (typeof openEditCourseModal === 'function') {
-        openEditCourseModal(courseId);
-    } else {
-        console.error("openEditCourseModal function not found.");
-    }
-}
-
-// --- Edit Course Modal ---
-
-/**
- * Fetches course data and opens the modal for editing.
- * @param {string} courseId - The ID of the course to edit.
- */
-async function openEditCourseModal(courseId) {
-    const modalElement = document.getElementById('edit-course-modal');
-    if (!modalElement) { console.error("Edit Course modal element not found."); return; }
-    if (!db) { console.error("Edit Course modal: DB not ready."); alert("Database connection failed."); return; }
-
-    modalElement.innerHTML = '<div class="modal-content"><p class="loading-text p-5">Loading course data for editing...</p></div>';
-    openModal(modalElement); // Open modal with loading state
-
-    try {
-        await ensureGolfCourseCache();
-        const course = globalGolfCourseCache[courseId];
-
-        if (!course) {
-            throw new Error("Golf course not found in cache or DB.");
-        }
-
-        let holeInputsHTML = '';
-        for (let i = 1; i <= 18; i++) {
-            const holeData = course.hole_details?.find(h => h.hole === i) || {};
-            const par = holeData.par || '';
-            const yardsBlue = holeData.yards?.blue || '';
-            const yardsWhite = holeData.yards?.white || '';
-            const yardsGold = holeData.yards?.gold || '';
-            const yardsRed = holeData.yards?.red || '';
-
-            holeInputsHTML += `
-                <fieldset class="mb-3 p-3 border rounded dark:border-gray-600">
-                    <legend class="text-sm font-medium px-1">Hole ${i}</legend>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
-                        <div>
-                            <label for="edit-hole-${i}-par" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Par</label>
-                            <input type="number" id="edit-hole-${i}-par" name="hole-${i}-par" value="${par}" min="3" max="6" class="input-field-sm w-full" required>
-                        </div>
-                        <div>
-                            <label for="edit-hole-${i}-yards-blue" class="block text-xs font-medium text-blue-600 dark:text-blue-400">Yards (Blue)</label>
-                            <input type="number" id="edit-hole-${i}-yards-blue" name="hole-${i}-yards-blue" value="${yardsBlue}" min="50" max="700" class="input-field-sm w-full" required>
-                        </div>
-                        <div>
-                            <label for="edit-hole-${i}-yards-white" class="block text-xs font-medium text-gray-700 dark:text-gray-300">Yards (White)</label>
-                            <input type="number" id="edit-hole-${i}-yards-white" name="hole-${i}-yards-white" value="${yardsWhite}" min="50" max="700" class="input-field-sm w-full" required>
-                        </div>
-                        <div>
-                            <label for="edit-hole-${i}-yards-gold" class="block text-xs font-medium text-yellow-600 dark:text-yellow-400">Yards (Gold)</label>
-                            <input type="number" id="edit-hole-${i}-yards-gold" name="hole-${i}-yards-gold" value="${yardsGold}" min="50" max="700" class="input-field-sm w-full">
-                        </div>
-                        <div>
-                            <label for="edit-hole-${i}-yards-red" class="block text-xs font-medium text-red-600 dark:text-red-400">Yards (Red)</label>
-                            <input type="number" id="edit-hole-${i}-yards-red" name="hole-${i}-yards-red" value="${yardsRed}" min="50" max="700" class="input-field-sm w-full">
-                        </div>
-                    </div>
-                </fieldset>
-            `;
-        }
-
-        const modalContentHTML = `
-            <div class="modal-content max-h-[85vh] overflow-y-auto">
-                <button id="close-edit-course-modal-btn" class="modal-close-button">&times;</button>
-                <h2 class="text-2xl font-semibold mb-5 text-indigo-700 dark:text-indigo-400">Edit Golf Course</h2>
-                <form id="edit-course-form" data-course-id="${course.id}">
-                    <div class="mb-4">
-                        <label for="edit-course-name" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Course Name:</label>
-                        <input type="text" id="edit-course-name" name="course-name" value="${course.name || ''}" class="input-field w-full" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="edit-course-location" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Location (Optional):</label>
-                        <input type="text" id="edit-course-location" name="course-location" value="${course.location || ''}" class="input-field w-full" placeholder="e.g., City, State">
-                    </div>
-
-                    <h3 class="text-lg font-semibold mt-6 mb-3 text-gray-800 dark:text-gray-200">Hole Details (1-18)</h3>
-                    <div class="space-y-4">
-                        ${holeInputsHTML}
-                    </div>
-
-                    <p id="edit-course-error" class="text-red-500 text-sm mt-4 h-4"></p>
-                    <div class="mt-6 flex justify-end space-x-3 sticky bottom-0 bg-white dark:bg-gray-800 py-3 border-t dark:border-gray-700">
-                        <button type="button" id="cancel-edit-course-modal-btn" class="button button-secondary">Cancel</button>
-                        <button type="submit" class="button button-primary">Save Changes</button>
-                    </div>
-                </form>
-            </div>`;
-
-        modalElement.innerHTML = modalContentHTML;
-
-        modalElement.querySelector('#close-edit-course-modal-btn')?.addEventListener('click', closeEditCourseModal);
-        modalElement.querySelector('#cancel-edit-course-modal-btn')?.addEventListener('click', closeEditCourseModal);
-        modalElement.querySelector('#edit-course-form')?.addEventListener('submit', handleEditCourseSubmit);
-
-    } catch (error) {
-        console.error(`Error loading course ${courseId} for editing:`, error);
-        modalElement.innerHTML = `<div class="modal-content"><button class="modal-close-button" onclick="closeEditCourseModal()">&times;</button><p class="error-text p-5">Error loading course data: ${error.message}</p></div>`;
-    }
-}
-
-/**
- * Closes the Edit Course modal.
- */
-function closeEditCourseModal() {
-    const modalElement = document.getElementById('edit-course-modal');
-    if (modalElement) closeModal(modalElement);
-}
-
-/**
- * Handles the submission of the Edit Course form.
- * @param {Event} event - The form submission event.
- */
-async function handleEditCourseSubmit(event) {
-    event.preventDefault();
-    const form = event.target;
-    const courseId = form.getAttribute('data-course-id');
-    const submitButton = form.querySelector('button[type="submit"]');
-    const errorMsgElement = form.querySelector('#edit-course-error');
-
-    if (!courseId) { console.error("Edit submit: Missing course ID."); return; }
-    if (!db || !firebase || !firebase.firestore) { console.error("Edit submit: DB not ready."); alert("Database connection error."); return; }
-
-    submitButton.disabled = true;
-    submitButton.textContent = 'Saving...';
-    if (errorMsgElement) errorMsgElement.textContent = '';
-
-    let isValid = true;
-    form.querySelectorAll('input[required]').forEach(field => {
-        field.classList.remove('border-red-500');
-        if (!field.value.trim()) {
-            isValid = false;
-            field.classList.add('border-red-500');
-            if (errorMsgElement && !errorMsgElement.textContent) errorMsgElement.textContent = "Please fill all required fields.";
-        }
-        if (field.type === 'number') {
-            const val = parseFloat(field.value);
-            const min = parseFloat(field.min);
-            const max = parseFloat(field.max);
-            if (isNaN(val) || (field.min && val < min) || (field.max && val > max)) {
-                isValid = false;
-                field.classList.add('border-red-500');
-                if (errorMsgElement && !errorMsgElement.textContent) errorMsgElement.textContent = `Invalid value for ${field.labels?.[0]?.textContent || field.name}. Check ranges.`;
-            }
-        }
-    });
-
-    if (!isValid) {
-        if (errorMsgElement && !errorMsgElement.textContent) errorMsgElement.textContent = "Please correct the highlighted fields.";
-        submitButton.disabled = false;
-        submitButton.textContent = 'Save Changes';
-        alert("Please fill out all required fields correctly. Check ranges for Par and Yardages.");
-        return;
-    }
-
-    const formData = new FormData(form);
-    const hole_details = [];
-    let totalPar = 0;
-    for (let i = 1; i <= 18; i++) {
-        const par = parseInt(formData.get(`hole-${i}-par`), 10);
-        totalPar += par;
-        hole_details.push({
-            hole: i,
-            par: par,
-            yards: {
-                blue: parseInt(formData.get(`hole-${i}-yards-blue`), 10),
-                white: parseInt(formData.get(`hole-${i}-yards-white`), 10),
-                gold: parseInt(formData.get(`hole-${i}-yards-gold`), 10) || null,
-                red: parseInt(formData.get(`hole-${i}-yards-red`), 10) || null,
-            }
-        });
-    }
-
-    const updatedData = {
-        name: formData.get('course-name')?.trim(),
-        location: formData.get('course-location')?.trim() || null, // Store null if empty
-        total_par: totalPar, // Recalculate total par
-        hole_details: hole_details, // Store updated hole details
-        last_updated: firebase.firestore.FieldValue.serverTimestamp()
-    };
-
-    console.log(`[COURSE EDIT SUBMIT] Updating course ${courseId} with data:`, updatedData);
-
-    try {
-        const docRef = db.collection('golf_courses').doc(courseId);
-        await docRef.update(updatedData);
-
-        console.log(`[COURSE EDIT SUBMIT] Course ${courseId} updated successfully.`);
-        alert("Course updated successfully!");
-
-        golfCourseCachePopulated = false;
-        await ensureGolfCourseCache(); // Re-populate global cache
-
-        closeEditCourseModal();
-
-        console.log("[COURSE EDIT SUBMIT] Refreshing UI lists...");
-        await populateGolfCourses(document.getElementById('golf-courses-list'));
-
-        if (typeof populateLiveGolfCourseSelect === 'function') {
-            await populateLiveGolfCourseSelect();
-        }
-        if (typeof populateGolfCourseSelectForSubmit === 'function') {
-            await populateGolfCourseSelectForSubmit();
-        }
-
-    } catch (error) {
-        console.error(`[COURSE EDIT SUBMIT] Error updating course ${courseId}:`, error);
-        if (errorMsgElement) errorMsgElement.textContent = `Error saving changes: ${error.message}`;
-    } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Save Changes';
-    }
-}
-
-console.log("[Golf Courses] golf_courses.js loaded.");
+console.log("[Golf Courses] golf_courses.js loaded");

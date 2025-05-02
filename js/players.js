@@ -257,153 +257,16 @@ async function handleAddPlayerSubmit(event) {
 // --- Player Profile Page ---
 
 /**
- * Fetches and populates the player profile page.
- * @param {string} playerId - The ID of the player to display.
+ * @deprecated Use populatePlayerProfilePage from player_management.js instead
  */
 async function populatePlayerProfilePage(playerId) {
-    console.log(`[Player Profile] Populating profile for player ID: ${playerId}`);
-    const profileSection = document.getElementById('player-profile-section');
-    const profileNameEl = document.getElementById('player-profile-name');
-    const profileImageEl = document.getElementById('player-profile-image');
-    const eloRatingsContainer = document.getElementById('player-profile-elo-ratings');
-    const gamesPlayedContainer = document.getElementById('player-profile-games-played');
-    const recentGamesContainer = document.getElementById('player-profile-recent-games');
-    const playedWithEl = document.getElementById('player-profile-played-with'); // Added
-    const playedAgainstEl = document.getElementById('player-profile-played-against'); // Added
-
-    if (!profileSection || !profileNameEl || !profileImageEl || !eloRatingsContainer || !gamesPlayedContainer || !recentGamesContainer || !playedWithEl || !playedAgainstEl) {
-        console.error("[Player Profile] One or more essential profile elements not found.");
-        const mainContent = document.getElementById('main-content');
-        if(mainContent) mainContent.innerHTML = '<p class="error-text">Error loading profile page structure.</p>';
-        return;
+    // Forward to the main implementation
+    if (typeof window.populatePlayerProfilePage === 'function') {
+        return window.populatePlayerProfilePage(playerId);
+    } else {
+        console.error("[Players] Main populatePlayerProfilePage implementation not found");
+        throw new Error("Profile page population not available");
     }
-
-    // Set loading states
-    profileNameEl.textContent = 'Loading...';
-    profileImageEl.src = `https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=128`;
-    eloRatingsContainer.innerHTML = '<p class="loading-text">Loading ratings...</p>';
-    gamesPlayedContainer.innerHTML = '<p class="loading-text">Loading stats...</p>';
-    recentGamesContainer.innerHTML = '<p class="loading-text">Loading recent games...</p>';
-    playedWithEl.innerHTML = '<p class="loading-text">Loading teammate stats...</p>'; // Added
-    playedAgainstEl.innerHTML = '<p class="loading-text">Loading opponent stats...</p>'; // Added
-
-    if (!db) {
-        console.error("[Player Profile] Firestore DB not available.");
-        profileNameEl.textContent = 'Error';
-        eloRatingsContainer.innerHTML = '<p class="error-text">DB Error</p>';
-        gamesPlayedContainer.innerHTML = '<p class="error-text">DB Error</p>';
-        recentGamesContainer.innerHTML = '<p class="error-text">DB Error</p>';
-        playedWithEl.innerHTML = '<p class="error-text">DB Error</p>'; // Added
-        playedAgainstEl.innerHTML = '<p class="error-text">DB Error</p>'; // Added
-        return;
-    }
-
-    try {
-        // 1. Fetch Player Data (Ensure cache is populated if needed)
-        if (!playersCachePopulated) {
-            console.log("[Player Profile] Player cache not populated, fetching...");
-            await fetchAllPlayersForCache();
-            if (!playersCachePopulated) { // Check again after attempting fetch
-                 throw new Error("Failed to populate player cache.");
-            }
-        }
-
-        const playerData = globalPlayerCache[playerId]; // Use cache
-
-        if (!playerData) {
-             // Attempt direct fetch as fallback if cache failed or player missing
-             console.warn(`[Player Profile] Player ${playerId} not found in cache, attempting direct fetch...`);
-             const playerDoc = await db.collection('players').doc(playerId).get();
-             if (!playerDoc.exists) {
-                 throw new Error(`Player not found with ID: ${playerId}`);
-             }
-             // Add to cache if fetched directly
-             globalPlayerCache[playerId] = { id: playerDoc.id, ...playerDoc.data() };
-             playerData = globalPlayerCache[playerId];
-             console.log(`[Player Profile] Successfully fetched player ${playerId} directly.`);
-        }
-
-        // Update Header
-        profileNameEl.textContent = playerData.name || 'Unnamed Player';
-        // Use iconUrl if available, fallback to photoURL, then to generated avatar
-        profileImageEl.src =
-            playerData.iconUrl || // Prioritize iconUrl
-            playerData.photoURL || // Fallback to photoURL (if it exists)
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(playerData.name || '?')}&background=random&color=fff&size=128`; // Final fallback: generated
-        profileImageEl.alt = `${playerData.name || 'Player'}'s Profile`;
-
-        // 2. Populate Ratings, Games Played, Recent Games (can run in parallel)
-        await Promise.all([
-            populatePlayerProfileRatings(eloRatingsContainer, playerData.elos || {}),
-            populatePlayerProfileGamesPlayed(gamesPlayedContainer, playerId), // Use function from player_management.js
-            populatePlayerRecentActivity(recentGamesContainer, playerId, 10), // Show more games on profile
-            populateTeammateOpponentStats(playedWithEl, playedAgainstEl, playerId) // Populate new sections
-        ]);
-
-        // --- Apply Themed Background ---
-        // Ensure configs are loaded before applying theme
-        if (!window.globalGameConfigs) {
-            console.warn("[Player Profile] Game configs not ready for theme, attempting fetch...");
-            await fetchAndCacheGameConfigs();
-        }
-
-        if (profileSection && window.globalGameConfigs) { // Check if configs are loaded
-            // Remove previous theme classes
-            profileSection.classList.remove(...Object.keys(window.globalGameConfigs).map(k => `theme-${k}`)); // Use window.globalGameConfigs
-            // Add new theme based on most played game (ensure getMostPlayedGameKey exists)
-            const mostPlayedKey = getMostPlayedGameKey(playerData); // Use helper from player_management.js
-            if (mostPlayedKey) {
-                profileSection.classList.add(`theme-${mostPlayedKey}`);
-                console.log(`[Player Profile] Applied theme: theme-${mostPlayedKey}`);
-            } else {
-                 console.log(`[Player Profile] No most played game found, no theme applied.`);
-            }
-        } else if (profileSection) {
-             console.warn("[Player Profile] Could not apply theme because game configs are not loaded.");
-        }
-
-
-        console.log(`[Player Profile] Successfully populated profile for ${playerData.name}`);
-
-    } catch (error) {
-        console.error(`[Player Profile] Error populating profile for ${playerId}:`, error);
-        profileNameEl.textContent = 'Error Loading Profile';
-        profileImageEl.src = `https://ui-avatars.com/api/?name=X&background=FEE2E2&color=DC2626&size=128`; // Error avatar
-        eloRatingsContainer.innerHTML = `<p class="error-text">Error: ${error.message}</p>`;
-        gamesPlayedContainer.innerHTML = `<p class="error-text">Error: ${error.message}</p>`;
-        recentGamesContainer.innerHTML = `<p class="error-text">Error: ${error.message}</p>`;
-        playedWithEl.innerHTML = `<p class="error-text">Error: ${error.message}</p>`; // Added
-        playedAgainstEl.innerHTML = `<p class="error-text">Error: ${error.message}</p>`; // Added
-    }
-}
-
-/**
- * Populates the Elo ratings section of the player profile.
- * @param {HTMLElement} container - The container element for ratings.
- * @param {object} elos - The player's elos object (e.g., { overall: 1050, pool: 1100, golf_handicap: 12.3 }).
- */
-async function populatePlayerProfileRatings(container, elos) {
-    // ...existing code...
-}
-
-/**
- * Fetches and populates the recent activity list for the player profile.
- * @param {HTMLElement} container - The container element for the list.
- * @param {string} playerId - The ID of the player.
- * @param {number} [limit=5] - Maximum number of activities to show.
- */
-async function populatePlayerRecentActivity(container, playerId, limit = 5) {
-    // ...existing code...
-}
-
-/**
- * Fetches and populates the teammate and opponent stats sections.
- * @param {HTMLElement} teammateContainer - The container for teammate stats.
- * @param {HTMLElement} opponentContainer - The container for opponent stats.
- * @param {string} playerId - The ID of the player whose stats to show.
- */
-async function populateTeammateOpponentStats(teammateContainer, opponentContainer, playerId) {
-    // ...existing code...
 }
 
 // --- Helper Functions ---

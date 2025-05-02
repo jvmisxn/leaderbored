@@ -173,31 +173,40 @@ async function populateGameTypeSelect(selectElement, prompt = 'Select Game Type'
         console.error("[UI Utils] populateGameTypeSelect: Select element not provided.");
         return;
     }
-    console.log(`[UI Utils] Populating game type select: #${selectElement.id}`);
+    console.log(`[UI Utils] Populating game type select: #${selectElement.id}`); // Keep log
+
+    selectElement.innerHTML = `<option value="">${prompt}</option>`; // Set prompt immediately
+    selectElement.disabled = true; // Disable while loading
 
     // Ensure configs are loaded
     if (!window.globalGameConfigs) {
-        console.warn("[UI Utils] Game configs not ready, attempting to fetch...");
+        console.warn("[UI Utils] Game configs not ready, attempting to fetch..."); // Keep log
         try {
             await fetchAndCacheGameConfigs(); // Ensure fetch completes
+            console.log("[UI Utils] fetchAndCacheGameConfigs completed."); // Added log
         } catch (error) {
             console.error("[UI Utils] Failed to fetch game configs for dropdown:", error);
             selectElement.innerHTML = `<option value="">Error loading games</option>`;
+            // Keep disabled
             return;
         }
     }
 
     // Check again after attempting fetch
-    if (!window.globalGameConfigs || Object.keys(window.globalGameConfigs).length === 0) {
+    const configs = window.globalGameConfigs; // Use local const
+    console.log("[UI Utils] Game configs available:", !!configs, "Keys:", configs ? Object.keys(configs) : 'N/A'); // Added log
+
+    if (!configs || Object.keys(configs).length === 0) {
         console.error("[UI Utils] Game configs are still empty after fetch attempt.");
         selectElement.innerHTML = `<option value="">No games available</option>`;
+        // Keep disabled
         return;
     }
 
-    selectElement.innerHTML = `<option value="">${prompt}</option>`; // Start with prompt
+    selectElement.innerHTML = `<option value="">${prompt}</option>`; // Reset prompt after loading potentially failed
 
     // Sort game types alphabetically by name
-    const sortedGames = Object.entries(window.globalGameConfigs)
+    const sortedGames = Object.entries(configs)
         .map(([key, config]) => ({ key, name: config.name || key }))
         .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -210,7 +219,9 @@ async function populateGameTypeSelect(selectElement, prompt = 'Select Game Type'
         }
         selectElement.appendChild(option);
     });
-    console.log(`[UI Utils] Populated #${selectElement.id} with ${sortedGames.length} game types.`);
+
+    selectElement.disabled = false; // Re-enable dropdown
+    console.log(`[UI Utils] Populated #${selectElement.id} with ${sortedGames.length} game types.`); // Keep log
 }
 
 /**
@@ -298,51 +309,85 @@ function setupThemeToggle() {
 }
 
 // --- Profile Dropdown ---
-/**
- * Toggles the visibility of the profile dropdown menu.
- */
-function toggleProfileDropdown() {
+function toggleProfileDropdown(event) {
+    event?.preventDefault();
     const profileDropdown = document.getElementById('profile-dropdown');
-    if (profileDropdown) {
-        profileDropdown.classList.toggle('hidden');
-        console.log("[UI Utils] Toggled profile dropdown visibility.");
+    if (!profileDropdown) return;
+
+    const isHidden = profileDropdown.classList.contains('hidden');
+    if (isHidden) {
+        showProfileDropdown();
     } else {
-        console.warn("[UI Utils] Profile dropdown element (#profile-dropdown) not found.");
+        hideProfileDropdown();
     }
 }
 
-/**
- * Sets up the profile dropdown button listener and logout link listener.
- */
-function setupProfileDropdown() {
-    console.log("[UI Utils] Setting up profile dropdown listeners...");
+function showProfileDropdown() {
+    const dropdown = document.getElementById('profile-dropdown');
+    if (!dropdown) return;
+    dropdown.classList.remove('hidden');
+    
+    // Update aria-expanded state
     const profileButton = document.getElementById('profile-photo-button');
-    const profileDropdown = document.getElementById('profile-dropdown'); // Needed for logout listener
-    const logoutLink = profileDropdown?.querySelector('#dropdown-logout');
+    if (profileButton) {
+        profileButton.setAttribute('aria-expanded', 'true');
+    }
+}
+
+function hideProfileDropdown() {
+    const dropdown = document.getElementById('profile-dropdown');
+    if (!dropdown) return;
+    dropdown.classList.add('hidden');
+    
+    // Update aria-expanded state
+    const profileButton = document.getElementById('profile-photo-button');
+    if (profileButton) {
+        profileButton.setAttribute('aria-expanded', 'false');
+    }
+}
+
+function setupProfileDropdown() {
+    const profileButton = document.getElementById('profile-photo-button');
+    const profileDropdown = document.getElementById('profile-dropdown');
+    const logoutLink = profileDropdown?.querySelector('#profile-dropdown-logout');
 
     if (profileButton) {
-        // Remove existing listener to prevent duplicates if called multiple times
         profileButton.removeEventListener('click', toggleProfileDropdown);
         profileButton.addEventListener('click', toggleProfileDropdown);
-        console.log("[UI Utils] Attached click listener to profile button.");
-    } else {
-        console.warn("[UI Utils] Profile button (#profile-photo-button) not found for dropdown setup.");
     }
 
     if (logoutLink) {
-        logoutLink.removeEventListener('click', handleLogoutClick); // Prevent duplicates
+        logoutLink.removeEventListener('click', handleLogoutClick);
         logoutLink.addEventListener('click', handleLogoutClick);
-        console.log("[UI Utils] Attached click listener to logout link.");
-    } else {
-        console.warn("[UI Utils] Logout link (#dropdown-logout) not found inside profile dropdown.");
     }
 
-    // Close dropdown if clicking outside
-    document.addEventListener('click', (event) => {
-        if (!profileButton?.contains(event.target) && !profileDropdown?.contains(event.target)) {
-            profileDropdown?.classList.add('hidden');
+    // Close dropdown when clicking outside
+    document.removeEventListener('click', handleOutsideClick);
+    document.addEventListener('click', handleOutsideClick);
+
+    // Close dropdown when pressing escape
+    document.removeEventListener('keydown', handleEscapeKey);
+    document.addEventListener('keydown', handleEscapeKey);
+}
+
+function handleOutsideClick(event) {
+    const profileButton = document.getElementById('profile-photo-button');
+    const profileDropdown = document.getElementById('profile-dropdown');
+    const isClickInside = profileButton?.contains(event.target) || 
+                         profileDropdown?.contains(event.target);
+    
+    if (!isClickInside && !profileDropdown?.classList.contains('hidden')) {
+        hideProfileDropdown();
+    }
+}
+
+function handleEscapeKey(event) {
+    if (event.key === 'Escape') {
+        const profileDropdown = document.getElementById('profile-dropdown');
+        if (profileDropdown && !profileDropdown.classList.contains('hidden')) {
+            hideProfileDropdown();
         }
-    });
+    }
 }
 
 /**
@@ -380,25 +425,13 @@ function setupNavigation() {
  * Sets up common UI elements like navigation, theme toggle, etc.
  */
 function setupCommonUI() {
-    console.log("[UI Utils] Setting up common UI elements...");
-    setupNavigation(); // Call the (now defined) placeholder
+    console.log("[UI] Setting up common UI elements..."); // <-- ADD THIS LINE
+    assignElements(); // Ensure elements are assigned first
     setupThemeToggle();
-    setupProfileDropdown(); // Ensure profile dropdown structure is ready
-
-    // Ensure the profile button has an img tag inside it
-    const profileButton = document.getElementById('profile-photo-button');
-    if (profileButton && !profileButton.querySelector('img')) {
-        const img = document.createElement('img');
-        img.id = 'profile-photo-img'; // Give it an ID for easier targeting
-        img.className = 'h-full w-full object-cover'; // Make it fill the button
-        img.src = `https://ui-avatars.com/api/?name=?&background=E0E7FF&color=4F46E5&size=40`; // Default placeholder
-        img.alt = 'My Profile';
-        profileButton.appendChild(img);
-        console.log("[UI Utils] Added profile image element to button.");
-    }
-
-    // Add other common UI setup tasks here
-    console.log("[UI Utils] Common UI setup complete.");
+    setupMobileNavListeners(); // Setup listeners for mobile menu
+    setupProfileDropdown(); // Setup listeners for profile dropdown
+    // setupNavLinkListeners(); // Commented out: Function not defined
+    console.log("[UI] Common UI setup complete."); // <-- ADD THIS LINE
 }
 
 // --- NEW Placeholder Functions for Dashboard ---

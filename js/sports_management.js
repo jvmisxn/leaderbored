@@ -6,81 +6,77 @@ let globalGolfCourseCache = {};
 
 // ... existing code ...
 
-async function populateAllSportsList() { // Make the function async
-    console.log("[Sports Management] populateAllSportsList function called."); // <-- Add log
-    const listElement = document.getElementById('all-sports-list');
-    const addSportBtn = document.getElementById('add-sport-btn'); // Get the new button
-
+/**
+ * Populates the main list of all available sports/activities.
+ */
+async function populateAllSportsList() {
+    console.log("[SPORTS/ALL] Attempting to populate all sports list..."); // Added log
+    const listElement = document.getElementById('all-sports-list'); // Use the correct ID from the template
     if (!listElement) {
-        console.warn("[SPORTS/ALL] All sports list element (#all-sports-list) not found in current DOM.");
+        console.error("[SPORTS/ALL] Container element #all-sports-list not found.");
         return;
     }
-    listElement.innerHTML = '<p class="loading-text text-center py-5 text-gray-600 dark:text-gray-400 col-span-full">Loading sports list...</p>'; // Show loading state
 
-    // --- Attach Add Sport Button Listener ---
-    // Attach listener regardless of config load success, but rely on admin-only class for visibility
-    if (addSportBtn && !addSportBtn.dataset.listenerAttached) {
-        addSportBtn.addEventListener('click', openAddSportModal); // Call the local function
-        addSportBtn.dataset.listenerAttached = 'true';
-        console.log("[SPORTS/ALL] Attached click listener to Add Sport button.");
-    } else if (addSportBtn) {
-         console.log("[SPORTS/ALL] Add Sport button listener already attached.");
-    } else {
-         console.warn("[SPORTS/ALL] Add Sport button (#add-sport-btn) not found in DOM.");
-    }
-    // --- End Button Listener ---
+    listElement.innerHTML = '<p class="loading-text col-span-full text-center py-5">Loading activities...</p>';
 
-    // Ensure configs are loaded before proceeding
-    let configs;
     try {
-        configs = await fetchAndCacheGameConfigs(); // Await the config fetch
-    } catch (error) {
-        console.error("[SPORTS/ALL] Failed to fetch game configs.", error);
-        listElement.innerHTML = '<p class="error-text col-span-full text-center py-5">Error loading activities configuration.</p>';
-        // Still ensure auth visibility is handled below
-    }
-
-    // Now use the fetched configs (or handle if fetch failed)
-    if (!configs || typeof configs !== 'object') {
-        console.error("[SPORTS/ALL] window.globalGameConfigs is not available or not an object after fetch attempt.");
-        // Ensure loading message is replaced if fetch failed after showing loading
-        if (!listElement.querySelector('.error-text')) {
-             listElement.innerHTML = '<p class="error-text col-span-full text-center py-5">Error loading activities configuration data.</p>';
+        // Ensure game configs are loaded
+        if (!window.globalGameConfigs) {
+            console.log("[SPORTS/ALL] Game configs not found, attempting to fetch...");
+            if (typeof fetchAndCacheGameConfigs === 'function') {
+                await fetchAndCacheGameConfigs();
+                console.log("[SPORTS/ALL] Game configs fetch attempt complete.");
+            } else {
+                throw new Error("fetchAndCacheGameConfigs function is not available.");
+            }
         }
-        // Still ensure auth visibility is handled below
-    } else {
-        console.log("[SPORTS/ALL] Populating all sports list using window.globalGameConfigs...");
-        listElement.innerHTML = ''; // Clear loading message or previous error
 
-        const sortedGames = Object.entries(configs) // Use the fetched configs
-            .map(([key, config]) => ({ key, name: config.name || key })) // Ensure name exists
-            .sort((a, b) => a.name.localeCompare(b.name));
+        // Check again after attempting fetch
+        const configs = window.globalGameConfigs;
+        console.log("[SPORTS/ALL] Game configs available:", !!configs); // Added log
 
-        if (sortedGames.length === 0) {
-            listElement.innerHTML = '<p class="muted-text italic col-span-full text-center py-5">No activities configured yet. Use the "Add New Sport" button to get started!</p>';
-            // Still show add button for admins (handled by CSS class)
+        if (!configs || typeof configs !== 'object' || Object.keys(configs).length === 0) {
+            console.error("[SPORTS/ALL] window.globalGameConfigs is not available or not an object after fetch attempt.");
+            // Ensure loading message is replaced if fetch failed after showing loading
+            if (!listElement.querySelector('.error-text')) {
+                 listElement.innerHTML = '<p class="error-text col-span-full text-center py-5">Error loading activities configuration data.</p>';
+            }
+            // Still ensure auth visibility is handled below
         } else {
-            sortedGames.forEach(({ key, name }) => {
-                const sportDiv = document.createElement('div');
-                // Link to the new sport details section
-                sportDiv.className = 'bg-gray-100 dark:bg-gray-700 p-3 rounded-lg text-center shadow hover:shadow-md transition-shadow';
-                sportDiv.innerHTML = `
-                    <a href="#sport-details-section?sport=${key}" class="nav-link font-medium text-indigo-700 dark:text-indigo-400 hover:underline" data-target="sport-details-section">
-                        ${name}
-                    </a>
-                `;
-                listElement.appendChild(sportDiv);
-            });
-            console.log(`[SPORTS/ALL] Populated list with ${sortedGames.length} activities.`);
-        }
-    }
+            console.log("[SPORTS/ALL] Populating all sports list using window.globalGameConfigs...");
+            listElement.innerHTML = ''; // Clear loading message or previous error
 
-    // Ensure admin-only buttons are correctly shown/hidden based on current auth state
-    // This needs to run regardless of config state
-    if (typeof handleAuthChange === 'function' && typeof auth !== 'undefined') {
-        handleAuthChange(auth.currentUser);
-    } else {
-        console.warn("[SPORTS/ALL] handleAuthChange or auth not available to update element visibility.");
+            const sortedGames = Object.entries(configs) // Use the fetched configs
+                .map(([key, config]) => ({ key, name: config.name || key })) // Ensure name exists
+                .sort((a, b) => a.name.localeCompare(b.name));
+
+            if (sortedGames.length === 0) {
+                listElement.innerHTML = '<p class="muted-text col-span-full text-center py-5">No activities configured yet.</p>';
+            } else {
+                sortedGames.forEach(({ key, name }) => {
+                    const div = document.createElement('div');
+                    div.className = 'sport-card bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow duration-200 overflow-hidden'; // Added sport-card class
+                    // Link the whole card
+                    div.innerHTML = `
+                        <a href="#sport-details-section?sport=${key}" class="block p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">${name}</h3>
+                            <!-- Add more details here if needed, e.g., icon -->
+                        </a>
+                    `;
+                    listElement.appendChild(div);
+                });
+                console.log(`[SPORTS/ALL] Populated list with ${sortedGames.length} sports.`); // Added log
+            }
+        }
+
+        // Update auth visibility for admin-only elements within this section if needed
+        if (typeof handleAuthChange === 'function' && typeof auth !== 'undefined') {
+            handleAuthChange(auth.currentUser);
+        }
+
+    } catch (error) {
+        console.error("[SPORTS/ALL] Error populating sports list:", error);
+        listElement.innerHTML = `<p class="error-text col-span-full text-center py-5">Error loading activities: ${error.message}</p>`;
     }
 }
 console.log("[Sports Management] populateAllSportsList defined:", typeof populateAllSportsList); // <-- Add log

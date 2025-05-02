@@ -3,6 +3,189 @@
 let allGamesCache = []; // Cache for all fetched games
 let currentResultsFilter = 'all'; // Keep track of the current filter
 
+// --- Helper Functions ---
+
+/**
+ * Populates the game filter dropdown in the results section.
+ */
+async function populateResultsFilter() {
+    const filterSelect = document.getElementById('results-game-filter');
+    if (!filterSelect) {
+        console.error("[Results Filter] Filter select element (#results-game-filter) not found.");
+        return;
+    }
+
+    try {
+        if (!window.globalGameConfigs) {
+            console.log("[Results Filter] Configs not ready, fetching...");
+            await fetchAndCacheGameConfigs();
+        }
+        const gameConfigs = window.globalGameConfigs || {};
+
+        filterSelect.innerHTML = '<option value="all">All Games</option>'; // Start with 'All Games'
+        Object.entries(gameConfigs)
+            .sort(([, a], [, b]) => a.name.localeCompare(b.name)) // Sort by game name
+            .forEach(([key, config]) => {
+                const option = new Option(config.name || key, key);
+                filterSelect.add(option);
+            });
+        console.log("[Results Filter] Populated results filter dropdown.");
+
+        // Attach listener if not already attached
+        if (!filterSelect.dataset.listenerAttached) {
+            filterSelect.addEventListener('change', handleResultsFilterChange);
+            filterSelect.dataset.listenerAttached = 'true';
+            console.log("[Results Filter] Attached change listener.");
+        }
+
+    } catch (error) {
+        console.error("[Results Filter] Error populating filter:", error);
+        filterSelect.innerHTML = '<option value="all">Error loading filters</option>';
+    }
+}
+
+/**
+ * Handles changes to the results game filter.
+ */
+function handleResultsFilterChange() {
+    console.log("[Results] Filter changed, reloading results...");
+    populateResultsTable(); // Reload the table with the new filter applied
+}
+
+/**
+ * Fetches game results based on the selected filter.
+ * @param {string} gameTypeFilter - The game type key to filter by ('all' for no filter).
+ * @param {number} limit - Maximum number of results to fetch.
+ * @returns {Promise<Array>} - A promise resolving to an array of game objects.
+ */
+async function fetchGameResults(gameTypeFilter = 'all', limit = 50) {
+    if (!db) {
+        console.error("[Results Data] Firestore DB not available.");
+        return [];
+    }
+    console.log(`[Results Data] Fetching results (Filter: ${gameTypeFilter}, Limit: ${limit})...`);
+    try {
+        let query = db.collection('games').orderBy('date_played', 'desc');
+
+        if (gameTypeFilter !== 'all') {
+            query = query.where('game_type', '==', gameTypeFilter);
+        }
+
+        query = query.limit(limit);
+        const snapshot = await query.get();
+
+        const results = [];
+        snapshot.forEach(doc => results.push({ id: doc.id, ...doc.data() }));
+        console.log(`[Results Data] Fetched ${results.length} game results.`);
+        return results;
+
+    } catch (error) {
+        console.error(`[Results Data] Error fetching game results (Filter: ${gameTypeFilter}):`, error);
+        if (error.code === 'failed-precondition') {
+             console.error(`Firestore index required for fetching results. Filter: ${gameTypeFilter}, Order: date_played desc.`);
+        }
+        return []; // Return empty array on error
+    }
+}
+
+/**
+ * Populates the results table body with fetched game data.
+ */
+async function populateResultsTable() {
+    const tableBody = document.getElementById('results-table-body');
+    const filterSelect = document.getElementById('results-game-filter');
+
+    if (!tableBody || !filterSelect) {
+        console.error("[Results Table] Table body or filter select not found.");
+        if (tableBody) tableBody.innerHTML = `<tr><td colspan="6" class="error-text text-center py-4">Error: Page structure missing.</td></tr>`;
+        return;
+    }
+
+    const selectedGameType = filterSelect.value || 'all';
+    tableBody.innerHTML = `<tr><td colspan="6" class="loading-text text-center py-4">Loading results for ${selectedGameType === 'all' ? 'all games' : (window.globalGameConfigs[selectedGameType]?.name || selectedGameType)}...</td></tr>`;
+
+    try {
+        // Ensure necessary caches are ready
+        if (!window.globalGameConfigs) await fetchAndCacheGameConfigs();
+        if (!playersCachePopulated) await fetchAllPlayersForCache();
+
+        const results = await fetchGameResults(selectedGameType);
+
+        if (results.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" class="muted-text text-center py-4">No results found for this filter.</td></tr>`;
+            return;
+        }
+
+        tableBody.innerHTML = ''; // Clear loading message
+        results.forEach(game => {
+            const row = tableBody.insertRow();
+            row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150';
+
+            const gameConfig = window.globalGameConfigs[game.game_type] || {};
+            const gameName = gameConfig.name || game.game_type || 'N/A';
+            const datePlayed = game.date_played?.toDate ? game.date_played.toDate().toLocaleDateString() : 'N/A';
+
+            let player1Name = 'N/A';
+            let player2Name = 'N/A';
+            let scoreText = game.score || 'N/A';
+            let outcomeText = game.outcome || 'N/A';
+
+            if (game.participants && game.participants.length > 0) {
+                player1Name = getPlayerNameFromCache(game.participants[0]);
+                if (game.participants.length > 1) {
+                    player2Name = getPlayerNameFromCache(game.participants[1]);
+                }
+            }
+
+            // Format score/outcome based on game type (example for Golf)
+            if (game.game_type === 'golf' && game.scores) {
+                 // Assuming scores is an array of objects like [{ playerId, score, strokes, putts, ... }]
+                 const player1Score = game.scores.find(s => s.playerId === game.participants[0]);
+                 const player2Score = game.scores.find(s => s.playerId === game.participants[1]);
+                 scoreText = `${player1Score?.score || '-'} / ${player2Score?.score || '-'}`;
+                 // Determine winner based on lower score for golf
+                 if (player1Score && player2Score) {
+                     if (player1Score.score < player2Score.score) outcomeText = `${player1Name} Wins`;
+                     else if (player2Score.score < player1Score.score) outcomeText = `${player2Name} Wins`;
+                     else outcomeText = 'Draw';
+                 } else {
+                     outcomeText = 'Incomplete';
+                 }
+            } else if (game.outcome === 'Win/Loss' && player1Name !== 'N/A' && player2Name !== 'N/A') {
+                // Assuming participant[0] is winner if outcome is Win/Loss
+                outcomeText = `${player1Name} Wins`;
+            } else if (game.outcome === 'Draw') {
+                 outcomeText = 'Draw';
+            }
+
+            // Add cells
+            row.insertCell().textContent = gameName;
+            row.insertCell().textContent = datePlayed;
+            row.insertCell().textContent = player1Name;
+            row.insertCell().textContent = player2Name;
+            row.insertCell().textContent = scoreText;
+            row.insertCell().textContent = outcomeText;
+
+            // Add link/button to view game details
+            const detailsCell = row.insertCell();
+            detailsCell.className = 'text-center';
+            const detailsLink = document.createElement('a');
+            detailsLink.href = `#game-info-section?gameId=${game.id}`;
+            detailsLink.className = 'nav-link text-indigo-600 dark:text-indigo-400 hover:underline text-xs';
+            detailsLink.textContent = 'Details';
+            detailsLink.dataset.target = 'game-info-section';
+            detailsCell.appendChild(detailsLink);
+
+        });
+
+    } catch (error) {
+        console.error("[Results Table] Error populating results table:", error);
+        tableBody.innerHTML = `<tr><td colspan="7" class="error-text text-center py-4">Error loading results: ${error.message}</td></tr>`; // Increased colspan
+    }
+}
+
+// --- Main Initialization ---
+
 /**
  * Main function to initialize and populate the results section.
  * Called by main.js when the results section is loaded.
@@ -28,236 +211,15 @@ async function populateResults() {
         resultsGameFilter.innerHTML = '<option value="all">Error loading filters</option>';
     }
 
-    // 2. Attach the event listener to the filter
-    resultsGameFilter.removeEventListener('change', handleResultsFilterChange);
-    resultsGameFilter.addEventListener('change', handleResultsFilterChange);
-    console.log("[Results] Attached change listener to results filter.");
-
-    // 3. Trigger the initial table population based on the default filter value
+    // 2. Populate the table initially (using default 'all' filter)
     if (typeof populateResultsTable === 'function') {
-        console.log("[Results] Triggering initial results table population.");
-        await populateResultsTable(); // This function will read the filter value
+        await populateResultsTable();
     } else {
         console.error("[Results] populateResultsTable function not found.");
-        resultsTableBody.innerHTML = `<tr><td colspan="6" class="error-text text-center py-4">Error: Results loading function unavailable.</td></tr>`;
-    }
-}
-
-/**
- * Populates the results game filter dropdown.
- */
-async function populateResultsFilter() {
-    console.log("[Results Filter] Populating filter dropdown...");
-    const resultsGameFilter = document.getElementById('results-game-filter');
-    if (!resultsGameFilter) {
-        console.warn("[Results Filter] Filter select element (#results-game-filter) not found.");
-        return;
+        resultsTableBody.innerHTML = `<tr><td colspan="6" class="error-text text-center py-4">Error loading results table component.</td></tr>`;
     }
 
-    // Ensure configs are loaded before proceeding
-    try {
-        if (!window.globalGameConfigs) await fetchAndCacheGameConfigs(); // Await the config fetch
-    } catch (error) {
-        console.error("[Results Filter] Failed to fetch game configs.", error);
-        resultsGameFilter.innerHTML = '<option value="all">All Games (Error)</option>';
-        return;
-    }
-
-    // Clear existing options except the default 'All Games'
-    resultsGameFilter.innerHTML = '<option value="all">All Games</option>';
-
-    // Add options from gameTypesConfig (ensure gameTypesConfig is accessible)
-    if (typeof window.globalGameConfigs === 'object' && window.globalGameConfigs !== null) {
-        // Sort game types alphabetically by name for the dropdown
-        const sortedGameTypes = Object.entries(window.globalGameConfigs)
-            .sort(([, configA], [, configB]) => (configA.name || '').localeCompare(configB.name || ''));
-
-        sortedGameTypes.forEach(([key, config]) => {
-            const name = config.name || key; // Fallback to key if name is missing
-            const option = new Option(name, key); // Text is the game name, value is the key
-            resultsGameFilter.add(option);
-        });
-        console.log("[Results Filter] Finished adding game types from config:", Object.keys(window.globalGameConfigs));
-    } else {
-        console.warn("[Results Filter] gameTypesConfig not found or invalid. Only 'All Games' will be available.");
-    }
-}
-
-/**
- * Handles the change event for the results game filter dropdown.
- */
-async function handleResultsFilterChange() {
-    console.log("[Results] Filter change detected.");
-    if (typeof populateResultsTable === 'function') {
-        await populateResultsTable(); // Re-populate the table with the new filter
-    } else {
-        console.error("[Results] populateResultsTable function not found during filter change.");
-        const resultsTableBody = document.getElementById('results-table-body');
-        if (resultsTableBody) {
-            resultsTableBody.innerHTML = `<tr><td colspan="6" class="error-text text-center py-4">Error updating results view.</td></tr>`;
-        }
-    }
-}
-
-/**
- * Fetches game results from Firestore and populates the results table.
- * Reads the filter value from the dropdown.
- * @param {number} [limit=25] - Maximum number of results to fetch.
- */
-async function populateResultsTable(limit = 25) {
-    const resultsTableBody = document.getElementById('results-table-body');
-    const resultsGameFilter = document.getElementById('results-game-filter');
-
-    if (!resultsTableBody || !resultsGameFilter) {
-        console.error("[Results Table] Table body or filter element not found.");
-        if (resultsTableBody) resultsTableBody.innerHTML = `<tr><td colspan="6" class="error-text text-center py-4">Error: Page structure missing.</td></tr>`;
-        return;
-    }
-
-    const selectedGame = resultsGameFilter.value;
-    console.log(`[Results Table] Populating results for game type: ${selectedGame} (limit: ${limit})`);
-    resultsTableBody.innerHTML = `<tr><td colspan="6" class="loading-text text-center py-4 text-gray-600 dark:text-gray-400">Loading game results...</td></tr>`;
-
-    if (!db) {
-        console.error("[Results Table] Firestore DB not available.");
-        resultsTableBody.innerHTML = `<tr><td colspan="6" class="error-text text-center py-4">Database connection error.</td></tr>`;
-        return;
-    }
-
-    // Ensure necessary caches are ready
-    try {
-        if (!playersCachePopulated) await fetchAllPlayersForCache();
-        if (!window.globalGameConfigs) await fetchAndCacheGameConfigs();
-        if (selectedGame === 'golf' && !golfCourseCachePopulated) await ensureGolfCourseCache();
-    } catch (error) {
-        console.error("[Results Table] Error preparing caches:", error);
-        resultsTableBody.innerHTML = `<tr><td colspan="6" class="error-text text-center py-4">Error loading required data: ${error.message}</td></tr>`;
-        return;
-    }
-
-    try {
-        let query = db.collection('games');
-
-        // Apply filter if not 'all'
-        if (selectedGame !== 'all') {
-            query = query.where('game_type', '==', selectedGame);
-        }
-
-        query = query.orderBy('date_played', 'desc').limit(limit);
-
-        const snapshot = await query.get();
-
-        if (snapshot.empty) {
-            resultsTableBody.innerHTML = `<tr><td colspan="6" class="muted-text text-center py-4">No game results found${selectedGame !== 'all' ? ` for ${window.globalGameConfigs[selectedGame]?.name || selectedGame}` : ''}.</td></tr>`;
-            return;
-        }
-
-        resultsTableBody.innerHTML = ''; // Clear loading message
-        snapshot.forEach(doc => {
-            const game = { id: doc.id, ...doc.data() };
-            const tr = document.createElement('tr');
-            tr.className = 'border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700';
-
-            const gameDate = game.date_played?.toDate ? game.date_played.toDate().toLocaleDateString() : 'Unknown Date';
-            const gameType = window.globalGameConfigs[game.game_type]?.name || game.game_type || 'Unknown Game';
-            let description = '';
-            let courseName = '';
-            let courseLocation = '';
-
-            // --- Build Description ---
-            const participants = game.participants || [];
-            const team1 = game.team1_participants || [];
-            const team2 = game.team2_participants || [];
-            const participantNames = participants.map(id => getPlayerNameFromCache(id));
-            const team1Names = team1.map(id => getPlayerNameFromCache(id));
-            const team2Names = team2.map(id => getPlayerNameFromCache(id));
-
-            if (game.outcome === 'Win/Loss') {
-                if (team1.length > 0 && team2.length > 0) { // Team Win/Loss
-                    description = `Team (${team1Names.join(', ')}) beat Team (${team2Names.join(', ')})`;
-                } else if (participantNames.length >= 2) { // 1v1 Win/Loss
-                    description = `${participantNames[0]} beat ${participantNames[1]}`;
-                } else {
-                    description = `Win/Loss recorded`; // Fallback
-                }
-            } else if (game.outcome === 'Draw') {
-                if (team1.length > 0 && team2.length > 0) { // Team Draw
-                    description = `Team (${team1Names.join(', ')}) drew with Team (${team2Names.join(', ')})`;
-                } else if (participantNames.length >= 2) { // 1v1 Draw
-                    description = `${participantNames[0]} drew with ${participantNames[1]}`;
-                } else {
-                    description = `Draw recorded`; // Fallback
-                }
-            } else if (game.outcome === 'Solo Complete' && participantNames.length === 1) {
-                description = `${participantNames[0]} completed`;
-            } else if (game.game_type === 'golf' && participantNames.length === 1) {
-                description = `${participantNames[0]} played Golf`;
-            } else { // Fallback or other outcomes
-                description = `Game played by ${participantNames.join(', ')}`;
-            }
-
-            if (game.score) {
-                description += ` (${game.score})`;
-            }
-            if (game.game_type === 'chess' && game.chess_outcome) {
-                description += ` [${game.chess_outcome}]`;
-            }
-
-            // --- Get Golf Course Info ---
-            if (game.game_type === 'golf' && game.course_id) {
-                const course = globalGolfCourseCache[game.course_id];
-                if (course) {
-                    courseName = course.name || 'Unknown Course';
-                    courseLocation = course.location || '';
-                } else {
-                    courseName = 'Course Info Missing';
-                }
-            }
-
-            // --- Populate Table Row ---
-            tr.innerHTML = `
-                <td class="px-4 py-3">${gameDate}</td>
-                <td class="px-4 py-3">${gameType}</td>
-                <td class="px-4 py-3">${description}</td>
-                <td class="px-4 py-3 golf-column">${courseName}</td>
-                <td class="px-4 py-3 golf-column">${courseLocation}</td>
-                <td class="px-4 py-3">
-                    <a href="#game-info-section?gameId=${game.id}" class="nav-link text-indigo-600 dark:text-indigo-400 hover:underline" data-target="game-info-section">Details</a>
-                </td>
-            `;
-            resultsTableBody.appendChild(tr);
-        });
-
-        // Show/hide golf columns based on filter
-        updateGolfColumnsVisibility(selectedGame === 'golf' || selectedGame === 'all');
-
-    } catch (error) {
-        console.error("[Results Table] Error fetching results:", error);
-        resultsTableBody.innerHTML = `<tr><td colspan="6" class="error-text text-center py-4">Error loading results: ${error.message}</td></tr>`;
-        if (error.code === 'failed-precondition') {
-            console.error("Firestore index required: 'games' collection, 'date_played' field (descending). Add composite index if filtering by game_type.");
-        }
-    }
-}
-
-/**
- * Shows or hides the golf-specific columns in the results table.
- * @param {boolean} show - Whether to show the golf columns.
- */
-function updateGolfColumnsVisibility(show) {
-    const table = document.getElementById('results-table');
-    if (!table) return;
-    const golfColumns = table.querySelectorAll('.golf-column');
-    golfColumns.forEach(col => {
-        col.style.display = show ? '' : 'none'; // Use '' to revert to default (table-cell) or 'none' to hide
-    });
-    // Adjust colspan of loading/error messages if needed (though they should be replaced by data)
-    const messageCells = table.querySelectorAll('.loading-text, .muted-text, .error-text');
-    messageCells.forEach(cell => {
-        if (cell.parentElement.cells.length === 1) { // Check if it's a full-row message
-            cell.colSpan = show ? 6 : 4; // Adjust colspan based on visible columns
-        }
-    });
+    console.log("[Results] Section initialization complete.");
 }
 
 console.log("[Results] results.js loaded.");

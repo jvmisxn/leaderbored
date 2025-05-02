@@ -1,186 +1,408 @@
 // --- game_info.js ---
 
-// --- Game Info Screen Logic ---
+let currentGameData = null;
 
-function setupGameInfoListeners() {
-    // Ensure the share button exists before adding listener
-    document.getElementById('share-game-info-btn')?.addEventListener('click', shareGameInfo);
-}
-
-async function populateGameInfoScreen(gameId, gameData) {
-    // Ensure necessary elements and variables are accessible: gameInfoContentElement, db, playersCachePopulated, fetchAllPlayersForCache, globalPlayerCache
+/**
+ * Fetches and populates the game information page.
+ * @param {string} gameId - The ID of the game to display.
+ */
+async function populateGameInfo(gameId) {
+    console.log(`[Game Info] Populating game info for game ID: ${gameId}`);
+    const loadingEl = document.getElementById('game-info-loading');
+    const errorEl = document.getElementById('game-info-error');
     const contentEl = document.getElementById('game-info-content');
-    if (!contentEl) {
-        console.error("Game Info content element (#game-info-content) not found.");
+    const titleEl = document.getElementById('game-info-title');
+    const dateEl = document.getElementById('game-info-date');
+    const typeBadgeEl = document.getElementById('game-info-type-badge');
+    const participantsEl = document.getElementById('game-info-participants');
+    const eloEl = document.getElementById('game-info-elo');
+    const specificsEl = document.getElementById('game-info-specifics');
+    const backButton = document.getElementById('game-info-back-button');
+    const deleteButton = document.getElementById('delete-game-btn');
+    const adminErrorEl = document.getElementById('game-info-admin-error');
+
+    // Reset state
+    loadingEl.style.display = 'block';
+    errorEl.style.display = 'none';
+    contentEl.classList.add('hidden');
+    participantsEl.innerHTML = '<p class="loading-text">Loading participants...</p>';
+    eloEl.innerHTML = '<h2 class="text-lg font-semibold">Elo Change</h2><p class="loading-text">Loading Elo changes...</p>';
+    specificsEl.innerHTML = '<h2 class="text-lg font-semibold">Game Specifics</h2><p class="muted-text italic">No game-specific details available.</p>';
+    if (adminErrorEl) adminErrorEl.textContent = '';
+    if (deleteButton) deleteButton.disabled = false;
+
+    if (!db) {
+        showGameInfoError("Database connection error.");
         return;
     }
 
-    contentEl.innerHTML = '<p class="text-gray-500 dark:text-gray-400">Loading game details...</p>'; // Loading state
-
-    let finalGameData = gameData; // Use passed data if available
-
     try {
-        // Ensure configs are loaded before fetching/processing game data
-        if (!window.globalGameConfigs) await fetchAndCacheGameConfigs();
+        const gameDoc = await db.collection('games').doc(gameId).get();
 
-        // If no data passed, fetch using gameId
-        if (!finalGameData && gameId && db) {
-             const docSnap = await db.collection('games').doc(gameId).get();
-             if (docSnap.exists) {
-                 finalGameData = { id: docSnap.id, ...docSnap.data() };
-             } else {
-                 throw new Error("Game not found");
-             }
-        } else if (!finalGameData) {
-             throw new Error("Could not load game details (No ID or data provided).");
+        if (!gameDoc.exists) {
+            throw new Error(`Game not found with ID: ${gameId}`);
         }
 
-        // Format data for display
-        // Use window.globalGameConfigs
-        const gameTypeDisplay = window.globalGameConfigs[finalGameData.game_type]?.name || finalGameData.game_type || 'N/A';
-        const gameDateStr = finalGameData.date_played?.toDate ? finalGameData.date_played.toDate().toLocaleDateString() : 'N/A';
-        const formatDisplay = finalGameData.format ? ` (${finalGameData.format})` : ''; // Display format if available
-        let description = '';
-        let playersHtml = '';
-        let detailsHtml = ''; // For extra details like course or hole scores
+        const game = { id: gameDoc.id, ...gameDoc.data() };
 
-        // Ensure player cache is populated for names
+        // --- Back Button Logic ---
+        const previousHash = sessionStorage.getItem('previousHash') || '';
+        const previousUrl = new URL(previousHash, window.location.origin);
+        const previousSectionId = previousUrl.hash.split('?')[0].substring(1);
+        const previousQueryParams = new URLSearchParams(previousUrl.search);
+        let backLink = '#results-section'; // Default back link
+        let backText = 'Back to Results';
+
+        if (previousSectionId && previousSectionId !== 'game-info-section') {
+             // Keep previous query params if going back to the same section type
+             if (previousSectionId === 'results-section') {
+                 backLink = `#results-section?${previousQueryParams.toString()}`;
+                 backText = 'Back to Results';
+             } else if (previousSectionId === 'player-profile-section') {
+                 backLink = `#player-profile-section?${previousQueryParams.toString()}`;
+                 backText = 'Back to Profile';
+             } else if (previousSectionId === 'tournament-detail-section') {
+                 backLink = `#tournament-detail-section?${previousQueryParams.toString()}`;
+                 backText = 'Back to Tournament';
+             }
+             // Add other relevant sections if needed
+        }
+        backButton.href = backLink;
+        backButton.textContent = `\u2190 ${backText}`;
+        // --- End Back Button Logic ---
+
+        // Ensure necessary caches/configs are loaded
+        if (!window.globalGameConfigs) await fetchAndCacheGameConfigs();
         if (!playersCachePopulated) await fetchAllPlayersForCache();
 
-        const participants = finalGameData.participants || [];
-        const participantNames = participants.map(id => globalPlayerCache[id]?.name || 'Unknown Player');
-        const team1Names = (finalGameData.team1_participants || []).map(id => globalPlayerCache[id]?.name || 'Unknown Player');
-        const team2Names = (finalGameData.team2_participants || []).map(id => globalPlayerCache[id]?.name || 'Unknown Player');
+        const gameConfig = window.globalGameConfigs?.[game.game_type];
+        const gameTypeName = gameConfig?.name || game.game_type || 'Unknown Game';
 
-        // --- Build Description and Player Info ---
-        if (finalGameData.game_type === 'golf' && participantNames.length > 0) { // Golf specific
-             description = `<b>${participantNames[0]}</b> played ${gameTypeDisplay}`;
-             playersHtml = `<p class="mb-1"><strong>Player:</strong> ${participantNames[0]}</p>`;
-             // Add Course Info if available
-             if (finalGameData.course_id && finalGameData.course_id !== 'none') {
-                 detailsHtml += `<p class="mb-1 text-sm text-gray-600 dark:text-gray-400"><strong>Course ID:</strong> ${finalGameData.course_id}</p>`; // Placeholder
-             } else if (!finalGameData.course_id) {
-                  detailsHtml += `<p class="mb-1 text-sm text-gray-600 dark:text-gray-400">Course: Not specified</p>`;
-             }
-             // Add Holes Played
-             detailsHtml += `<p class="mb-1 text-sm text-gray-600 dark:text-gray-400"><strong>Holes:</strong> ${finalGameData.holes_played || '18'}</p>`;
-             // Add Hole Details if tracked
-             if (finalGameData.hole_details) {
-                 detailsHtml += '<div class="mt-2 pt-2 border-t dark:border-gray-600"><strong class="text-sm text-gray-600 dark:text-gray-400">Hole Details:</strong>';
-                 detailsHtml += `<div class="overflow-x-auto mt-1"><table class="w-full text-xs border-collapse border border-gray-300 dark:border-gray-600">
-                                <thead><tr class="bg-gray-100 dark:bg-gray-700">
-                                    <th class="border p-1">Hole</th>
-                                    <th class="border p-1">Score</th>
-                                    <th class="border p-1">Putts</th>
-                                    <th class="border p-1">Drive</th>
-                                </tr></thead><tbody>`;
-                 Object.entries(finalGameData.hole_details)
-                     .sort((a, b) => parseInt(a[0].split('_')[1]) - parseInt(b[0].split('_')[1]))
-                     .forEach(([holeKey, details]) => {
-                         detailsHtml += `<tr class="text-center">
-                                            <td class="border p-1">${holeKey.split('_')[1]}</td>
-                                            <td class="border p-1">${details.score ?? '-'}</td>
-                                            <td class="border p-1">${details.putts ?? '-'}</td>
-                                            <td class="border p-1">${details.drive_distance ? details.drive_distance + ' yds' : '-'}</td>
-                                         </tr>`;
-                 });
-                 detailsHtml += '</tbody></table></div></div>';
-             }
+        // Populate Header
+        titleEl.textContent = `${gameTypeName} Details`;
+        dateEl.textContent = `Date Played: ${game.date_played?.toDate ? game.date_played.toDate().toLocaleString() : 'Unknown'}`;
+        typeBadgeEl.textContent = gameTypeName;
 
-        } else if (finalGameData.outcome === 'Team Win' && team1Names.length > 0 && team2Names.length > 0) { // Team Win
-             description = `<b>Team (${team1Names.join(', ')})</b> defeated Team (${team2Names.join(', ')}) in ${gameTypeDisplay}${formatDisplay}`;
-             playersHtml = `<p class="mb-1"><strong>Winning Team:</strong> ${team1Names.join(', ')}</p><p class="mb-1"><strong>Losing Team:</strong> ${team2Names.join(', ')}</p>`;
-        } else if (finalGameData.outcome === 'Win/Loss' && participantNames.length >= 2) { // Standard 1v1 Win/Loss
-             description = `<b>${participantNames[0]}</b> defeated ${participantNames[1]} in ${gameTypeDisplay}${formatDisplay}`;
-             playersHtml = `<p class="mb-1"><strong>Winner:</strong> ${participantNames[0]}</p><p class="mb-1"><strong>Loser:</strong> ${participantNames[1]}</p>`;
-             // Add 1v1 specific details
-             if (finalGameData.game_type === 'pool_8ball') {
-                 if (finalGameData.ball_type_winner) detailsHtml += `<p class="text-xs text-gray-500 dark:text-gray-400">Winner played ${finalGameData.ball_type_winner}.</p>`;
-                 if (finalGameData.scratches_winner !== null || finalGameData.scratches_loser !== null) {
-                     detailsHtml += `<p class="text-xs text-gray-500 dark:text-gray-400">Scratches: ${finalGameData.scratches_winner ?? 0} (W) / ${finalGameData.scratches_loser ?? 0} (L)</p>`;
-                 }
-             } else if (finalGameData.game_type === 'chess' && finalGameData.chess_outcome) {
-                 detailsHtml += `<p class="text-xs text-gray-500 dark:text-gray-400">Outcome: ${finalGameData.chess_outcome}</p>`;
-             } else if ((finalGameData.game_type === 'magic_gathering' || finalGameData.game_type === 'disney_lorcana') && finalGameData.format) {
-                 detailsHtml += `<p class="text-xs text-gray-500 dark:text-gray-400">Format: ${finalGameData.format}</p>`;
-             } else if (finalGameData.game_type === 'warhammer_40k' && finalGameData.points_value) {
-                 detailsHtml += `<p class="text-xs text-gray-500 dark:text-gray-400">Points: ${finalGameData.points_value}</p>`;
-             }
-        } else if (finalGameData.outcome === 'Draw' && participantNames.length >= 2) { // Standard Draw (1v1 or Team)
-             if (team1Names.length > 0 && team2Names.length > 0) { // Team Draw
-                 description = `Team (${team1Names.join(', ')}) drew with Team (${team2Names.join(', ')}) in ${gameTypeDisplay}${formatDisplay}`;
-                 playersHtml = `<p class="mb-1"><strong>Team 1:</strong> ${team1Names.join(', ')}</p><p class="mb-1"><strong>Team 2:</strong> ${team2Names.join(', ')}</p>`;
-             } else { // 1v1 Draw
-                 description = `${participantNames[0]} drew with ${participantNames[1]} in ${gameTypeDisplay}${formatDisplay}`;
-                 playersHtml = `<p class="mb-1"><strong>Player 1:</strong> ${participantNames[0]}</p><p class="mb-1"><strong>Player 2:</strong> ${participantNames[1]}</p>`;
-             }
-             if (finalGameData.game_type === 'chess' && finalGameData.chess_outcome) {
-                 detailsHtml += `<p class="text-xs text-gray-500 dark:text-gray-400">Outcome: ${finalGameData.chess_outcome}</p>`;
-             }
-        } else if (finalGameData.outcome === 'Cutthroat Win' && participantNames.length >= 3) {
-             const winnerName = globalPlayerCache[finalGameData.participants.find(pId => !finalGameData.participants.slice(1).includes(pId))]?.name || 'Unknown'; // Find winner
-             const loserNames = finalGameData.participants.filter(pId => finalGameData.participants.find(pId => !finalGameData.participants.slice(1).includes(pId)) !== pId).map(id => globalPlayerCache[id]?.name || 'Unknown');
-             description = `<b>${winnerName}</b> won ${gameTypeDisplay}${formatDisplay}`;
-             playersHtml = `<p class="mb-1"><strong>Winner:</strong> ${winnerName}</p><p class="mb-1"><strong>Others:</strong> ${loserNames.join(', ')}</p>`;
-        } else if (finalGameData.outcome === 'Solo Complete' && participantNames.length === 1) {
-             description = `<b>${participantNames[0]}</b> completed ${gameTypeDisplay}${formatDisplay}`;
-             playersHtml = `<p class="mb-1"><strong>Player:</strong> ${participantNames[0]}</p>`;
-             if (finalGameData.points !== null) detailsHtml += `<p class="text-xs text-gray-500 dark:text-gray-400">Points: ${finalGameData.points}</p>`;
-        } else { // Fallback / Other Outcomes (e.g., 'Single' for bowling)
-             description = `Game of ${gameTypeDisplay}${formatDisplay} played`;
-             playersHtml = `<p class="mb-1"><strong>Participants:</strong> ${participantNames.join(', ')}</p>`;
+        // Populate Participants & Score
+        populateGameParticipants(participantsEl, game);
+
+        // Populate Elo Changes
+        populateGameEloChanges(eloEl, game);
+
+        // Populate Game Specifics
+        populateGameSpecifics(specificsEl, game);
+
+        // Setup Admin Actions (Delete Button)
+        if (deleteButton) {
+            // Remove previous listener to avoid duplicates
+            const newDeleteButton = deleteButton.cloneNode(true);
+            deleteButton.parentNode.replaceChild(newDeleteButton, deleteButton);
+
+            newDeleteButton.addEventListener('click', async () => {
+                if (confirm(`Are you sure you want to delete this game (${gameTypeName} on ${dateEl.textContent})? This action cannot be undone.`)) {
+                    newDeleteButton.disabled = true;
+                    if(adminErrorEl) adminErrorEl.textContent = 'Deleting...';
+                    try {
+                        await deleteGame(gameId);
+                        alert('Game deleted successfully.');
+                        // Navigate back after deletion
+                        if (typeof showSection === 'function') {
+                            // Go back to the previous section determined by backButton logic
+                            const targetSection = backButton.href.split('#')[1].split('?')[0];
+                            const targetParams = Object.fromEntries(new URLSearchParams(backButton.href.split('?')[1]));
+                            showSection(targetSection || 'results-section', true, targetParams);
+                        } else {
+                            window.location.hash = backButton.href.split('#')[1] || 'results-section'; // Fallback
+                        }
+                    } catch (error) {
+                        console.error("Error deleting game:", error);
+                        if(adminErrorEl) adminErrorEl.textContent = `Error: ${error.message}`;
+                        newDeleteButton.disabled = false;
+                    }
+                }
+            });
         }
 
-        // --- Build Final HTML (with dark mode classes) ---
-        contentEl.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
-                <h2 class="text-xl md:text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100">${description}</h2>
-                <div class="space-y-2 text-gray-700 dark:text-gray-300">
-                    <p><strong>Date:</strong> ${gameDateStr}</p>
-                    ${playersHtml}
-                    ${finalGameData.score ? `<p><strong>${finalGameData.outcome === 'Solo Complete' ? 'Time (s)' : 'Score/Notes'}:</strong> ${finalGameData.score}</p>` : ''}
-                    ${finalGameData.elo_change ? `<p class="text-xs ${finalGameData.elo_change > 0 ? 'text-green-600 dark:text-green-400' : (finalGameData.elo_change < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400')}">Elo Change: ${finalGameData.elo_change > 0 ? '+' : ''}${finalGameData.elo_change}</p>` : ''}
-                    ${detailsHtml}
-                </div>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-4 pt-2 border-t dark:border-gray-600">Game ID: ${finalGameData.id || gameId}</p>
-            </div>
-        `;
+        // Show content
+        loadingEl.style.display = 'none';
+        contentEl.classList.remove('hidden');
 
-        // Store game ID for sharing functionality
-        contentEl.setAttribute('data-game-id-for-share', finalGameData.id || gameId);
+        // Make player links navigable
+        makePlayerLinksNavigable();
 
-    } catch (err) {
-        console.error("Error populating game info:", err);
-        contentEl.innerHTML = `<p class="text-red-500">Error loading game details: ${err.message}</p>`;
+    } catch (error) {
+        console.error(`[Game Info] Error populating game info for ${gameId}:`, error);
+        showGameInfoError(error.message);
     }
-} // End populateGameInfoScreen
+}
 
-function shareGameInfo() {
+/** Helper function to show errors */
+function showGameInfoError(message) {
+    const loadingEl = document.getElementById('game-info-loading');
+    const errorEl = document.getElementById('game-info-error');
     const contentEl = document.getElementById('game-info-content');
-    const gameId = contentEl?.getAttribute('data-game-id-for-share');
-    if (navigator.share && gameId) {
-        const shareUrl = `${window.location.origin}${window.location.pathname}#game-info-section?gameId=${gameId}`;
-        navigator.share({
-            title: 'LeaderBored Game Result',
-            text: 'Check out this game result!',
-            url: shareUrl,
-        })
-        .then(() => console.log('Successful share'))
-        .catch((error) => console.log('Error sharing', error));
-    } else if (gameId) {
-        // Fallback for browsers that don't support navigator.share
-        const shareUrl = `${window.location.origin}${window.location.pathname}#game-info-section?gameId=${gameId}`;
-        navigator.clipboard.writeText(shareUrl).then(() => {
-            alert('Game link copied to clipboard!');
-        }).catch(err => {
-            console.error('Failed to copy link: ', err);
-            alert('Failed to copy game link.');
-        });
-    } else {
-        alert('Could not get game details to share.');
-    }
-} // End shareGameInfo
 
-// Note: This file assumes that 'db', 'playersCachePopulated', 'fetchAllPlayersForCache',
-// 'globalPlayerCache', 'fetchAndCacheGameConfigs', 'window.globalGameConfigs'
-// are initialized and accessible globally or imported.
+    loadingEl.style.display = 'none';
+    contentEl.classList.add('hidden');
+    errorEl.querySelector('p').textContent = `Error: ${message}`;
+    errorEl.style.display = 'block';
+}
+
+/**
+ * Populates the participants and score section.
+ * @param {HTMLElement} container - The container element.
+ * @param {object} game - The game data object.
+ */
+function populateGameParticipants(container, game) {
+    let html = `<h2 class="text-lg font-semibold mb-3">Participants & Score</h2>`;
+    html += '<div class="space-y-3">';
+
+    if (!game.participants || game.participants.length === 0) {
+        html += '<p class="muted-text italic">No participant information available.</p>';
+    } else if (game.game_type === 'golf' && game.scores) {
+        // Golf: List players with scores, strokes, putts etc.
+        game.scores.sort((a, b) => (a.score || 999) - (b.score || 999)); // Sort by score ascending
+        game.scores.forEach((scoreEntry, index) => {
+            const player = globalPlayerCache[scoreEntry.playerId];
+            const playerName = player?.name || 'Unknown Player';
+            const playerAvatar = player?.iconUrl || player?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(playerName)}&background=random&color=fff&size=32`;
+            const isWinner = game.winner_id === scoreEntry.playerId; // Golf winner might be lowest score
+
+            html += `
+                <div class="flex items-center justify-between p-2 rounded ${isWinner ? 'bg-green-50 dark:bg-green-900/50' : ''}">
+                    <div class="flex items-center">
+                        <img src="${playerAvatar}" alt="${playerName}" class="w-8 h-8 rounded-full mr-3 object-cover">
+                        <a href="#player-profile-section?playerId=${scoreEntry.playerId}" class="nav-link font-medium text-indigo-600 dark:text-indigo-400 hover:underline" data-player-id="${scoreEntry.playerId}">${playerName}</a>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-semibold text-lg">${scoreEntry.score ?? '-'}</span>
+                        ${scoreEntry.strokes ? `<span class="text-sm text-gray-500 dark:text-gray-400 ml-2">(${scoreEntry.strokes} strokes)</span>` : ''}
+                        ${scoreEntry.putts ? `<span class="text-xs text-gray-400 dark:text-gray-500 ml-2">P:${scoreEntry.putts}</span>` : ''}
+                    </div>
+                </div>`;
+        });
+
+    } else if (game.participants.length <= 2 && game.scores && game.scores.length === game.participants.length) {
+        // 1v1 or Solo (non-golf) with scores array
+        const player1Id = game.participants[0];
+        const player2Id = game.participants.length > 1 ? game.participants[1] : null;
+        const player1 = globalPlayerCache[player1Id];
+        const player2 = player2Id ? globalPlayerCache[player2Id] : null;
+        const score1 = game.scores.find(s => s.playerId === player1Id)?.score ?? '-';
+        const score2 = player2Id ? (game.scores.find(s => s.playerId === player2Id)?.score ?? '-') : null;
+
+        const player1Name = player1?.name || 'Unknown Player 1';
+        const player2Name = player2?.name || 'Unknown Player 2';
+        const player1Avatar = player1?.iconUrl || player1?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(player1Name)}&background=random&color=fff&size=40`;
+        const player2Avatar = player2 ? (player2.iconUrl || player2.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(player2Name)}&background=random&color=fff&size=40`) : null;
+
+        const player1OutcomeClass = game.winner_id === player1Id ? 'bg-green-50 dark:bg-green-900/50' : (game.loser_id === player1Id ? 'bg-red-50 dark:bg-red-900/50' : (game.is_draw ? 'bg-yellow-50 dark:bg-yellow-900/50' : ''));
+        const player2OutcomeClass = game.winner_id === player2Id ? 'bg-green-50 dark:bg-green-900/50' : (game.loser_id === player2Id ? 'bg-red-50 dark:bg-red-900/50' : (game.is_draw ? 'bg-yellow-50 dark:bg-yellow-900/50' : ''));
+
+        html += `
+            <div class="flex items-center justify-between p-3 rounded ${player1OutcomeClass}">
+                <div class="flex items-center">
+                    <img src="${player1Avatar}" alt="${player1Name}" class="w-10 h-10 rounded-full mr-4 object-cover">
+                    <a href="#player-profile-section?playerId=${player1Id}" class="nav-link font-medium text-indigo-600 dark:text-indigo-400 hover:underline" data-player-id="${player1Id}">${player1Name}</a>
+                </div>
+                <span class="font-semibold text-xl">${score1}</span>
+            </div>`;
+        if (player2Id && player2) {
+             html += `<div class="text-center text-sm font-bold my-1 text-gray-500 dark:text-gray-400">vs</div>`;
+             html += `
+                <div class="flex items-center justify-between p-3 rounded ${player2OutcomeClass}">
+                    <div class="flex items-center">
+                        <img src="${player2Avatar}" alt="${player2Name}" class="w-10 h-10 rounded-full mr-4 object-cover">
+                        <a href="#player-profile-section?playerId=${player2Id}" class="nav-link font-medium text-indigo-600 dark:text-indigo-400 hover:underline" data-player-id="${player2Id}">${player2Name}</a>
+                    </div>
+                    <span class="font-semibold text-xl">${score2}</span>
+                </div>`;
+        }
+
+    } else {
+        // Generic participant list (e.g., teams or no score breakdown)
+        game.participants.forEach(playerId => {
+            const player = globalPlayerCache[playerId];
+            const playerName = player?.name || 'Unknown Player';
+            const playerAvatar = player?.iconUrl || player?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(playerName)}&background=random&color=fff&size=32`;
+            const isWinner = game.winner_id === playerId;
+            const isLoser = game.loser_id === playerId;
+            const outcomeClass = isWinner ? 'bg-green-50 dark:bg-green-900/50' : (isLoser ? 'bg-red-50 dark:bg-red-900/50' : (game.is_draw ? 'bg-yellow-50 dark:bg-yellow-900/50' : ''));
+
+            html += `
+                <div class="flex items-center p-2 rounded ${outcomeClass}">
+                    <img src="${playerAvatar}" alt="${playerName}" class="w-8 h-8 rounded-full mr-3 object-cover">
+                    <a href="#player-profile-section?playerId=${playerId}" class="nav-link font-medium text-indigo-600 dark:text-indigo-400 hover:underline" data-player-id="${playerId}">${playerName}</a>
+                    ${isWinner ? '<span class="ml-auto text-xs font-bold text-green-700 dark:text-green-300">WINNER</span>' : ''}
+                    ${isLoser ? '<span class="ml-auto text-xs font-bold text-red-700 dark:text-red-300">LOSER</span>' : ''}
+                    ${game.is_draw ? '<span class="ml-auto text-xs font-bold text-yellow-700 dark:text-yellow-300">DRAW</span>' : ''}
+                </div>`;
+        });
+        if (game.score) {
+             html += `<div class="mt-3 text-center text-lg font-semibold">Final Score: ${game.score}</div>`;
+        }
+    }
+
+    html += '</div>'; // Close space-y-3
+    container.innerHTML = html;
+}
+
+/**
+ * Populates the Elo changes section.
+ * @param {HTMLElement} container - The container element.
+ * @param {object} game - The game data object.
+ */
+function populateGameEloChanges(container, game) {
+    let html = `<h2 class="text-lg font-semibold mb-2">Elo Change</h2>`;
+    if (!game.elo_change || game.elo_change.length === 0) {
+        html += '<p class="muted-text italic">No Elo change recorded for this game.</p>';
+    } else {
+        html += '<ul class="space-y-1 text-sm">';
+        game.elo_change.forEach(change => {
+            const player = globalPlayerCache[change.playerId];
+            const playerName = player?.name || 'Unknown Player';
+            const changeValue = change.change;
+            const newElo = change.newElo;
+            const changeClass = changeValue > 0 ? 'text-green-600 dark:text-green-400' : (changeValue < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400');
+            const sign = changeValue > 0 ? '+' : '';
+
+            html += `
+                <li class="flex justify-between items-center">
+                    <span><a href="#player-profile-section?playerId=${change.playerId}" class="nav-link hover:underline" data-player-id="${change.playerId}">${playerName}</a>:</span>
+                    <span class="text-right">
+                        <span class="${changeClass} font-medium">${sign}${changeValue.toFixed(1)}</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-xs ml-1">(New: ${Math.round(newElo)})</span>
+                    </span>
+                </li>`;
+        });
+        html += '</ul>';
+    }
+    container.innerHTML = html;
+}
+
+/**
+ * Populates the game-specific details section (e.g., Golf course, hole scores).
+ * @param {HTMLElement} container - The container element.
+ * @param {object} game - The game data object.
+ */
+async function populateGameSpecifics(container, game) {
+    let html = `<h2 class="text-lg font-semibold mb-2">Game Specifics</h2>`;
+    let specificsFound = false;
+
+    if (game.game_type === 'golf') {
+        specificsFound = true;
+        html += '<div class="space-y-4">';
+
+        // Display Golf Course Info
+        if (game.course_id) {
+            // Fetch course details (consider caching these)
+            try {
+                const courseDoc = await db.collection('golf_courses').doc(game.course_id).get();
+                if (courseDoc.exists) {
+                    const course = courseDoc.data();
+                    html += `<div><strong>Course:</strong> ${course.name || 'Unknown Course'}${course.location ? ` (${course.location})` : ''}</div>`;
+                } else {
+                    html += `<div><strong>Course:</strong> Course data not found (ID: ${game.course_id})</div>`;
+                }
+            } catch (err) {
+                 html += `<div><strong>Course:</strong> Error loading course data.</div>`;
+                 console.error("Error fetching course data:", err);
+            }
+        } else {
+             html += `<div><strong>Course:</strong> Not specified</div>`;
+        }
+
+        // Display Hole-by-Hole Scores (if available)
+        if (game.scores && game.scores.some(s => s.hole_scores)) {
+            html += '<div class="mt-4 overflow-x-auto">';
+            html += '<h3 class="text-md font-medium mb-2">Hole Scores:</h3>';
+            html += '<table class="min-w-full text-xs border border-gray-200 dark:border-gray-700">';
+            html += '<thead class="bg-gray-50 dark:bg-gray-700">';
+            html += '<tr><th class="p-1 border-r dark:border-gray-600">Player</th>';
+            for (let i = 1; i <= 18; i++) {
+                html += `<th class="p-1 text-center w-8">${i}</th>`;
+            }
+            html += '<th class="p-1 border-l dark:border-gray-600 font-semibold">Total</th>';
+            html += '</tr></thead>';
+            html += '<tbody class="divide-y divide-gray-200 dark:divide-gray-700">';
+
+            game.scores.forEach(scoreEntry => {
+                const player = globalPlayerCache[scoreEntry.playerId];
+                const playerName = player?.name || 'Unknown';
+                html += `<tr><td class="p-1 border-r dark:border-gray-600 font-medium"><a href="#player-profile-section?playerId=${scoreEntry.playerId}" class="nav-link hover:underline" data-player-id="${scoreEntry.playerId}">${playerName}</a></td>`;
+                let totalScore = 0;
+                for (let i = 1; i <= 18; i++) {
+                    const holeScore = scoreEntry.hole_scores?.[`hole_${i}`];
+                    html += `<td class="p-1 text-center">${holeScore ?? '-'}</td>`;
+                    if (holeScore) totalScore += holeScore;
+                }
+                 // Verify total against stored score if needed
+                 const displayedTotal = scoreEntry.score ?? totalScore;
+                html += `<td class="p-1 border-l dark:border-gray-600 font-semibold text-center">${displayedTotal}</td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            html += '</div>'; // Close overflow-x-auto
+        }
+
+        html += '</div>'; // Close space-y-4
+    }
+
+    // Add more game types here...
+    // else if (game.game_type === 'chess') { ... }
+
+    if (!specificsFound) {
+        html += '<p class="muted-text italic">No game-specific details available.</p>';
+    }
+
+    container.innerHTML = html;
+}
+
+/**
+ * Deletes a game document from Firestore.
+ * TODO: Implement recalculation of Elo/stats if necessary, or handle this via cloud functions.
+ * @param {string} gameId - The ID of the game to delete.
+ */
+async function deleteGame(gameId) {
+    if (!db) throw new Error("Database connection error.");
+    if (!gameId) throw new Error("Game ID is required.");
+
+    console.log(`[Admin] Attempting to delete game: ${gameId}`);
+    // For now, just delete the game document.
+    // WARNING: This does NOT automatically update player stats or Elo.
+    // A more robust solution would involve a Cloud Function triggered on delete
+    // or a batch update process here to revert player stats.
+    await db.collection('games').doc(gameId).delete();
+    console.log(`[Admin] Game document ${gameId} deleted.`);
+    // Consider invalidating caches if necessary
+    // resultsCache = null; // Example if you have a results cache
+}
+
+/**
+ * Makes player links within the game info section navigable.
+ * Uses a data attribute to prevent adding multiple listeners.
+ */
+function makePlayerLinksNavigable() {
+    const container = document.getElementById('game-info-content');
+    if (!container) return;
+
+    container.querySelectorAll('a[data-player-id]').forEach(link => {
+        if (link.dataset.gameInfoListenerAttached === 'true') {
+            return; // Skip if listener already exists
+        }
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const playerId = link.getAttribute('data-player-id');
+            console.log(`[Game Info] Player link clicked: ID ${playerId}`);
+            if (playerId && typeof showSection === 'function') {
+                 // Store current hash before navigating
+                 sessionStorage.setItem('previousHash', window.location.hash);
+                 showSection('player-profile-section', true, { playerId });
+            }
+        });
+        link.dataset.gameInfoListenerAttached = 'true'; // Mark as attached
+    });
+}
+
+console.log("[Game Info] game_info.js loaded.");

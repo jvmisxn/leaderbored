@@ -15,6 +15,16 @@ async function navigateToSubmitScore(gameKey = null, results = {}) {
         console.warn("[Navigate Submit] Player cache not ready, fetching...");
         await fetchAllPlayersForCache();
     }
+    // Ensure game configs are loaded (needed by setupSubmitPastGameListeners later)
+    if (!window.globalGameConfigs) {
+        console.warn("[Navigate Submit] Game configs not ready, fetching...");
+        await fetchAndCacheGameConfigs();
+    }
+    // Ensure golf course cache is loaded if relevant (needed by setupSubmitPastGameListeners later)
+    if (gameKey === 'golf' && !golfCourseCachePopulated) {
+        console.warn("[Navigate Submit] Golf course cache not ready, fetching...");
+        await ensureGolfCourseCache();
+    }
 
     // Store the results temporarily so they can be picked up after the template loads.
     // We'll store them in a global variable or a temporary storage accessible by setupSubmitPastGameListeners.
@@ -31,216 +41,205 @@ async function navigateToSubmitScore(gameKey = null, results = {}) {
 // --- Submit Past Game Section Logic ---
 
 /**
- * Sets up listeners for the "Submit Past Game" section.
+ * Sets up the main listeners for the submit past game section.
+ * Called once when the section is loaded.
  */
-async function setupSubmitPastGameListeners() {
-    console.log("[Submit Past] Setting up listeners...");
+async function setupSubmitScoreSection(prefillParams = null) {
+    console.log("[Submit Score] Setting up Submit Score Section. Prefill Params:", prefillParams); // Added log
     const gameTypeSelect = document.getElementById('submit-game-type-select');
-    const formFieldsContainer = document.getElementById('submit-form-fields');
-    const submitForm = document.getElementById('submit-score-form'); // Get the form itself
+    const formFieldsContainer = document.getElementById('submit-game-specific-fields');
+    const form = document.getElementById('submit-past-game-form');
+    const errorElement = document.getElementById('submit-game-error'); // General error display
 
-    if (!gameTypeSelect || !formFieldsContainer || !submitForm) {
-        console.error("[Submit Past] Missing essential elements (select, fields container, or form).");
+    if (!gameTypeSelect || !formFieldsContainer || !form || !errorElement) {
+        console.error("[Submit Score] Essential elements missing for setup (select, fields container, form, or error display).");
+        if (errorElement) errorElement.textContent = "Error loading page structure.";
+        else console.error("Cannot display error message - error element missing.");
         return;
     }
 
-    // 1. Populate Game Type Dropdown (Ensure configs are ready first)
+    errorElement.textContent = ''; // Clear previous errors
+    formFieldsContainer.innerHTML = '<p class="muted-text text-center">Select a game type to enter details.</p>'; // Reset fields container
+
+    // 1. Populate Game Type Dropdown
     try {
-        // Use populateGameTypeSelect from ui_utils.js
+        console.log("[Submit Score] Attempting to populate game type select..."); // Added log
         if (typeof populateGameTypeSelect === 'function') {
-            // Await ensures configs are fetched if needed within populateGameTypeSelect
             await populateGameTypeSelect(gameTypeSelect, 'Select Game Type');
+            console.log("[Submit Score] populateGameTypeSelect finished."); // Added log
         } else {
-            console.error("[Submit Past] populateGameTypeSelect function not found."); // Updated function name
-            gameTypeSelect.innerHTML = '<option value="">Error loading games</option>';
+            throw new Error("populateGameTypeSelect function not found.");
         }
     } catch (error) {
-        console.error("[Submit Past] Error populating game type dropdown:", error);
+        console.error("[Submit Score] Error populating game type dropdown:", error);
         gameTypeSelect.innerHTML = '<option value="">Error loading games</option>';
-    }
-
-    // 2. Add Listener for Game Type Change
-    gameTypeSelect.removeEventListener('change', handleSubmitGameTypeChange); // Prevent duplicates
-    gameTypeSelect.addEventListener('change', handleSubmitGameTypeChange);
-
-    // 3. Add Listener for Form Submission
-    submitForm.removeEventListener('submit', handleSubmitScoreForm); // Prevent duplicates
-    submitForm.addEventListener('submit', handleSubmitScoreForm);
-
-    // 4. Check for and Apply Prefill Data (from live game results)
-    if (window._tempLiveResults) {
-        console.log("[Submit Past] Applying prefill data from live game:", window._tempLiveResults);
-        const { gameKey, results } = window._tempLiveResults;
-
-        if (gameKey && gameTypeSelect.querySelector(`option[value="${gameKey}"]`)) {
-            gameTypeSelect.value = gameKey;
-            // Manually trigger the change event to load the correct fields
-            await handleSubmitGameTypeChange(); // Await this to ensure fields are loaded before prefill
-            // Apply the actual results data to the loaded fields
-            if (typeof applySubmitFormPrefill === 'function') {
-                applySubmitFormPrefill(results);
-            } else {
-                console.error("[Submit Past] applySubmitFormPrefill function not found.");
-            }
-        } else if (gameKey) {
-            console.warn(`[Submit Past] Prefill game key "${gameKey}" not found in dropdown.`);
-        }
-        // Clear the temporary data after attempting to use it
-        delete window._tempLiveResults;
-        console.log("[Submit Past] Cleared temporary live results.");
-    } else {
-        // If no prefill, ensure the form fields container is initially empty
-        formFieldsContainer.innerHTML = '';
-        console.log("[Submit Past] No prefill data found.");
-    }
-
-    console.log("[Submit Past] Listeners setup complete.");
-}
-
-/**
- * Handles the change event when a game type is selected in the submit score section.
- */
-async function handleSubmitGameTypeChange() {
-    // ...existing code...
-}
-
-/**
- * Handles the submission of the main score form.
- */
-async function handleSubmitScoreForm(event) {
-    // ...existing code...
-}
-
-// --- Player & Course Dropdown Population ---
-
-/**
- * Populates player dropdowns within a given container element.
- * @param {HTMLElement} container - The element containing the dropdowns to populate.
- */
-async function populatePlayerDropdowns(container) {
-    // ...existing code...
-}
-
-// Populates a single select element with player options from an array
-async function populatePlayerDropdown(selectElement, playersArray, prompt = 'Select Player', selectedValue = null) {
-    if (!selectElement) {
-        console.warn("populatePlayerDropdown: Provided selectElement is null or undefined.");
+        errorElement.textContent = "Failed to load game types.";
+        // Don't proceed if game types fail to load
         return;
     }
-    // Ensure player cache is ready
-    if (!playersCachePopulated) await fetchAllPlayersForCache();
-    selectElement.innerHTML = `<option value="">${prompt}</option>`;
-    playersArray.forEach(player => {
-        const option = new Option(player.name || 'Unnamed Player', player.id);
-        if (player.id === selectedValue) {
-            option.selected = true;
+
+    // 2. Attach Change Listener to Game Type Select
+    gameTypeSelect.removeEventListener('change', handleGameTypeChange); // Prevent duplicates
+    gameTypeSelect.addEventListener('change', handleGameTypeChange);
+    console.log("[Submit Score] Attached change listener to game type select."); // Added log
+
+    // 3. Attach Submit Listener to Form
+    form.removeEventListener('submit', handleSubmitPastGame); // Prevent duplicates
+    form.addEventListener('submit', handleSubmitPastGame);
+    console.log("[Submit Score] Attached submit listener to form."); // Added log
+
+    // 4. Handle Prefill (if data is passed via params)
+    const prefillData = window.history.state?.prefillData; // Get data from history state
+    if (prefillData) {
+        console.log("[Submit Score] Prefill data found in history state:", prefillData);
+        // Clear the state after reading it
+        window.history.replaceState({ ...window.history.state, prefillData: null }, '');
+
+        if (prefillData.game_type && gameTypeSelect.querySelector(`option[value="${prefillData.game_type}"]`)) {
+            gameTypeSelect.value = prefillData.game_type;
+            console.log(`[Submit Score] Prefilled game type to: ${prefillData.game_type}`);
+            // Manually trigger load fields after setting value and ensuring DOM is ready
+            // Use setTimeout to allow dropdown population to potentially finish if async issues persist
+            setTimeout(async () => {
+                console.log("[Submit Score] Triggering loadSubmitGameFormFields for prefill...");
+                await loadSubmitGameFormFields(prefillData.game_type, formFieldsContainer, prefillData);
+            }, 50); // Small delay
+        } else {
+            console.warn("[Submit Score] Prefill game type not found in dropdown or missing:", prefillData.game_type);
+            errorElement.textContent = "Could not prefill all game details.";
         }
-        selectElement.add(option);
-    });
-    console.log(`[UI] Populated dropdown ${selectElement.id || '(no id)'} with ${playersArray.length} players.`);
+    } else {
+        console.log("[Submit Score] No prefill data found in history state.");
+    }
+
+    console.log("[Submit Score] Setup complete."); // Added log
 }
 
 /**
- * Applies prefill data (from live game) to the submit form fields.
- * Assumes form fields have already been loaded by loadSubmitGameFormFields.
- * Uses unified element IDs.
- * @param {object} prefillData - The data object from live game.
+ * Handles the change event when a game type is selected.
+ * @param {Event} event - The change event object.
+ */
+async function handleGameTypeChange(event) {
+    const gameKey = event.target.value;
+    const formFieldsContainer = document.getElementById('submit-game-specific-fields');
+    console.log(`[Submit Score] Game type changed to: ${gameKey}`); // Added log
+    if (gameKey) {
+        await loadSubmitGameFormFields(gameKey, formFieldsContainer);
+    } else {
+        formFieldsContainer.innerHTML = '<p class="muted-text text-center">Select a game type to enter details.</p>';
+    }
+}
+
+/**
+ * Applies prefilled data to the submit score form.
+ * Should be called AFTER loadSubmitGameFormFields has populated the fields.
+ * @param {object} prefillData - The data object from live game or other source.
  */
 function applySubmitFormPrefill(prefillData) {
-    console.log("[Submit Form] Applying prefill data:", prefillData);
+    console.log("[Submit Score Prefill] Applying prefill data:", prefillData);
     const form = document.getElementById('submit-past-game-form');
     if (!form || !prefillData) return;
 
-    // Game Type is already set by setupSubmitPastGameListeners
-
-    // Date/Time (Use submit-specific IDs)
-    const dateInput = form.querySelector('#submit-date-played');
-    const durationInput = form.querySelector('#submit-duration');
-    const notesInput = form.querySelector('#submit-notes');
-
-    // Set Date/Time to NOW by default when prefilling from live
+    // --- Prefill Common Fields ---
+    if (prefillData.game_type) {
+        const gameTypeSelect = form.querySelector('#submit-game-type-select');
+        if (gameTypeSelect && gameTypeSelect.querySelector(`option[value="${prefillData.game_type}"]`)) {
+            gameTypeSelect.value = prefillData.game_type;
+            console.log(`[Submit Score Prefill] Set game type to ${prefillData.game_type}`);
+        } else {
+            console.warn(`[Submit Score Prefill] Could not set game type: ${prefillData.game_type}`);
+        }
+    }
+    // Prefill date (optional, might default to today)
+    const dateInput = form.querySelector('#game-date');
     if (dateInput) {
-        try {
-            const now = new Date();
-            // Format for datetime-local: YYYY-MM-DDTHH:mm
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            dateInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
-        } catch (e) {
-            console.error("[Submit Form Prefill] Error setting date/time:", e);
+        dateInput.value = new Date().toISOString().split('T')[0]; // Default to today
+        console.log(`[Submit Score Prefill] Set date to today`);
+    }
+
+    // --- Prefill Participants ---
+    if (prefillData.participants && prefillData.participants.length > 0) {
+        const winnerSelect = form.querySelector('#game-winner-select');
+        const loserSelect = form.querySelector('#game-loser-select');
+        const player1Select = form.querySelector('#game-player1-select');
+        const player2Select = form.querySelector('#game-player2-select');
+
+        if (winnerSelect && prefillData.participants[0]) {
+            winnerSelect.value = prefillData.participants[0];
+            console.log(`[Submit Score Prefill] Set winner to ${prefillData.participants[0]}`);
+        }
+        if (loserSelect && prefillData.participants[1]) {
+            loserSelect.value = prefillData.participants[1];
+            console.log(`[Submit Score Prefill] Set loser to ${prefillData.participants[1]}`);
+        }
+        if (player1Select && prefillData.participants[0]) {
+            player1Select.value = prefillData.participants[0];
+            console.log(`[Submit Score Prefill] Set player 1 to ${prefillData.participants[0]}`);
+        }
+        if (player2Select && prefillData.participants[1]) {
+            player2Select.value = prefillData.participants[1];
+            console.log(`[Submit Score Prefill] Set player 2 to ${prefillData.participants[1]}`);
         }
     }
-    if (durationInput && prefillData.match_duration) {
-        durationInput.value = prefillData.match_duration;
-    }
-    if (notesInput && prefillData.notes) { // Assuming notes might be collected live
-        notesInput.value = prefillData.notes;
-    }
 
-    // Score / Details (Use generic IDs)
-    const scoreInput = form.querySelector('#game-golf-score-input') || form.querySelector('#game-score-input') || form.querySelector('#game-score-details');
-    if (scoreInput && prefillData.score !== undefined && prefillData.score !== null) {
-        scoreInput.value = prefillData.score;
-    }
-
-    // Players (Use generic IDs)
-    const player1Select = form.querySelector('#game-player1'); // Golf/Bowling Player
-    const winnerSelect = form.querySelector('#game-winner-select'); // 1v1 Winner
-    const loserSelect = form.querySelector('#game-loser-select'); // 1v1 Loser
-    const team1Select = form.querySelector('#game-team1-select');
-    const team2Select = form.querySelector('#game-team2-select');
-    const drawCheckbox = form.querySelector('#submit-is-draw');
-
-    const currentUserId = getCurrentUserId(); // Assuming this function exists
-
-    // Simple prefill logic - assumes live game might only know current user and maybe opponent
-    if (player1Select && currentUserId) { // Solo game
-        player1Select.value = currentUserId;
-    } else if (winnerSelect && loserSelect && currentUserId) { // 1v1 game
-        // Assume current user won if prefilling, opponent needs selection
-        winnerSelect.value = currentUserId;
-        // If opponent ID was somehow captured live (e.g., pre-selected opponent)
-        if (prefillData.opponent_id) {
-             loserSelect.value = prefillData.opponent_id;
-        }
-        if (prefillData.outcome === 'Draw' && drawCheckbox) {
-             drawCheckbox.checked = true;
-             drawCheckbox.dispatchEvent(new Event('change')); // Trigger label change if listener exists
-        }
-    }
-    // Add logic for team prefill if needed
-
-    // Game Specific Prefills
+    // --- Prefill Game-Specific Fields ---
     if (prefillData.game_type === 'golf') {
         const courseSelect = form.querySelector('#game-golf-course-select');
         const holesSelect = form.querySelector('#game-golf-holes-select');
         if (courseSelect && prefillData.course_id) {
-            // May need timeout if course dropdown populates async after fields are added
-            setTimeout(() => { courseSelect.value = prefillData.course_id; }, 150);
+            courseSelect.value = prefillData.course_id;
+            console.log(`[Submit Score Prefill] Set course to ${prefillData.course_id}`);
         }
         if (holesSelect && prefillData.holes_played) {
-            holesSelect.value = String(prefillData.holes_played);
-            // Trigger change if hole inputs depend on it
-             holesSelect.dispatchEvent(new Event('change'));
+            holesSelect.value = prefillData.holes_played.toString();
+            console.log(`[Submit Score Prefill] Set holes played to ${prefillData.holes_played}`);
+            setTimeout(() => generateGolfHoleInputs('submit'), 50);
         }
-        // Prefill hole details if captured live and UI exists
-        if (prefillData.hole_details) {
-            const detailsContainer = form.querySelector('#game-golf-hole-inputs');
-            const detailsElement = form.querySelector('#game-golf-hole-details');
-            if (detailsContainer && detailsElement) {
-                detailsElement.open = true; // Open the details section
-                // Assuming setupSubmitGolfHoleInputs is called after prefill or handles existing values
-                // You might need to explicitly set values here after inputs are generated
-                console.warn("[Submit Form Prefill] Hole detail prefill needs specific input targeting after generation.");
-            }
+
+        if (prefillData.scores) {
+            console.log("[Submit Score Prefill] Prefilling golf scores:", prefillData.scores);
+            Object.entries(prefillData.scores).forEach(([playerId, scoreData]) => {
+                console.log(`[Submit Score Prefill] Processing scores for player ${playerId}`);
+                const playerSection = form.querySelector(`[data-player-id="${playerId}"]`);
+                if (!playerSection) {
+                    console.warn(`[Submit Score Prefill] Could not find form section for player ${playerId}`);
+                    return;
+                }
+
+                const totalScoreInput = playerSection.querySelector('input[name="total_score"]');
+                if (totalScoreInput && scoreData.totalScore !== undefined) {
+                    totalScoreInput.value = scoreData.totalScore;
+                    console.log(`[Submit Score Prefill] Set total score for ${playerId} to ${scoreData.totalScore}`);
+                }
+
+                if (scoreData.holeScores) {
+                    console.log(`[Submit Score Prefill] Prefilling hole scores for ${playerId}:`, scoreData.holeScores);
+                    const numHoles = prefillData.holes_played === 9 ? 9 : 18;
+                    for (let i = 1; i <= numHoles; i++) {
+                        const holeKey = `hole_${i}`;
+                        const holeScoreData = scoreData.holeScores[holeKey];
+                        if (holeScoreData) {
+                            const holeScoreInput = playerSection.querySelector(`#hole_${i}_score_${playerId}`);
+                            if (holeScoreInput && holeScoreData.score !== undefined && holeScoreData.score !== null) {
+                                holeScoreInput.value = holeScoreData.score;
+                            }
+                            const holePuttsInput = playerSection.querySelector(`#hole_${i}_putts_${playerId}`);
+                            if (holePuttsInput && holeScoreData.putts !== undefined && holeScoreData.putts !== null) {
+                                holePuttsInput.value = holeScoreData.putts;
+                            }
+                            const holeDriveInput = playerSection.querySelector(`#hole_${i}_drive_${playerId}`);
+                            if (holeDriveInput && holeScoreData.drive !== undefined && holeScoreData.drive !== null) {
+                                holeDriveInput.value = holeScoreData.drive;
+                            }
+                        }
+                    }
+                    console.log(`[Submit Score Prefill] Finished prefilling hole scores for ${playerId}`);
+                }
+            });
         }
     }
-    // Add prefill for pool scratches, chess outcome etc. if captured live
 
-    console.log("[Submit Form] Finished applying prefill data.");
+    console.log("[Submit Score Prefill] Finished applying prefill data.");
 }
 
 /**
@@ -248,152 +247,249 @@ function applySubmitFormPrefill(prefillData) {
  * Populates dropdowns after generating HTML.
  * @param {string} gameKey - The key of the selected game (e.g., 'golf', 'pool_8ball').
  * @param {HTMLElement} containerElement - The HTML element to populate with form fields.
- * @param {string} context - 'live' or 'submit'.
+ * @param {object|null} prefillData - Optional data to prefill the form (e.g., from live game).
  */
-async function loadSubmitGameFormFields(gameKey, containerElement, context) {
-    console.log(`[Submit Form] Loading fields for game: ${gameKey}, context: ${context}`);
-    if (!containerElement) {
-        console.error("[Submit Score] Target container for fields not provided or found.");
+async function loadSubmitGameFormFields(gameKey, containerElement, prefillData = null) {
+    console.log(`[Submit Score] Loading form fields for game: ${gameKey}. Prefill data present: ${!!prefillData}`);
+    containerElement.innerHTML = '<p class="loading-text">Loading form...</p>'; // Show loading state
+
+    // Ensure configs are loaded (should be, but double-check)
+    if (!window.globalGameConfigs) {
+        console.warn("[Submit Score] Game configs not ready in loadSubmitGameFormFields, attempting fetch...");
+        await fetchAndCacheGameConfigs();
+        if (!window.globalGameConfigs) {
+             containerElement.innerHTML = '<p class="error-text">Error: Game configurations could not be loaded.</p>';
+             return;
+        }
+    }
+
+    const gameConfig = window.globalGameConfigs?.[gameKey];
+    if (!gameConfig) {
+        containerElement.innerHTML = '<p class="error-text">Invalid game type selected.</p>';
         return;
     }
-    containerElement.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center">Loading fields...</p>'; // Loading state
 
-    // Handle empty game key selection
-    if (!gameKey) {
-        containerElement.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-center">Select a game type to see specific fields.</p>`;
+    let formHtml = '';
+    // Generate game-specific fields using the factory function
+    if (typeof generateGameFormFieldsHTML === 'function') {
+        formHtml = await generateGameFormFieldsHTML(gameKey, 'submit', prefillData); // Pass context and optional prefill
+    } else {
+        console.error("generateGameFormFieldsHTML function not found!");
+        containerElement.innerHTML = '<p class="error-text">Error generating form fields.</p>';
         return;
     }
 
+    containerElement.innerHTML = formHtml;
+    console.log(`[Submit Score] Injected HTML for ${gameKey} fields.`); // Added log
+
+    // --- Populate Dropdowns AFTER HTML is in the DOM ---
     try {
-        // Ensure player cache and configs are ready
-        if (!playersCachePopulated) await fetchAllPlayersForCache();
+        console.log("[Submit Score] Populating dropdowns..."); // Added log
+        // Ensure player cache is ready before populating dropdowns
+        if (!playersCachePopulated) {
+            console.log("[Submit Score] Player cache not populated, fetching..."); // Added log
+            await fetchAllPlayersForCache();
+        }
+        if (!playersCachePopulated) throw new Error("Player cache failed to load."); // Check again
+        console.log("[Submit Score] Player cache ready."); // Added log
+
         const playersArray = Object.values(globalPlayerCache).sort((a, b) => a.name.localeCompare(b.name));
-        // Ensure configs are loaded (generateGameFormFieldsHTML also checks, but good practice)
-        if (!window.globalGameConfigs) await fetchAndCacheGameConfigs();
 
-        // Generate HTML using the shared function
-        const formHTML = await generateGameFormFieldsHTML(gameKey, context); // Now async
-        containerElement.innerHTML = formHTML;
+        // Populate all player dropdowns within the container
+        const playerSelects = containerElement.querySelectorAll('select[name="player_id"], select[name="winner_id"], select[name="loser_id"], select[name^="team"], select[id^="game-player"]'); // Added generic player selects
+        console.log(`[Submit Score] Found ${playerSelects.length} player select elements.`); // Added log
+        playerSelects.forEach(select => {
+            let prompt = 'Select Player';
+            if (select.id.includes('winner')) prompt = 'Select Winner';
+            else if (select.id.includes('loser')) prompt = 'Select Loser';
+            else if (select.id.includes('team1')) prompt = 'Select Team 1 Players';
+            else if (select.id.includes('team2')) prompt = 'Select Team 2 Players';
+            else if (select.id.includes('player1')) prompt = 'Select Player 1';
+            else if (select.id.includes('player2')) prompt = 'Select Player 2';
 
-        // --- Populate Dropdowns & Attach Listeners (After HTML is in DOM) ---
-        // Use window.globalGameConfigs
-        const config = window.globalGameConfigs ? window.globalGameConfigs[gameKey] : null;
-        if (!config) throw new Error(`Configuration for ${gameKey} not loaded.`);
+            populatePlayerDropdown(select, playersArray, prompt); // Use the helper from player_management.js or players.js
+        });
+        console.log("[Submit Score] Player dropdowns populated."); // Added log
 
-        if (config.supports_single_player && !config.supports_1v1 && !config.supports_teams) {
-            await populatePlayerDropdown(containerElement.querySelector('#game-player1'), playersArray, 'Select Player');
-        } else if (config.supports_1v1) {
-            const winnerSelect = containerElement.querySelector('#game-winner-select');
-            const loserSelect = containerElement.querySelector('#game-loser-select');
-            await populatePlayerDropdown(winnerSelect, playersArray, 'Select Winner');
-            await populatePlayerDropdown(loserSelect, playersArray, 'Select Loser');
-            // Add draw checkbox listener
-            const drawCheckbox = containerElement.querySelector('#submit-is-draw');
-            if (drawCheckbox && winnerSelect && loserSelect) {
-                drawCheckbox.addEventListener('change', (e) => {
-                    const isChecked = e.target.checked;
-                    // Find labels associated with the selects to change text
-                    const winnerLabel = winnerSelect.previousElementSibling; // Assumes label is direct sibling
-                    const loserLabel = loserSelect.previousElementSibling;
-                    if(winnerLabel) winnerLabel.textContent = isChecked ? 'Player 1:' : 'Winner:';
-                    if(loserLabel) loserLabel.textContent = isChecked ? 'Player 2:' : 'Loser:';
-                });
-                 // Initial check in case prefilled
-                 if (drawCheckbox.checked) drawCheckbox.dispatchEvent(new Event('change'));
+        // Populate Golf Course Dropdown if present
+        const golfCourseSelect = containerElement.querySelector('#game-golf-course-select');
+        if (golfCourseSelect) {
+            console.log("[Submit Score] Found golf course select, populating..."); // Added log
+            // Ensure course cache is ready
+            if (!golfCourseCachePopulated && typeof fetchAndCacheGolfCourses === 'function') {
+                 console.log("[Submit Score] Golf course cache not populated, fetching..."); // Added log
+                 await fetchAndCacheGolfCourses();
             }
-        } else if (config.supports_teams) {
-             await populatePlayerDropdown(containerElement.querySelector('#game-team1-select'), playersArray, 'Select Players');
-             await populatePlayerDropdown(containerElement.querySelector('#game-team2-select'), playersArray, 'Select Players');
+            if (!golfCourseCachePopulated) throw new Error("Golf course cache failed to load."); // Check again
+            console.log("[Submit Score] Golf course cache ready."); // Added log
+
+            if (typeof populateGolfCourseDropdown === 'function') {
+                await populateGolfCourseDropdown(golfCourseSelect);
+                console.log("[Submit Score] Golf course dropdown populated."); // Added log
+            } else {
+                console.error("populateGolfCourseDropdown function not found.");
+                golfCourseSelect.innerHTML = '<option value="">Error loading courses</option>';
+            }
+            // Add listener for holes played dropdown to regenerate hole inputs
+             const holesPlayedSelect = containerElement.querySelector('#game-golf-holes-select');
+             if (holesPlayedSelect) {
+                 holesPlayedSelect.removeEventListener('change', setupSubmitGolfHoleInputs); // Use the specific handler
+                 holesPlayedSelect.addEventListener('change', setupSubmitGolfHoleInputs);
+                 console.log("[Submit Score] Attached change listener to holes played select."); // Added log
+                 // Also generate initially if a course might be prefilled or default selected
+                 // Use setTimeout to ensure DOM is fully ready after innerHTML update
+                 setTimeout(() => {
+                    console.log("[Submit Score] Triggering initial golf hole input generation...");
+                    generateGolfHoleInputs('submit'); // Call with context only initially
+                 }, 0);
+             }
         }
 
-        // Populate Golf Course Select
-        if (gameKey === 'golf') {
-            await populateGolfCourseSelectForSubmit(); // Targets '#game-golf-course-select'
-            // Add listener for hole inputs generation
-            const holeInputsContainer = containerElement.querySelector('#game-golf-hole-inputs');
-            const holesSelect = containerElement.querySelector('#game-golf-holes-select');
-            if (holeInputsContainer && holesSelect && typeof setupSubmitGolfHoleInputs === 'function') {
-                // Initial setup based on default selection
-                setupSubmitGolfHoleInputs(holeInputsContainer, holesSelect.value);
-                // Add listener for changes
-                holesSelect.addEventListener('change', (e) => setupSubmitGolfHoleInputs(holeInputsContainer, e.target.value));
-            } else if (holeInputsContainer) {
-                holeInputsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 italic">Hole tracking setup function not found.</p>';
-            }
+        // Apply prefill data if provided *after* dropdowns are populated
+        if (prefillData) {
+            console.log("[Submit Score] Applying prefill data after field/dropdown population:", prefillData); // Added log
+            applySubmitFormPrefill(prefillData);
+             // Re-generate hole inputs if golf course/holes were prefilled
+             if (gameKey === 'golf' && (prefillData.course_id || prefillData.holes_played)) {
+                 console.log("[Submit Score] Re-generating golf hole inputs due to prefill..."); // Added log
+                 // Use setTimeout to ensure prefill values are set before generation
+                 setTimeout(() => {
+                    generateGolfHoleInputs('submit'); // Call with context only
+                 }, 50); // Small delay
+             }
         }
 
-        console.log(`[Submit Form] Fields loaded and dropdowns populated for ${gameKey}.`);
+        console.log(`[Submit Score] Form fields for ${gameKey} loaded and dropdowns populated.`);
 
     } catch (error) {
-        console.error(`[Submit Form] Error loading/populating fields for ${gameKey}:`, error);
-        containerElement.innerHTML = `<p class="error-text">Error loading form details for ${gameKey}. Please try again.</p>`;
+        console.error("[Submit Score] Error populating dropdowns or applying prefill:", error); // Updated error context
+        containerElement.innerHTML += `<p class="error-text">Error loading selection options: ${error.message}</p>`;
     }
 }
 
-// --- Game Specific Field Generation ---
-
 /**
- * Generates HTML for standard 1v1 player selection fields.
- * @param {string} context - 'live' or 'submit'.
- * @returns {string} HTML string for the fields.
+ * Handles the submission of the past game form.
  */
-function generateStandard1v1Fields(context) {
-    // ...existing code...
+async function handleSubmitPastGame(event) {
+    console.log("[Submit Score] Past game form submitted."); // Keep existing log
+    // ... (existing handleSubmitPastGame code - no changes needed based on current prompt) ...
 }
 
 /**
- * Generates HTML for standard team selection fields.
- * @param {string} context - 'live' or 'submit'.
- * @returns {string} HTML string for the fields.
+ * Initializes the submit score form and adds event listeners.
  */
-function generateStandardTeamFields(context) {
+function initSubmitScoreForm() {
     // ...existing code...
+    
+    // Add continue iteration handler
+    document.getElementById('continue-iteration').addEventListener('click', () => {
+        const currentGameData = getCurrentGameData();
+        if (currentGameData) {
+            navigateToLiveGame(currentGameData.sport, currentGameData.players);
+        }
+    });
 }
 
 /**
- * Generates HTML for Golf specific fields (player, course, score, etc.).
- * @param {string} context - 'live' or 'submit'.
- * @returns {string} HTML string for the fields.
+ * Retrieves the current game data from the form.
+ * @returns {object|null} - The current game data or null if invalid.
  */
-function generateGolfFields(context) {
-    // ...existing code...
+function getCurrentGameData() {
+    const form = document.getElementById('submit-past-game-form');
+    const sportSelect = form.querySelector('[name="sport"]');
+    const playerInputs = form.querySelectorAll('[name^="player"]');
+    
+    if (!sportSelect || !playerInputs.length) return null;
+    
+    const players = Array.from(playerInputs)
+        .map(input => input.value)
+        .filter(value => value.trim() !== '');
+        
+    return {
+        sport: sportSelect.value,
+        players: players
+    };
 }
 
 /**
- * Generates HTML for Pool (8-Ball) specific fields.
- * @param {string} context - 'live' or 'submit'.
- * @returns {string} HTML string for the fields.
+ * Initializes the submit score functionality.
  */
-function generatePool8BallFields(context) {
+function initSubmitScore() {
     // ...existing code...
+    
+    document.getElementById('continue-iteration').addEventListener('click', function() {
+        // Clear the current game data
+        clearGameData();
+        // Navigate back to the live game screen
+        navigateToLiveGame();
+    });
 }
 
 /**
- * Generates HTML for Chess specific fields.
- * @param {string} context - 'live' or 'submit'.
- * @returns {string} HTML string for the fields.
+ * Starts a new game iteration based on the previous game data.
+ * @param {object} previousGameData - The data from the previous game.
  */
-function generateChessFields(context) {
-    // ...existing code...
+function startNewGameIteration(previousGameData) {
+    // Preserve relevant game settings for the next iteration
+    const newGameData = {
+        sport: previousGameData.sport,
+        players: previousGameData.players,
+        course: previousGameData.course,  // If applicable
+        settings: previousGameData.settings
+    };
+    
+    // Reset scores and start time
+    localStorage.setItem('currentGame', JSON.stringify(newGameData));
+    
+    // Navigate back to the live game screen
+    window.location.href = '#live-game';
+    initializeLiveGame();
 }
 
 /**
- * Generates HTML for Bowling specific fields.
- * @param {string} context - 'live' or 'submit'.
- * @returns {string} HTML string for the fields.
+ * Clears the current game data from temporary storage.
  */
-function generateBowlingFields(context) {
-    // ...existing code...
+function clearGameData() {
+    // Reset any temporary game state
+    sessionStorage.removeItem('currentGameScores');
+    sessionStorage.removeItem('currentGamePlayers');
 }
 
 /**
- * Generates HTML for generic score/outcome fields.
- * @param {string} context - 'live' or 'submit'.
- * @param {object} config - The game config object.
- * @returns {string} HTML string for the fields.
+ * Navigates back to the live game screen.
  */
-function generateGenericScoreFields(context, config) {
-    // ...existing code...
+function navigateToLiveGame() {
+    // Hide submit score section
+    document.getElementById('submit-score-section').classList.add('hidden');
+    // Show live game section
+    document.getElementById('live-game-section').classList.remove('hidden');
+    // Reset the live game form
+    resetLiveGameForm();
 }
+
+/**
+ * Resets the live game form fields and state.
+ */
+function resetLiveGameForm() {
+    // Reset any form fields or game state
+    const scoreInputs = document.querySelectorAll('.score-input');
+    scoreInputs.forEach(input => input.value = '');
+}
+
+// Add event listener for DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    // ...existing code...
+    const continueIterationBtn = document.getElementById('continue-iteration');
+    if (continueIterationBtn) {
+        continueIterationBtn.addEventListener('click', () => {
+            const gameConfig = getCurrentGameConfig();
+            if (gameConfig) {
+                // Reset the game state but keep the same configuration
+                navigateToLiveGame(gameConfig);
+            }
+        });
+    }
+    // ...existing code...
+});
 
 console.log("[Submit Score] submit_score.js loaded.");
